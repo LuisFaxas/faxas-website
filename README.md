@@ -45,8 +45,8 @@ A revolutionary developer portfolio platform that transforms prospects into educ
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/faxas.net.git
-   cd faxas.net/faxas_website
+   git clone https://github.com/LuisFaxas/faxas-website.git
+   cd faxas-website
    ```
 
 2. **Install dependencies**
@@ -357,7 +357,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 **FAXAS** - [hello@faxas.net](mailto:hello@faxas.net)
 
-Project Link: [https://github.com/yourusername/faxas.net](https://github.com/yourusername/faxas.net)
+Project Link: [https://github.com/LuisFaxas/faxas-website](https://github.com/LuisFaxas/faxas-website)
 
 ---
 
