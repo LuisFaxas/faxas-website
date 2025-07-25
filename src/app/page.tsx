@@ -113,67 +113,80 @@ export default function Home() {
         {/* Services Section */}
         <section className="relative px-4 sm:px-6 py-16 sm:py-20">
           <div className="mx-auto max-w-7xl">
-            <div className="text-center mb-8 sm:mb-12">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="text-center mb-8 sm:mb-12"
+            >
               <h3 className="text-3xl sm:text-4xl font-bold mb-4">What I Build</h3>
               <p className="text-lg sm:text-xl text-text-secondary">Modern solutions for real business challenges</p>
-            </div>
+            </motion.div>
             
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-              <GlassPanel level="primary" className="p-6 sm:p-8 text-center">
-                <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-accent-blue/20 flex items-center justify-center">
+              <FloatingTile delay={100} className="glass-primary p-6 sm:p-8 text-center group">
+                <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br from-blue-400/20 to-blue-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <span className="text-2xl">🚀</span>
                 </div>
                 <h4 className="text-xl font-semibold mb-3">Web Applications</h4>
                 <p className="text-text-secondary">
                   Full-stack applications with real-time features, beautiful UIs, and scalable architecture
                 </p>
-              </GlassPanel>
+              </FloatingTile>
               
-              <GlassPanel level="primary" className="p-8 text-center">
-                <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-accent-purple/20 flex items-center justify-center">
+              <FloatingTile delay={200} className="glass-primary p-6 sm:p-8 text-center group">
+                <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-400/20 to-purple-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <span className="text-2xl">🛍️</span>
                 </div>
                 <h4 className="text-xl font-semibold mb-3">E-commerce Solutions</h4>
                 <p className="text-text-secondary">
                   High-converting online stores with secure payments and inventory management
                 </p>
-              </GlassPanel>
+              </FloatingTile>
               
-              <GlassPanel level="primary" className="p-8 text-center">
-                <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-accent-green/20 flex items-center justify-center">
+              <FloatingTile delay={300} className="glass-primary p-6 sm:p-8 text-center group">
+                <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br from-green-400/20 to-green-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <span className="text-2xl">📱</span>
                 </div>
                 <h4 className="text-xl font-semibold mb-3">Progressive Web Apps</h4>
                 <p className="text-text-secondary">
                   Mobile-first experiences that work offline and feel like native apps
                 </p>
-              </GlassPanel>
+              </FloatingTile>
             </div>
           </div>
         </section>
 
         {/* Process Section */}
-        <section className="relative px-6 py-20 bg-gradient-to-b from-transparent to-glass-light/30">
-          <div className="mx-auto max-w-7xl">
-            <div className="text-center mb-12">
+        <section className="relative px-6 py-20">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-glass-blue to-transparent" />
+          <div className="mx-auto max-w-7xl relative">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
               <h3 className="text-4xl font-bold mb-4">How I Work</h3>
               <p className="text-xl text-text-secondary">A proven process that delivers results</p>
-            </div>
+            </motion.div>
             
             <div className="grid md:grid-cols-4 gap-6">
               {[
-                { step: 1, title: 'Discover', desc: 'Understanding your goals and requirements' },
-                { step: 2, title: 'Design', desc: 'Creating beautiful, functional interfaces' },
-                { step: 3, title: 'Develop', desc: 'Building with clean, scalable code' },
-                { step: 4, title: 'Deploy', desc: 'Launching and ongoing support' }
-              ].map((item) => (
-                <GlassPanel key={item.step} level="secondary" className="p-6">
-                  <div className="text-3xl font-bold text-accent-blue mb-3">
+                { step: 1, title: 'Discover', desc: 'Understanding your goals and requirements', color: 'blue' },
+                { step: 2, title: 'Design', desc: 'Creating beautiful, functional interfaces', color: 'purple' },
+                { step: 3, title: 'Develop', desc: 'Building with clean, scalable code', color: 'pink' },
+                { step: 4, title: 'Deploy', desc: 'Launching and ongoing support', color: 'green' }
+              ].map((item, index) => (
+                <FloatingTile key={item.step} delay={100 + index * 100} className="glass-secondary p-6 text-center">
+                  <div className={`text-3xl font-bold mb-3 bg-gradient-to-r from-accent-${item.color} to-accent-purple bg-clip-text text-transparent`}>
                     {item.step}
                   </div>
                   <h4 className="font-semibold mb-2">{item.title}</h4>
                   <p className="text-sm text-text-secondary">{item.desc}</p>
-                </GlassPanel>
+                </FloatingTile>
               ))}
             </div>
           </div>
@@ -200,7 +213,13 @@ export default function Home() {
         {/* CTA Section */}
         <section className="relative px-6 py-20">
           <div className="mx-auto max-w-7xl">
-            <GlassPanel level="accent" className="p-12 text-center">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="glass-accent p-12 text-center rounded-[32px]"
+            >
               <h3 className="text-3xl md:text-4xl font-bold mb-4">
                 Ready to Build Something Amazing?
               </h3>
@@ -209,7 +228,7 @@ export default function Home() {
               </p>
               <div className="flex flex-wrap gap-4 justify-center">
                 <Link href="/contact">
-                  <Button variant="primary" size="lg" float>
+                  <Button variant="primary" size="lg">
                     Start Your Project
                   </Button>
                 </Link>
@@ -219,7 +238,7 @@ export default function Home() {
                   </Button>
                 </Link>
               </div>
-            </GlassPanel>
+            </motion.div>
           </div>
         </section>
     </PageLayout>

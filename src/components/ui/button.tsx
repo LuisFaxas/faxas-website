@@ -9,38 +9,34 @@ import { Ripple } from './ripple';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 relative overflow-hidden',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-all duration-300 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 relative overflow-hidden transform-gpu',
   {
     variants: {
       variant: {
         primary: [
-          'bg-accent-blue text-white',
-          'shadow-[0_4px_14px_0_rgba(0,122,255,0.3)]',
-          'hover:shadow-[0_6px_20px_rgba(0,122,255,0.4)]',
-          'hover:bg-accent-blue/90',
+          'bg-gradient-to-r from-accent-blue to-accent-purple text-white',
+          'shadow-[0_8px_32px_rgba(59,130,246,0.3)]',
+          'hover:shadow-[0_12px_48px_rgba(59,130,246,0.4)]',
+          'hover:scale-[1.02]',
           'active:scale-[0.98]',
-          'focus-visible:ring-2 focus-visible:ring-accent-blue focus-visible:ring-offset-2',
+          'border border-white/20',
         ].join(' '),
         secondary: [
-          'bg-white/70 backdrop-blur-md text-text-primary',
-          'border border-white/30',
-          'shadow-[0_8px_32px_rgba(0,0,0,0.04)]',
-          'hover:bg-white/80',
-          'hover:shadow-[0_8px_32px_rgba(0,0,0,0.08)]',
+          'glass-secondary text-text-primary',
+          'hover:shadow-lg',
+          'hover:scale-[1.02]',
           'active:scale-[0.98]',
         ].join(' '),
         ghost: [
           'text-text-primary',
-          'hover:bg-white/20 hover:backdrop-blur-sm',
+          'hover:bg-glass-blue',
+          'hover:backdrop-blur-sm',
           'active:scale-[0.98]',
         ].join(' '),
         glass: [
-          'bg-white/30 backdrop-blur-md text-text-primary',
-          'border border-white/20',
-          'shadow-glass-sm',
-          'hover:bg-white/40',
-          'hover:border-white/30',
-          'hover:shadow-glass',
+          'glass-accent text-text-primary',
+          'hover:shadow-xl',
+          'hover:scale-[1.02]',
           'active:scale-[0.98]',
         ].join(' '),
         link: [
@@ -50,9 +46,9 @@ const buttonVariants = cva(
         ].join(' '),
       },
       size: {
-        sm: 'min-h-[40px] sm:min-h-[36px] px-4 text-sm rounded-[20px]',
-        md: 'min-h-[44px] sm:min-h-[44px] px-6 text-base rounded-[24px]',
-        lg: 'min-h-[48px] sm:min-h-[56px] px-8 text-lg rounded-[28px]',
+        sm: 'min-h-[36px] px-4 text-sm rounded-[18px]',
+        md: 'min-h-[44px] px-6 text-base rounded-[22px]',
+        lg: 'min-h-[52px] px-8 text-lg rounded-[26px]',
         icon: 'h-10 w-10 rounded-full',
       },
     },
