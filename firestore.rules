@@ -1,0 +1,71 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        request.auth.token.admin == true;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && 
+        request.auth.uid == userId;
+    }
+    
+    // Test collection (temporary - remove in production)
+    match /test/{document} {
+      allow read, write: if true;
+    }
+    
+    // Projects collection - public read, admin write
+    match /projects/{projectId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // Leads collection - write for all, read for admin only
+    match /leads/{leadId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+    
+    // Users collection - users can only access their own data
+    match /users/{userId} {
+      allow read, update: if isOwner(userId);
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow delete: if false; // Never allow deletion
+    }
+    
+    // Analytics collection - admin only
+    match /analytics/{document} {
+      allow read, write: if isAdmin();
+    }
+    
+    // Blog posts - public read, admin write
+    match /posts/{postId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // Comments - authenticated users can create, admin can manage
+    match /comments/{commentId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && 
+        request.auth.uid == resource.data.authorId;
+      allow delete: if isAdmin() || 
+        (isAuthenticated() && request.auth.uid == resource.data.authorId);
+    }
+    
+    // Client project updates - admin write, specific client read
+    match /projectUpdates/{updateId} {
+      allow read: if isAuthenticated() && 
+        (isAdmin() || request.auth.uid in resource.data.clientIds);
+      allow create, update, delete: if isAdmin();
+    }
+  }
+}

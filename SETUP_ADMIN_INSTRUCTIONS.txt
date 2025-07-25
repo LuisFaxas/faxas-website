@@ -1,0 +1,56 @@
+ADMIN SETUP INSTRUCTIONS FOR FAXAS.NET
+=====================================
+
+STEP 1: Copy Your Service Account Key
+--------------------------------------
+1. Copy your Firebase service account key file:
+   FROM: C:\Users\MrFax\Documents\faxas-website-firebase-adminsdk-fbsvc-b5a908dc58.json
+   TO: C:\1) FAXAS\CODING PROJECTS\faxas.net\faxas_website\service-account-key.json
+
+   (Just rename it to "service-account-key.json" when you copy it)
+
+STEP 2: Create Your Account
+---------------------------
+1. Make sure the dev server is running:
+   npm run dev
+
+2. Go to: http://localhost:3000/register
+3. Sign up with your email
+
+STEP 3: Make Yourself Admin
+---------------------------
+Option A - Using the script (EASIEST):
+
+1. Open a terminal in the project folder
+2. Run this command (replace with your email):
+   
+   node scripts/make-admin.js your-email@example.com
+
+Option B - Using Firebase Console:
+
+1. Go to https://console.firebase.google.com
+2. Select your project
+3. Go to Firestore Database
+4. Find the "users" collection
+5. Find your user document
+6. Add field: role = "admin"
+
+STEP 4: Verify It Worked
+------------------------
+1. Sign out from the website
+2. Sign back in
+3. You should see "Admin" in the navigation
+4. Go to http://localhost:3000/admin
+
+That's it! You're now an admin.
+
+TROUBLESHOOTING
+--------------
+If the script doesn't work:
+- Make sure the service account key is copied correctly
+- Check that you're using the right email
+- Try signing out and back in again
+
+If you still can't access admin:
+- Go to http://localhost:3000/debug/auth
+- This will show you your current auth status
