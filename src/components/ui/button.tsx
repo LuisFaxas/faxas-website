@@ -4,6 +4,7 @@ import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { motion, HTMLMotionProps } from 'framer-motion';
 import * as React from 'react';
+import { Ripple } from './ripple';
 
 import { cn } from '@/lib/utils';
 
@@ -67,12 +68,12 @@ export interface ButtonProps
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
   float?: boolean;
-  // ripple?: boolean; // TODO: Re-add when ripple effect is fixed
+  ripple?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, float = false, children, ...props }, ref) => {
-    // TODO: Re-implement ripple effect with proper TypeScript compatibility
+  ({ className, variant, size, asChild = false, float = false, ripple = true, children, ...props }, ref) => {
+    const buttonContent = <span className="relative z-10">{children}</span>;
 
     if (asChild) {
       return (
@@ -81,12 +82,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           ref={ref}
           {...props}
         >
-          <span className="relative z-10">{children}</span>
+          {buttonContent}
         </Slot>
       );
     }
 
-    return (
+    const motionButton = (
       <motion.button
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
@@ -95,12 +96,21 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         transition={{ type: "spring", stiffness: 400, damping: 25 }}
         {...props}
       >
-        {/* Ripple effect - temporarily disabled for TypeScript compatibility */}
-        {/* TODO: Fix ripple effect type issue */}
-        
-        <span className="relative z-10">{children}</span>
+        {buttonContent}
       </motion.button>
     );
+
+    if (ripple && variant !== 'link') {
+      return (
+        <Ripple 
+          color={variant === 'primary' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(59, 130, 246, 0.3)'}
+        >
+          {motionButton}
+        </Ripple>
+      );
+    }
+
+    return motionButton;
   }
 );
 Button.displayName = 'Button';

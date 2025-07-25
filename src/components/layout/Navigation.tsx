@@ -43,14 +43,30 @@ export function Navigation() {
     <nav
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-        isScrolled ? 'py-4' : 'py-6'
+        isScrolled ? 'py-2' : 'py-4'
       )}
     >
-      <GlassPanel
+      <motion.div
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ type: 'spring', stiffness: 100, damping: 20 }}
         className={cn(
-          'mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 transition-all duration-300',
-          isScrolled ? 'py-3' : 'py-4'
+          'mx-auto max-w-7xl px-4 sm:px-6 lg:px-8',
+          isScrolled ? 'glass-nav-scrolled' : 'glass-nav'
         )}
+        style={{
+          background: isScrolled 
+            ? 'rgba(255, 255, 255, 0.9)' 
+            : 'rgba(255, 255, 255, 0.7)',
+          backdropFilter: isScrolled ? 'blur(30px)' : 'blur(20px)',
+          WebkitBackdropFilter: isScrolled ? 'blur(30px)' : 'blur(20px)',
+          borderRadius: '24px',
+          border: '1px solid rgba(255, 255, 255, 0.4)',
+          boxShadow: isScrolled 
+            ? '0 1px 0 rgba(0, 0, 0, 0.05)' 
+            : '0 4px 24px rgba(0, 0, 0, 0.06)',
+          padding: isScrolled ? '0.75rem 1.5rem' : '1rem 1.5rem',
+        }}
       >
         <div className="flex items-center justify-between">
           {/* Logo */}
@@ -122,7 +138,7 @@ export function Navigation() {
                         exit={{ opacity: 0, y: -10 }}
                         className="absolute right-0 mt-2 w-48 origin-top-right"
                       >
-                        <GlassPanel className="py-2">
+                        <div className="glass-secondary py-2 rounded-xl">
                           {isAdmin && (
                             <Link
                               href="/admin"
@@ -149,7 +165,7 @@ export function Navigation() {
                             <LogOut className="w-4 h-4" />
                             <span>Sign Out</span>
                           </button>
-                        </GlassPanel>
+                        </div>
                       </motion.div>
                     </>
                   )}
@@ -278,7 +294,7 @@ export function Navigation() {
             </motion.div>
           )}
         </AnimatePresence>
-      </GlassPanel>
+      </motion.div>
     </nav>
   );
 }

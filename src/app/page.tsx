@@ -1,61 +1,111 @@
+'use client';
+
 import Link from 'next/link';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { GlassPanel } from '@/components/ui/glass/glass-panel';
 import { Button } from '@/components/ui/button';
+import { FloatingTile } from '@/components/ui/floating-tile';
+import { motion } from 'framer-motion';
+import { ArrowRight, Sparkles, Code2, Palette } from 'lucide-react';
 
 export default function Home() {
   return (
     <PageLayout>
 
-        {/* Hero Section */}
-        <section className="relative px-4 sm:px-6 py-16 sm:py-20 md:py-32">
-          <div className="mx-auto max-w-7xl">
-            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-              {/* Left Column - Text Content */}
-              <div className="space-y-8">
-                <GlassPanel level="accent" float className="inline-block px-4 py-2">
-                  <span className="text-sm font-medium text-text-primary">Welcome to the Future of Web Development</span>
-                </GlassPanel>
-                
-                <h2 className="text-4xl sm:text-5xl md:text-7xl font-bold leading-tight">
-                  Building <span className="gradient-text">Premium</span> Digital Experiences
-                </h2>
-                
-                <p className="text-lg sm:text-xl text-text-secondary leading-relaxed">
-                  Transform your vision into stunning, glassmorphic web applications that captivate users and drive business growth.
-                </p>
-                
-                <div className="flex flex-wrap gap-4">
-                  <Link href="/projects">
-                    <Button variant="primary" size="lg" float>
-                      View Projects
-                    </Button>
-                  </Link>
-                  <Link href="#about">
-                    <Button variant="secondary" size="lg">
-                      Learn More
-                    </Button>
-                  </Link>
+        {/* Premium Hero Section */}
+        <section className="relative min-h-screen flex items-center px-4 sm:px-6 py-16 sm:py-20 md:py-32">
+          <div className="mx-auto max-w-7xl w-full">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
+              className="text-center space-y-8"
+            >
+              {/* Floating Badge */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2, duration: 0.5 }}
+                className="inline-block"
+              >
+                <div className="glass-accent px-6 py-3 rounded-full inline-flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-accent-purple" />
+                  <span className="text-sm font-medium bg-gradient-to-r from-accent-blue to-accent-purple bg-clip-text text-transparent">
+                    Premium Web Development
+                  </span>
+                  <Sparkles className="w-4 h-4 text-accent-blue" />
                 </div>
-              </div>
+              </motion.div>
               
-              {/* Right Column - Visual Element */}
-              <div className="relative mt-8 lg:mt-0">
-                <GlassPanel level="primary" float className="p-6 sm:p-8">
-                  <div className="space-y-4">
-                    <div className="h-2 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full" />
-                    <div className="h-2 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full w-4/5" />
-                    <div className="h-2 bg-gradient-to-r from-pink-400 to-blue-400 rounded-full w-3/5" />
-                  </div>
-                  <div className="mt-8 grid grid-cols-3 gap-4">
-                    {['React', 'Next.js', 'TypeScript'].map((tech) => (
-                      <GlassPanel key={tech} level="secondary" className="p-3 text-center">
-                        <span className="text-sm font-medium">{tech}</span>
-                      </GlassPanel>
-                    ))}
-                  </div>
-                </GlassPanel>
-              </div>
+              {/* Main Title */}
+              <motion.h1 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.8 }}
+                className="text-5xl sm:text-6xl md:text-8xl font-bold leading-tight"
+              >
+                Building the Future,
+                <br />
+                <span className="gradient-text">One Line at a Time</span>
+              </motion.h1>
+              
+              {/* Subtitle */}
+              <motion.p 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.8 }}
+                className="text-xl sm:text-2xl text-text-secondary max-w-3xl mx-auto leading-relaxed"
+              >
+                Educational portfolio that transforms visitors into clients through progressive learning, 
+                live demos, and premium glassmorphic experiences.
+              </motion.p>
+              
+              {/* CTA Buttons */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5, duration: 0.8 }}
+                className="flex flex-wrap gap-4 justify-center pt-4"
+              >
+                <Link href="/projects">
+                  <Button variant="primary" size="lg" className="group">
+                    <span>Explore Projects</span>
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+                <Link href="/contact">
+                  <Button variant="secondary" size="lg">
+                    Start Your Project
+                  </Button>
+                </Link>
+              </motion.div>
+            </motion.div>
+            
+            {/* Floating Tiles */}
+            <div className="mt-20 grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              <FloatingTile delay={600} className="text-center group">
+                <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-gradient-to-br from-blue-400/20 to-blue-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Code2 className="w-6 h-6 text-blue-600" />
+                </div>
+                <h3 className="font-semibold mb-2">Quick Preview</h3>
+                <p className="text-sm text-text-secondary">See code and demos side-by-side</p>
+              </FloatingTile>
+              
+              <FloatingTile delay={700} className="text-center group">
+                <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-400/20 to-purple-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Sparkles className="w-6 h-6 text-purple-600" />
+                </div>
+                <h3 className="font-semibold mb-2">Live Demos</h3>
+                <p className="text-sm text-text-secondary">Interact with real applications</p>
+              </FloatingTile>
+              
+              <FloatingTile delay={800} className="text-center group">
+                <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-gradient-to-br from-pink-400/20 to-pink-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Palette className="w-6 h-6 text-pink-600" />
+                </div>
+                <h3 className="font-semibold mb-2">Learn & Explore</h3>
+                <p className="text-sm text-text-secondary">Understand the tech behind it</p>
+              </FloatingTile>
             </div>
           </div>
         </section>
