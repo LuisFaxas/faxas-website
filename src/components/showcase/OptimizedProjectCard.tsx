@@ -2,16 +2,14 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { 
   ExternalLink, 
   Github, 
   Play, 
   ChevronRight,
-  Zap,
-  TrendingUp,
-  Clock
+  Zap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { FloatingTile } from '@/components/ui/floating-tile';
@@ -40,6 +38,7 @@ interface ProjectCardProps {
 }
 
 export function OptimizedProjectCard({ project, index = 0 }: ProjectCardProps) {
+  const router = useRouter();
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
 
@@ -48,6 +47,15 @@ export function OptimizedProjectCard({ project, index = 0 }: ProjectCardProps) {
     ? `https://via.placeholder.com/600x400/3b82f6/ffffff?text=${encodeURIComponent(project.title)}`
     : project.images[0];
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't navigate if clicking on an action button
+    const target = e.target as HTMLElement;
+    if (target.closest('a') || target.closest('button')) {
+      return;
+    }
+    router.push(`/projects/${project.slug}`);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -55,7 +63,7 @@ export function OptimizedProjectCard({ project, index = 0 }: ProjectCardProps) {
       viewport={{ once: true }}
       transition={{ delay: index * 0.1 }}
     >
-      <Link href={`/projects/${project.slug}`}>
+      <div onClick={handleCardClick}>
         <FloatingTile className="glass-primary overflow-hidden group cursor-pointer h-full">
           {/* Image Container */}
           <div className="relative h-48 md:h-56 overflow-hidden">
@@ -106,7 +114,10 @@ export function OptimizedProjectCard({ project, index = 0 }: ProjectCardProps) {
                   href={project.liveUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                  }}
                   className="glass-accent p-2 rounded-lg hover:scale-110 transition-transform"
                 >
                   <ExternalLink className="w-4 h-4" />
@@ -117,7 +128,10 @@ export function OptimizedProjectCard({ project, index = 0 }: ProjectCardProps) {
                   href={project.githubUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                  }}
                   className="glass-accent p-2 rounded-lg hover:scale-110 transition-transform"
                 >
                   <Github className="w-4 h-4" />
@@ -126,7 +140,10 @@ export function OptimizedProjectCard({ project, index = 0 }: ProjectCardProps) {
               {project.demoUrl && (
                 <a
                   href={project.demoUrl}
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                  }}
                   className="glass-accent p-2 rounded-lg hover:scale-110 transition-transform"
                 >
                   <Play className="w-4 h-4" />
@@ -194,7 +211,7 @@ export function OptimizedProjectCard({ project, index = 0 }: ProjectCardProps) {
             </div>
           </div>
         </FloatingTile>
-      </Link>
+      </div>
     </motion.div>
   );
 }

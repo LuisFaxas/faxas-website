@@ -1,279 +1,258 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { Grid, List, Search, ArrowRight, Zap, Globe, Code, Filter, Sparkles, TrendingUp, Award } from 'lucide-react';
-import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { Search, Sparkles } from 'lucide-react';
 import { PageLayout } from '@/components/layout/PageLayout';
-import { Button } from '@/components/ui/button';
-import { FloatingTile } from '@/components/ui/floating-tile';
-import { OptimizedProjectCard } from '@/components/showcase/OptimizedProjectCard';
+import { GlassmorphicProjectCard } from '@/components/showcase/GlassmorphicProjectCard';
 import { cn } from '@/lib/utils';
 
-interface Project {
-  id: string;
-  title: string;
-  slug: string;
-  category: string;
-  description: string;
-  techStack: string[];
-  images: string[];
-  liveUrl?: string;
-  githubUrl?: string;
-  demoUrl?: string;
-  featured?: boolean;
-  status: string;
-  metrics?: {
-    desktop: number;
-    mobile: number;
-    loadTime: number;
-    improvement?: number;
-  };
-  order: number;
-}
+// Static project data - no Firebase, no images needed
+const staticProjects = [
+  {
+    id: '1',
+    title: 'E-Commerce Dashboard',
+    slug: 'ecommerce-dashboard',
+    category: 'Web Application',
+    description: 'Real-time inventory management system with advanced analytics and reporting',
+    techStack: ['React', 'Next.js', 'TypeScript', 'Firebase', 'Tailwind CSS'],
+    liveUrl: 'https://demo.faxas.net/ecommerce',
+    githubUrl: 'https://github.com/luisfaxas/ecommerce-dashboard',
+    featured: true,
+    metrics: {
+      desktop: 98,
+      mobile: 95,
+      loadTime: 0.8,
+      improvement: 276
+    },
+    gradient: 'from-blue-500/20 to-purple-500/20'
+  },
+  {
+    id: '2',
+    title: 'SaaS Analytics Platform',
+    slug: 'saas-analytics',
+    category: 'Data Visualization',
+    description: 'Powerful analytics platform with custom dashboards and real-time data processing',
+    techStack: ['React', 'D3.js', 'Node.js', 'PostgreSQL', 'AWS'],
+    liveUrl: 'https://demo.faxas.net/analytics',
+    featured: true,
+    metrics: {
+      desktop: 96,
+      mobile: 92,
+      loadTime: 1.2,
+      improvement: 198
+    },
+    gradient: 'from-purple-500/20 to-pink-500/20'
+  },
+  {
+    id: '3',
+    title: 'Healthcare Portal',
+    slug: 'healthcare-portal',
+    category: 'Healthcare',
+    description: 'HIPAA-compliant patient management system with telemedicine capabilities',
+    techStack: ['React', 'TypeScript', 'Node.js', 'MongoDB', 'WebRTC'],
+    liveUrl: 'https://demo.faxas.net/healthcare',
+    githubUrl: 'https://github.com/luisfaxas/healthcare-portal',
+    metrics: {
+      desktop: 94,
+      mobile: 91,
+      loadTime: 0.9
+    },
+    gradient: 'from-green-500/20 to-blue-500/20'
+  },
+  {
+    id: '4',
+    title: 'Financial Trading App',
+    slug: 'trading-app',
+    category: 'FinTech',
+    description: 'Real-time trading platform with advanced charting and portfolio management',
+    techStack: ['React', 'WebSocket', 'Chart.js', 'Python', 'Redis'],
+    liveUrl: 'https://demo.faxas.net/trading',
+    metrics: {
+      desktop: 97,
+      mobile: 93,
+      loadTime: 0.7
+    },
+    gradient: 'from-orange-500/20 to-red-500/20'
+  },
+  {
+    id: '5',
+    title: 'Educational Platform',
+    slug: 'edu-platform',
+    category: 'EdTech',
+    description: 'Interactive learning management system with video streaming and assessments',
+    techStack: ['Next.js', 'Prisma', 'PostgreSQL', 'Stripe', 'AWS S3'],
+    liveUrl: 'https://demo.faxas.net/education',
+    githubUrl: 'https://github.com/luisfaxas/edu-platform',
+    metrics: {
+      desktop: 95,
+      mobile: 94,
+      loadTime: 1.0
+    },
+    gradient: 'from-cyan-500/20 to-blue-500/20'
+  },
+  {
+    id: '6',
+    title: 'Social Media Dashboard',
+    slug: 'social-dashboard',
+    category: 'Social Media',
+    description: 'Multi-platform social media management tool with AI-powered insights',
+    techStack: ['React', 'Node.js', 'GraphQL', 'Redis', 'OpenAI'],
+    liveUrl: 'https://demo.faxas.net/social',
+    metrics: {
+      desktop: 93,
+      mobile: 90,
+      loadTime: 1.1
+    },
+    gradient: 'from-pink-500/20 to-purple-500/20'
+  }
+];
 
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | string>('all');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
-
-  useEffect(() => {
-    loadProjects();
-  }, []);
-
-  const loadProjects = async () => {
-    try {
-      const q = query(
-        collection(db, 'projects'),
-        where('status', '==', 'completed'),
-        orderBy('order', 'asc')
-      );
-      
-      const snapshot = await getDocs(q);
-      const projectsData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as Project));
-      
-      setProjects(projectsData);
-    } catch (error) {
-      console.error('Error loading projects:', error);
-      // Fallback to sample data if Firebase fails
-      const { sampleProjects } = await import('@/data/projects');
-      setProjects(sampleProjects as any);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  
   // Get unique categories
-  const categories = Array.from(new Set(projects.map(p => p.category)));
-
-  // Filter projects based on category and search
-  const filteredProjects = projects.filter(project => {
+  const categories = Array.from(new Set(staticProjects.map(p => p.category)));
+  
+  // Filter projects based on search and category
+  const filteredProjects = staticProjects.filter(project => {
+    const matchesSearch = searchQuery === '' || 
+      project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      project.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      project.techStack.some((tech: string) => tech.toLowerCase().includes(searchQuery.toLowerCase()));
+    
     const matchesFilter = filter === 'all' || project.category === filter;
-    const matchesSearch = project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         project.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         project.techStack.some(tech => tech.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesFilter && matchesSearch;
+    
+    return matchesSearch && matchesFilter;
   });
-
-  // Separate featured and regular projects
-  const featuredProjects = filteredProjects.filter(p => p.featured);
-  const regularProjects = filteredProjects.filter(p => !p.featured);
 
   return (
     <PageLayout>
-      <div className="pb-24">
-        {/* Hero Section */}
-        <section className="pt-20 pb-12 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto text-center">
-            <motion.h1 
-              className="text-4xl md:text-5xl lg:text-6xl font-bold text-text-primary mb-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              Live Project Showcase
-            </motion.h1>
-            <motion.p 
-              className="text-xl text-text-secondary max-w-3xl mx-auto mb-8"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.1 }}
-            >
-              Real projects. Real results. Click to experience them yourself.
-              These aren&apos;t just screenshots - they&apos;re fully functional applications.
-            </motion.p>
-          </div>
-        </section>
-
-        {/* Filters and Search */}
-        <section className="px-4 sm:px-6 lg:px-8 pb-8">
-          <div className="max-w-7xl mx-auto">
-            <div className="glass-primary p-4 rounded-2xl">
-              <div className="flex flex-col md:flex-row gap-4">
-                {/* Search */}
-                <div className="flex-1">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary w-5 h-5" />
-                    <input
-                      type="text"
-                      placeholder="Search projects, technologies..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 bg-white/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-blue"
-                    />
-                  </div>
-                </div>
-
-                {/* Category Filter */}
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setFilter('all')}
-                    className={cn(
-                      "px-4 py-2 rounded-lg transition-all",
-                      filter === 'all' 
-                        ? "bg-accent-blue text-white" 
-                        : "glass-secondary hover:bg-glass-light"
-                    )}
-                  >
-                    All Projects
-                  </button>
-                  {categories.map(category => (
-                    <button
-                      key={category}
-                      onClick={() => setFilter(category)}
-                      className={cn(
-                        "px-4 py-2 rounded-lg transition-all capitalize",
-                        filter === category 
-                          ? "bg-accent-blue text-white" 
-                          : "glass-secondary hover:bg-glass-light"
-                      )}
-                    >
-                      {category.replace('-', ' ')}
-                    </button>
-                  ))}
-                </div>
-
-                {/* View Mode */}
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setViewMode('grid')}
-                    className={cn(
-                      "p-2 rounded-lg transition-all",
-                      viewMode === 'grid' 
-                        ? "bg-accent-blue text-white" 
-                        : "glass-secondary hover:bg-glass-light"
-                    )}
-                  >
-                    <Grid className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => setViewMode('list')}
-                    className={cn(
-                      "p-2 rounded-lg transition-all",
-                      viewMode === 'list' 
-                        ? "bg-accent-blue text-white" 
-                        : "glass-secondary hover:bg-glass-light"
-                    )}
-                  >
-                    <List className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
+      {/* Hero Section */}
+      <motion.section 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative py-20 px-4 sm:px-6 lg:px-8 overflow-hidden"
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-accent-blue/10 via-purple-500/5 to-accent-purple/10" />
+        
+        <div className="relative z-10 max-w-4xl mx-auto text-center">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.1 }}
+            className="inline-flex items-center gap-2 glass-accent px-4 py-2 rounded-full mb-6"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span className="text-sm font-medium">Featured Projects</span>
+          </motion.div>
+          
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 text-gradient">
+            My Portfolio
+          </h1>
+          
+          <p className="text-lg sm:text-xl text-text-secondary max-w-2xl mx-auto mb-8">
+            Explore high-performance web applications built with modern technologies. 
+            Each project showcases best practices in React, performance optimization, and user experience.
+          </p>
+          
+          {/* Search Bar */}
+          <div className="max-w-md mx-auto">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-text-secondary" />
+              <input
+                type="text"
+                placeholder="Search projects, tech stack..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 glass-primary rounded-xl focus:outline-none focus:ring-2 focus:ring-accent-blue/50"
+              />
             </div>
           </div>
-        </section>
+        </div>
+      </motion.section>
 
-        {/* Projects Grid/List */}
-        <section className="px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
-            {filteredProjects.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-text-secondary text-lg">No projects found matching your criteria.</p>
-              </div>
-            ) : (
-              <div className={cn(
-                viewMode === 'grid' 
-                  ? "grid md:grid-cols-2 lg:grid-cols-3 gap-6" 
-                  : "space-y-6"
-              )}>
-                {loading ? (
-                <div className="col-span-full text-center py-12">
-                  <div className="w-12 h-12 border-4 border-accent-blue border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                  <p className="text-text-secondary">Loading amazing projects...</p>
-                </div>
-              ) : (
-                <>
-                  {/* Featured Projects */}
-                  {featuredProjects.length > 0 && (
-                    <div className="col-span-full mb-8">
-                      <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                        <Sparkles className="w-6 h-6 text-yellow-500" />
-                        Featured Projects
-                      </h2>
-                      <div className={cn(
-                        viewMode === 'grid' 
-                          ? "grid md:grid-cols-2 lg:grid-cols-3 gap-6" 
-                          : "space-y-6"
-                      )}>
-                        {featuredProjects.map((project, index) => (
-                          <OptimizedProjectCard 
-                            key={project.id} 
-                            project={project} 
-                            index={index} 
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Regular Projects */}
-                  {regularProjects.map((project, index) => (
-                    <OptimizedProjectCard 
-                      key={project.id} 
-                      project={project} 
-                      index={index + featuredProjects.length} 
-                    />
-                  ))}
-                </>
+      {/* Filters */}
+      <section className="py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <button
+              onClick={() => setFilter('all')}
+              className={cn(
+                "glass-accent px-4 py-2 rounded-lg transition-all",
+                filter === 'all' && "bg-accent-blue/20 ring-2 ring-accent-blue/50"
               )}
-              </div>
-            )}
+            >
+              All Projects
+            </button>
+            {categories.map((category: string) => (
+              <button
+                key={category}
+                onClick={() => setFilter(category)}
+                className={cn(
+                  "glass-accent px-4 py-2 rounded-lg transition-all",
+                  filter === category && "bg-accent-blue/20 ring-2 ring-accent-blue/50"
+                )}
+              >
+                {category}
+              </button>
+            ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* CTA Section */}
-        <motion.section 
-          className="px-4 sm:px-6 lg:px-8 pt-16"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="max-w-4xl mx-auto">
-            <div className="glass-accent p-8 md:p-12 rounded-3xl text-center">
-              <h2 className="text-3xl font-bold mb-4">
-                Ready to Build Something Amazing?
-              </h2>
-              <p className="text-xl text-text-secondary mb-8">
-                Let&apos;s create a web application that transforms your business
-              </p>
-              <Link href="/contact">
-                <Button variant="primary" size="lg">
-                  Start Your Project
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </Link>
+      {/* Projects Grid */}
+      <section className="py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          {filteredProjects.length === 0 ? (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-20"
+            >
+              <div className="glass-primary inline-block p-8 rounded-2xl">
+                <Search className="w-12 h-12 mx-auto mb-4 text-text-secondary" />
+                <p className="text-lg text-text-secondary">No projects found matching your criteria.</p>
+              </div>
+            </motion.div>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {filteredProjects.map((project, index) => (
+                <GlassmorphicProjectCard 
+                  key={project.id} 
+                  project={project} 
+                  index={index}
+                />
+              ))}
             </div>
+          )}
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <motion.section 
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        className="py-20 px-4 sm:px-6 lg:px-8"
+      >
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="glass-primary p-12 rounded-3xl">
+            <h2 className="text-3xl font-bold mb-4">Let&apos;s Build Something Amazing Together</h2>
+            <p className="text-lg text-text-secondary mb-8">
+              Have a project in mind? I&apos;d love to help bring your vision to life with modern, performant web technologies.
+            </p>
+            <a 
+              href="/contact"
+              className="inline-flex items-center gap-2 glass-accent px-6 py-3 rounded-xl hover:scale-105 transition-all font-medium"
+            >
+              Start a Project
+              <Sparkles className="w-4 h-4" />
+            </a>
           </div>
-        </motion.section>
-      </div>
+        </div>
+      </motion.section>
     </PageLayout>
   );
 }
