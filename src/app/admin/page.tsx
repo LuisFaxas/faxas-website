@@ -249,18 +249,24 @@ export default function AdminDashboardPage() {
           Quick Actions
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <button className="p-4 rounded-lg bg-glass-light hover:bg-glass-lighter transition-colors text-center">
-            <Users className="w-6 h-6 mx-auto mb-2 text-accent-blue" />
-            <span className="text-sm text-text-primary">View Leads</span>
-          </button>
-          <button className="p-4 rounded-lg bg-glass-light hover:bg-glass-lighter transition-colors text-center">
-            <FolderOpen className="w-6 h-6 mx-auto mb-2 text-accent-purple" />
-            <span className="text-sm text-text-primary">Add Project</span>
-          </button>
-          <button className="p-4 rounded-lg bg-glass-light hover:bg-glass-lighter transition-colors text-center">
-            <MessageSquare className="w-6 h-6 mx-auto mb-2 text-accent-green" />
-            <span className="text-sm text-text-primary">Check Messages</span>
-          </button>
+          <Link href="/admin/leads">
+            <button className="p-4 rounded-lg bg-glass-light hover:bg-glass-lighter transition-colors text-center w-full">
+              <Users className="w-6 h-6 mx-auto mb-2 text-accent-blue" />
+              <span className="text-sm text-text-primary">View Leads</span>
+            </button>
+          </Link>
+          <Link href="/admin/projects">
+            <button className="p-4 rounded-lg bg-glass-light hover:bg-glass-lighter transition-colors text-center w-full">
+              <FolderOpen className="w-6 h-6 mx-auto mb-2 text-accent-purple" />
+              <span className="text-sm text-text-primary">Manage Projects</span>
+            </button>
+          </Link>
+          <Link href="/admin/messages">
+            <button className="p-4 rounded-lg bg-glass-light hover:bg-glass-lighter transition-colors text-center w-full">
+              <MessageSquare className="w-6 h-6 mx-auto mb-2 text-accent-green" />
+              <span className="text-sm text-text-primary">Check Messages</span>
+            </button>
+          </Link>
           <button className="p-4 rounded-lg bg-glass-light hover:bg-glass-lighter transition-colors text-center">
             <Activity className="w-6 h-6 mx-auto mb-2 text-accent-pink" />
             <span className="text-sm text-text-primary">View Analytics</span>

@@ -1,31 +1,90 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Grid, List, Search, ArrowRight, Zap, Globe, Code } from 'lucide-react';
+import { Grid, List, Search, ArrowRight, Zap, Globe, Code, Filter, Sparkles, TrendingUp, Award } from 'lucide-react';
+import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase/config';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
 import { FloatingTile } from '@/components/ui/floating-tile';
-import { sampleProjects } from '@/data/projects';
+import { OptimizedProjectCard } from '@/components/showcase/OptimizedProjectCard';
 import { cn } from '@/lib/utils';
 
+interface Project {
+  id: string;
+  title: string;
+  slug: string;
+  category: string;
+  description: string;
+  techStack: string[];
+  images: string[];
+  liveUrl?: string;
+  githubUrl?: string;
+  demoUrl?: string;
+  featured?: boolean;
+  status: string;
+  metrics?: {
+    desktop: number;
+    mobile: number;
+    loadTime: number;
+    improvement?: number;
+  };
+  order: number;
+}
+
 export default function ProjectsPage() {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
 
+  useEffect(() => {
+    loadProjects();
+  }, []);
+
+  const loadProjects = async () => {
+    try {
+      const q = query(
+        collection(db, 'projects'),
+        where('status', '==', 'completed'),
+        orderBy('order', 'asc')
+      );
+      
+      const snapshot = await getDocs(q);
+      const projectsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Project));
+      
+      setProjects(projectsData);
+    } catch (error) {
+      console.error('Error loading projects:', error);
+      // Fallback to sample data if Firebase fails
+      const { sampleProjects } = await import('@/data/projects');
+      setProjects(sampleProjects as any);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Get unique categories
-  const categories = Array.from(new Set(sampleProjects.map(p => p.category)));
+  const categories = Array.from(new Set(projects.map(p => p.category)));
 
   // Filter projects based on category and search
-  const filteredProjects = sampleProjects.filter(project => {
+  const filteredProjects = projects.filter(project => {
     const matchesFilter = filter === 'all' || project.category === filter;
     const matchesSearch = project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          project.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          project.techStack.some(tech => tech.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesFilter && matchesSearch;
   });
+
+  // Separate featured and regular projects
+  const featuredProjects = filteredProjects.filter(p => p.featured);
+  const regularProjects = filteredProjects.filter(p => !p.featured);
 
   return (
     <PageLayout>
@@ -144,93 +203,46 @@ export default function ProjectsPage() {
                   ? "grid md:grid-cols-2 lg:grid-cols-3 gap-6" 
                   : "space-y-6"
               )}>
-                {filteredProjects.map((project, index) => (
-                  <motion.div
-                    key={project.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                  >
-                    <Link href={`/projects/${project.slug}`}>
-                      <FloatingTile 
-                        className={cn(
-                          "glass-primary p-6 h-full cursor-pointer group",
-                          viewMode === 'list' && "flex gap-6"
-                        )}
-                      >
-                        {/* Project Content */}
-                        <div className={cn(
-                          "space-y-4",
-                          viewMode === 'list' && "flex-1"
-                        )}>
-                          {/* Header */}
-                          <div>
-                            <div className="flex items-start justify-between mb-2">
-                              <h3 className="text-xl font-bold text-text-primary group-hover:text-accent-blue transition-colors">
-                                {project.title}
-                              </h3>
-                              {project.featured && (
-                                <span className="glass-accent px-2 py-1 text-xs rounded-full">
-                                  Featured
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-text-secondary line-clamp-2">
-                              {project.description}
-                            </p>
-                          </div>
+                {loading ? (
+                <div className="col-span-full text-center py-12">
+                  <div className="w-12 h-12 border-4 border-accent-blue border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                  <p className="text-text-secondary">Loading amazing projects...</p>
+                </div>
+              ) : (
+                <>
+                  {/* Featured Projects */}
+                  {featuredProjects.length > 0 && (
+                    <div className="col-span-full mb-8">
+                      <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                        <Sparkles className="w-6 h-6 text-yellow-500" />
+                        Featured Projects
+                      </h2>
+                      <div className={cn(
+                        viewMode === 'grid' 
+                          ? "grid md:grid-cols-2 lg:grid-cols-3 gap-6" 
+                          : "space-y-6"
+                      )}>
+                        {featuredProjects.map((project, index) => (
+                          <OptimizedProjectCard 
+                            key={project.id} 
+                            project={project} 
+                            index={index} 
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-                          {/* Tech Stack */}
-                          <div className="flex flex-wrap gap-2">
-                            {project.techStack.slice(0, 3).map(tech => (
-                              <span key={tech} className="glass-secondary px-2 py-1 text-xs rounded-full">
-                                {tech}
-                              </span>
-                            ))}
-                            {project.techStack.length > 3 && (
-                              <span className="text-xs text-text-secondary">
-                                +{project.techStack.length - 3} more
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Metrics */}
-                          {project.metrics && (
-                            <div className="flex items-center gap-4 text-sm">
-                              <div className="flex items-center gap-1">
-                                <Zap className="w-4 h-4 text-yellow-500" />
-                                <span>{project.loadTime}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Globe className="w-4 h-4 text-blue-500" />
-                                <span>{project.metrics.desktop}/100</span>
-                              </div>
-                              {project.mobileOptimized && (
-                                <div className="flex items-center gap-1">
-                                  <Code className="w-4 h-4 text-green-500" />
-                                  <span>Mobile Ready</span>
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          {/* CTA */}
-                          <div className="flex items-center gap-2 text-accent-blue group-hover:gap-3 transition-all">
-                            <span className="text-sm font-medium">View Project</span>
-                            <ArrowRight className="w-4 h-4" />
-                          </div>
-                        </div>
-
-                        {/* Preview for List View */}
-                        {viewMode === 'list' && (
-                          <div className="w-48 h-32 rounded-lg bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-                            <Code className="w-8 h-8 text-accent-blue/50" />
-                          </div>
-                        )}
-                      </FloatingTile>
-                    </Link>
-                  </motion.div>
-                ))}
+                  {/* Regular Projects */}
+                  {regularProjects.map((project, index) => (
+                    <OptimizedProjectCard 
+                      key={project.id} 
+                      project={project} 
+                      index={index + featuredProjects.length} 
+                    />
+                  ))}
+                </>
+              )}
               </div>
             )}
           </div>

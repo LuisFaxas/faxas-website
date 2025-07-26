@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { ToastContainer } from "@/components/ui/toast";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { StructuredData, organizationSchema, websiteSchema } from "@/components/seo/StructuredData";
 import "./globals.css";
 
 const inter = Inter({
@@ -60,6 +61,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <StructuredData type="Organization" data={organizationSchema} />
+        <StructuredData type="WebSite" data={websiteSchema} />
+      </head>
       <body
         className={`${inter.variable} font-sans antialiased`}
       >
