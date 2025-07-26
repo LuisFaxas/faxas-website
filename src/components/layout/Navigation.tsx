@@ -4,10 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, User, LogOut, Settings, LayoutDashboard } from 'lucide-react';
+import { Menu, X, LogOut, Settings, LayoutDashboard } from 'lucide-react';
 import { useAuthStore } from '@/lib/store/authStore';
-import { GlassPanel } from '@/components/ui/glass/glass-panel';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -42,60 +40,79 @@ export function Navigation() {
   return (
     <nav
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-        isScrolled ? 'py-2' : 'py-4'
+        'fixed top-0 left-0 right-0 z-50 transition-all duration-500',
+        isScrolled ? 'py-3' : 'py-6'
       )}
     >
       <motion.div
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ type: 'spring', stiffness: 100, damping: 20 }}
-        className={cn(
-          'mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 glass-primary transition-all duration-300',
-          isScrolled && 'shadow-sm'
-        )}
+        className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
       >
-        <div className="flex items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <h1 className="text-2xl font-bold gradient-text">FAXAS</h1>
-          </Link>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  'text-sm font-medium transition-colors',
-                  pathname === item.href
-                    ? 'text-accent-blue'
-                    : 'text-text-secondary hover:text-text-primary'
-                )}
+        {/* Glassmorphism Navbar - Matching Site Theme */}
+        <div className="glass-primary rounded-2xl">
+          {/* Content */}
+          <div className="relative flex items-center justify-between px-6 py-4">
+            {/* Logo */}
+            <Link href="/" className="flex items-center space-x-2 group">
+              <motion.div 
+                whileHover={{ scale: 1.05 }}
+                className="relative"
               >
-                {item.label}
-              </Link>
-            ))}
+                <h1 className="text-2xl font-bold gradient-text">FAXAS</h1>
+              </motion.div>
+            </Link>
+
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-6">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    'text-sm font-medium transition-colors relative group',
+                    pathname === item.href
+                      ? 'text-accent-blue'
+                      : 'text-text-secondary hover:text-text-primary'
+                  )}
+                >
+                  {item.label}
+                  {pathname === item.href && (
+                    <motion.div
+                      layoutId="navbar-underline"
+                      className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-accent-blue to-accent-purple rounded-full"
+                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                    />
+                  )}
+                </Link>
+              ))}
             
-            {isAdmin && (
-              <Link
-                href="/admin"
-                className={cn(
-                  'text-sm font-medium transition-colors',
-                  pathname.startsWith('/admin')
-                    ? 'text-accent-purple'
-                    : 'text-text-secondary hover:text-accent-purple'
-                )}
-              >
-                Admin
-              </Link>
-            )}
-          </div>
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className={cn(
+                    'text-sm font-medium transition-colors relative',
+                    pathname.startsWith('/admin')
+                      ? 'text-accent-purple'
+                      : 'text-text-secondary hover:text-accent-purple'
+                  )}
+                >
+                  Admin
+                  {pathname.startsWith('/admin') && (
+                    <motion.div
+                      layoutId="admin-underline"
+                      className="absolute -bottom-1 left-0 right-0 h-0.5 bg-accent-purple rounded-full"
+                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                    />
+                  )}
+                </Link>
+              )}
+            </div>
 
-          {/* Desktop Auth Section */}
-          <div className="hidden md:flex items-center space-x-4">
-            {user ? (
+            {/* Desktop Auth Section */}
+            <div className="hidden md:flex items-center space-x-4">
+              {user ? (
               <div className="relative">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
@@ -158,33 +175,34 @@ export function Navigation() {
                   )}
                 </AnimatePresence>
               </div>
-            ) : (
-              <>
-                <Link href="/login">
-                  <Button variant="secondary" size="sm">
-                    Sign In
-                  </Button>
-                </Link>
-                <Link href="/register">
-                  <Button variant="primary" size="sm">
-                    Get Started
-                  </Button>
-                </Link>
-              </>
-            )}
+              ) : (
+                <>
+                  <Link href="/login">
+                    <button className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary bg-glass-light hover:bg-glass-primary rounded-lg transition-all duration-300">
+                      Sign In
+                    </button>
+                  </Link>
+                  <Link href="/register">
+                    <button className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-accent-blue to-accent-purple hover:from-accent-blue/90 hover:to-accent-purple/90 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl">
+                      Get Started
+                    </button>
+                  </Link>
+                </>
+              )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg hover:bg-glass-light transition-colors"
-          >
-            {isMobileMenuOpen ? (
-              <X className="w-6 h-6 text-text-primary" />
-            ) : (
-              <Menu className="w-6 h-6 text-text-primary" />
-            )}
-          </button>
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-2 rounded-lg hover:bg-glass-light transition-colors"
+            >
+              {isMobileMenuOpen ? (
+                <X className="w-6 h-6 text-text-primary" />
+              ) : (
+                <Menu className="w-6 h-6 text-text-primary" />
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Menu */}
@@ -196,7 +214,7 @@ export function Navigation() {
               exit={{ height: 0, opacity: 0 }}
               className="md:hidden overflow-hidden"
             >
-              <div className="pt-4 pb-2 space-y-2">
+              <div className="pt-6 pb-4 px-4 space-y-2">
                 {navItems.map((item) => (
                   <Link
                     key={item.href}
@@ -258,22 +276,30 @@ export function Navigation() {
                     </button>
                   </>
                 ) : (
-                  <div className="space-y-2 pt-2">
+                  <div className="space-y-3 pt-4 border-t border-gray-200/50">
                     <Link
                       href="/login"
                       onClick={() => setIsMobileMenuOpen(false)}
+                      className="block"
                     >
-                      <Button variant="secondary" size="md" className="w-full">
+                      <motion.button
+                        whileTap={{ scale: 0.98 }}
+                        className="w-full px-4 py-3 text-base font-semibold text-gray-700 bg-gray-100/50 hover:bg-gray-100/70 rounded-xl transition-all duration-300"
+                      >
                         Sign In
-                      </Button>
+                      </motion.button>
                     </Link>
                     <Link
                       href="/register"
                       onClick={() => setIsMobileMenuOpen(false)}
+                      className="block"
                     >
-                      <Button variant="primary" size="md" className="w-full">
+                      <motion.button
+                        whileTap={{ scale: 0.98 }}
+                        className="w-full px-4 py-3 text-base font-semibold text-white bg-gradient-to-r from-accent-blue to-accent-purple rounded-xl transition-all duration-300"
+                      >
                         Get Started
-                      </Button>
+                      </motion.button>
                     </Link>
                   </div>
                 )}

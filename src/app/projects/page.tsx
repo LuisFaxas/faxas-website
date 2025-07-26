@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Filter, Grid, List, Search, ArrowRight, Zap, Globe, Code } from 'lucide-react';
+import { Grid, List, Search, ArrowRight, Zap, Globe, Code } from 'lucide-react';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
 import { FloatingTile } from '@/components/ui/floating-tile';
@@ -48,7 +48,7 @@ export default function ProjectsPage() {
               transition={{ duration: 0.8, delay: 0.1 }}
             >
               Real projects. Real results. Click to experience them yourself.
-              These aren't just screenshots - they're fully functional applications.
+              These aren&apos;t just screenshots - they&apos;re fully functional applications.
             </motion.p>
           </div>
         </section>
@@ -250,7 +250,7 @@ export default function ProjectsPage() {
                 Ready to Build Something Amazing?
               </h2>
               <p className="text-xl text-text-secondary mb-8">
-                Let's create a web application that transforms your business
+                Let&apos;s create a web application that transforms your business
               </p>
               <Link href="/contact">
                 <Button variant="primary" size="lg">
