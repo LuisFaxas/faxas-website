@@ -60,7 +60,7 @@ const buttonVariants = cva(
 );
 
 export interface ButtonProps
-  extends Omit<HTMLMotionProps<"button">, 'size'>,
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
   float?: boolean;
@@ -68,7 +68,7 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, float = false, ripple = true, children, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, float = false, ripple = true, children, onClick, ...props }, ref) => {
     const buttonContent = <span className="relative z-10">{children}</span>;
 
     if (asChild) {
@@ -78,7 +78,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           ref={ref}
           {...props}
         >
-          {buttonContent}
+          {children}
         </Slot>
       );
     }
@@ -90,6 +90,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         whileHover={float ? { y: -2 } : undefined}
         whileTap={{ scale: 0.98 }}
         transition={{ type: "spring", stiffness: 400, damping: 25 }}
+        onClick={onClick}
+        aria-label={props['aria-label']}
+        role={props.role || 'button'}
+        tabIndex={props.tabIndex ?? 0}
         {...props}
       >
         {buttonContent}

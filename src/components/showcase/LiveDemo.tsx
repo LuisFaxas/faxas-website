@@ -45,7 +45,7 @@ export function LiveDemo({
   const [showVideo, setShowVideo] = useState(false);
 
   const viewportSizes = {
-    desktop: { width: '100%', height: '600px' },
+    desktop: { width: '100%', height: '600px', scale: 1 },
     tablet: { width: '768px', height: '1024px', scale: 0.7 },
     mobile: { width: '375px', height: '667px', scale: 0.8 }
   };
@@ -202,7 +202,7 @@ export function LiveDemo({
                 style={{ 
                   width: currentSize.width,
                   height: currentSize.height,
-                  transform: view !== 'desktop' ? `scale(${currentSize.scale})` : undefined
+                  transform: currentSize.scale !== 1 ? `scale(${currentSize.scale})` : undefined
                 }}
               >
                 <iframe

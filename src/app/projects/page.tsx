@@ -1,182 +1,267 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Filter, Grid, List, Search } from 'lucide-react';
+import Link from 'next/link';
+import { Filter, Grid, List, Search, ArrowRight, Zap, Globe, Code } from 'lucide-react';
 import { PageLayout } from '@/components/layout/PageLayout';
-import { GlassPanel } from '@/components/ui/glass/glass-panel';
 import { Button } from '@/components/ui/button';
-import { ProjectCard } from '@/components/showcase/ProjectCard';
-import { ProgressTracker } from '@/components/educational/ProgressTracker';
+import { FloatingTile } from '@/components/ui/floating-tile';
 import { sampleProjects } from '@/data/projects';
 import { cn } from '@/lib/utils';
 
 export default function ProjectsPage() {
-  const [filter, setFilter] = useState<'all' | 'web-app' | 'interactive' | 'technical'>('all');
+  const [filter, setFilter] = useState<'all' | string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
-  const [userConcepts, setUserConcepts] = useState<any[]>([]);
+
+  // Get unique categories
+  const categories = Array.from(new Set(sampleProjects.map(p => p.category)));
 
   // Filter projects based on category and search
   const filteredProjects = sampleProjects.filter(project => {
     const matchesFilter = filter === 'all' || project.category === filter;
     const matchesSearch = project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         project.description.toLowerCase().includes(searchQuery.toLowerCase());
+                         project.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         project.techStack.some(tech => tech.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesFilter && matchesSearch;
   });
 
-  // Calculate total concepts from all projects
-  const totalConcepts = sampleProjects.reduce((total, project) => 
-    total + (project.educational?.concepts?.length || 0), 0
-  );
-
   return (
     <PageLayout>
+      <div className="pb-24">
         {/* Hero Section */}
-        <section className="pt-32 pb-16 px-4 sm:px-6 lg:px-8">
+        <section className="pt-20 pb-12 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto text-center">
-            <motion.h1
+            <motion.h1 
+              className="text-4xl md:text-5xl lg:text-6xl font-bold text-text-primary mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-5xl md:text-6xl font-bold text-text-primary mb-4"
+              transition={{ duration: 0.8 }}
             >
-              Featured Projects
+              Live Project Showcase
             </motion.h1>
-            <motion.p
+            <motion.p 
+              className="text-xl text-text-secondary max-w-3xl mx-auto mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-xl text-text-secondary max-w-3xl mx-auto mb-8"
+              transition={{ duration: 0.8, delay: 0.1 }}
             >
-              Explore real-world solutions built with cutting-edge technology. 
-              Each project showcases modern development practices and measurable business impact.
+              Real projects. Real results. Click to experience them yourself.
+              These aren't just screenshots - they're fully functional applications.
             </motion.p>
-
-            {/* Progress Tracker */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className="max-w-2xl mx-auto"
-            >
-              <ProgressTracker
-                concepts={userConcepts}
-                totalConcepts={totalConcepts}
-              />
-            </motion.div>
           </div>
         </section>
 
-        {/* Filter Controls */}
-        <section className="px-4 sm:px-6 lg:px-8 mb-12">
+        {/* Filters and Search */}
+        <section className="px-4 sm:px-6 lg:px-8 pb-8">
           <div className="max-w-7xl mx-auto">
-            <GlassPanel level="light" className="p-6">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                {/* Search Bar */}
-                <div className="relative w-full md:w-96">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
-                  <input
-                    type="text"
-                    placeholder="Search projects..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 rounded-full bg-white/50 backdrop-blur-sm border border-glass-lighter focus:outline-none focus:ring-2 focus:ring-accent-blue/50 transition-all"
-                  />
+            <div className="glass-primary p-4 rounded-2xl">
+              <div className="flex flex-col md:flex-row gap-4">
+                {/* Search */}
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary w-5 h-5" />
+                    <input
+                      type="text"
+                      placeholder="Search projects, technologies..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 bg-white/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-blue"
+                    />
+                  </div>
                 </div>
 
-                {/* Filter Buttons */}
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1 p-1 rounded-full bg-glass-light/50">
-                    {(['all', 'web-app', 'interactive', 'technical'] as const).map((category) => (
-                      <button
-                        key={category}
-                        onClick={() => setFilter(category)}
+                {/* Category Filter */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setFilter('all')}
+                    className={cn(
+                      "px-4 py-2 rounded-lg transition-all",
+                      filter === 'all' 
+                        ? "bg-accent-blue text-white" 
+                        : "glass-secondary hover:bg-glass-light"
+                    )}
+                  >
+                    All Projects
+                  </button>
+                  {categories.map(category => (
+                    <button
+                      key={category}
+                      onClick={() => setFilter(category)}
+                      className={cn(
+                        "px-4 py-2 rounded-lg transition-all capitalize",
+                        filter === category 
+                          ? "bg-accent-blue text-white" 
+                          : "glass-secondary hover:bg-glass-light"
+                      )}
+                    >
+                      {category.replace('-', ' ')}
+                    </button>
+                  ))}
+                </div>
+
+                {/* View Mode */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={cn(
+                      "p-2 rounded-lg transition-all",
+                      viewMode === 'grid' 
+                        ? "bg-accent-blue text-white" 
+                        : "glass-secondary hover:bg-glass-light"
+                    )}
+                  >
+                    <Grid className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={cn(
+                      "p-2 rounded-lg transition-all",
+                      viewMode === 'list' 
+                        ? "bg-accent-blue text-white" 
+                        : "glass-secondary hover:bg-glass-light"
+                    )}
+                  >
+                    <List className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Projects Grid/List */}
+        <section className="px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            {filteredProjects.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-text-secondary text-lg">No projects found matching your criteria.</p>
+              </div>
+            ) : (
+              <div className={cn(
+                viewMode === 'grid' 
+                  ? "grid md:grid-cols-2 lg:grid-cols-3 gap-6" 
+                  : "space-y-6"
+              )}>
+                {filteredProjects.map((project, index) => (
+                  <motion.div
+                    key={project.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                  >
+                    <Link href={`/projects/${project.slug}`}>
+                      <FloatingTile 
                         className={cn(
-                          "px-4 py-2 rounded-full text-sm font-medium transition-all",
-                          filter === category
-                            ? "bg-white shadow-sm text-text-primary"
-                            : "text-text-secondary hover:text-text-primary"
+                          "glass-primary p-6 h-full cursor-pointer group",
+                          viewMode === 'list' && "flex gap-6"
                         )}
                       >
-                        {category === 'all' ? 'All' : category.split('-').map(word => 
-                          word.charAt(0).toUpperCase() + word.slice(1)
-                        ).join(' ')}
-                      </button>
-                    ))}
-                  </div>
+                        {/* Project Content */}
+                        <div className={cn(
+                          "space-y-4",
+                          viewMode === 'list' && "flex-1"
+                        )}>
+                          {/* Header */}
+                          <div>
+                            <div className="flex items-start justify-between mb-2">
+                              <h3 className="text-xl font-bold text-text-primary group-hover:text-accent-blue transition-colors">
+                                {project.title}
+                              </h3>
+                              {project.featured && (
+                                <span className="glass-accent px-2 py-1 text-xs rounded-full">
+                                  Featured
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-text-secondary line-clamp-2">
+                              {project.description}
+                            </p>
+                          </div>
 
-                  {/* View Mode Toggle */}
-                  <div className="flex items-center gap-1 p-1 rounded-lg bg-glass-light/50">
-                    <button
-                      onClick={() => setViewMode('grid')}
-                      className={cn(
-                        "p-2 rounded transition-all",
-                        viewMode === 'grid'
-                          ? "bg-white shadow-sm text-text-primary"
-                          : "text-text-secondary hover:text-text-primary"
-                      )}
-                    >
-                      <Grid className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => setViewMode('list')}
-                      className={cn(
-                        "p-2 rounded transition-all",
-                        viewMode === 'list'
-                          ? "bg-white shadow-sm text-text-primary"
-                          : "text-text-secondary hover:text-text-primary"
-                      )}
-                    >
-                      <List className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
+                          {/* Tech Stack */}
+                          <div className="flex flex-wrap gap-2">
+                            {project.techStack.slice(0, 3).map(tech => (
+                              <span key={tech} className="glass-secondary px-2 py-1 text-xs rounded-full">
+                                {tech}
+                              </span>
+                            ))}
+                            {project.techStack.length > 3 && (
+                              <span className="text-xs text-text-secondary">
+                                +{project.techStack.length - 3} more
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Metrics */}
+                          {project.metrics && (
+                            <div className="flex items-center gap-4 text-sm">
+                              <div className="flex items-center gap-1">
+                                <Zap className="w-4 h-4 text-yellow-500" />
+                                <span>{project.loadTime}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Globe className="w-4 h-4 text-blue-500" />
+                                <span>{project.metrics.desktop}/100</span>
+                              </div>
+                              {project.mobileOptimized && (
+                                <div className="flex items-center gap-1">
+                                  <Code className="w-4 h-4 text-green-500" />
+                                  <span>Mobile Ready</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* CTA */}
+                          <div className="flex items-center gap-2 text-accent-blue group-hover:gap-3 transition-all">
+                            <span className="text-sm font-medium">View Project</span>
+                            <ArrowRight className="w-4 h-4" />
+                          </div>
+                        </div>
+
+                        {/* Preview for List View */}
+                        {viewMode === 'list' && (
+                          <div className="w-48 h-32 rounded-lg bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                            <Code className="w-8 h-8 text-accent-blue/50" />
+                          </div>
+                        )}
+                      </FloatingTile>
+                    </Link>
+                  </motion.div>
+                ))}
               </div>
-
-              {/* Results Count */}
-              <div className="mt-4 text-sm text-text-secondary">
-                Showing {filteredProjects.length} of {sampleProjects.length} projects
-              </div>
-            </GlassPanel>
-          </div>
-        </section>
-
-        {/* Projects Grid */}
-        <section className="px-4 sm:px-6 lg:px-8 pb-24">
-          <div className="max-w-7xl mx-auto">
-            <div className={cn(
-              "grid gap-8",
-              viewMode === 'grid' 
-                ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-                : "grid-cols-1"
-            )}>
-              {filteredProjects.map((project, index) => (
-                <ProjectCard 
-                  key={project.id} 
-                  project={project} 
-                  index={index}
-                />
-              ))}
-            </div>
-
-            {/* Empty State */}
-            {filteredProjects.length === 0 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-16"
-              >
-                <Filter className="w-12 h-12 text-text-secondary/50 mx-auto mb-4" />
-                <h3 className="text-xl font-medium text-text-primary mb-2">
-                  No projects found
-                </h3>
-                <p className="text-text-secondary">
-                  Try adjusting your filters or search query
-                </p>
-              </motion.div>
             )}
           </div>
         </section>
+
+        {/* CTA Section */}
+        <motion.section 
+          className="px-4 sm:px-6 lg:px-8 pt-16"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="max-w-4xl mx-auto">
+            <div className="glass-accent p-8 md:p-12 rounded-3xl text-center">
+              <h2 className="text-3xl font-bold mb-4">
+                Ready to Build Something Amazing?
+              </h2>
+              <p className="text-xl text-text-secondary mb-8">
+                Let's create a web application that transforms your business
+              </p>
+              <Link href="/contact">
+                <Button variant="primary" size="lg">
+                  Start Your Project
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </motion.section>
+      </div>
     </PageLayout>
   );
 }

@@ -171,6 +171,37 @@
     height: 350px;
   }
 
+  /* Glass Color Variations */
+  .glass-blue {
+    background: rgba(219, 234, 254, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .glass-purple {
+    background: rgba(237, 233, 254, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .glass-green {
+    background: rgba(220, 252, 231, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .glass-light {
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .glass-lighter {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
   /* Floating Tile Effects */
   .floating-tile {
     @apply transition-all duration-500;

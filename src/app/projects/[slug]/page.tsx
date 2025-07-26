@@ -2,16 +2,13 @@
 
 import { notFound } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ExternalLink, Github, Globe, Play, Code, Zap, Shield, Users, TrendingUp } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Github, Globe, Play, Code, Zap, Shield, Users, TrendingUp, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { PageLayout } from '@/components/layout/PageLayout';
-import { GlassPanel } from '@/components/ui/glass/glass-panel';
 import { Button } from '@/components/ui/button';
-import { SmartTooltip } from '@/components/educational/SmartTooltip';
-import { ComparisonWidget } from '@/components/educational/ComparisonWidget';
-import { QuickPreview } from '@/components/showcase/QuickPreview';
+import { FloatingTile } from '@/components/ui/floating-tile';
+import { EducationalTooltip, tooltips } from '@/components/educational/Tooltip';
 import { sampleProjects } from '@/data/projects';
-import { cn } from '@/lib/utils';
 
 interface ProjectPageProps {
   params: {
@@ -25,27 +22,6 @@ export default function ProjectPage({ params }: ProjectPageProps) {
   if (!project) {
     notFound();
   }
-
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { duration: 0.5 }
-    }
-  };
 
   return (
     <PageLayout>
@@ -62,16 +38,16 @@ export default function ProjectPage({ params }: ProjectPageProps) {
               </Link>
               
               <div className="flex items-center gap-3">
-                {project.technical.liveUrl && (
-                  <Link href={project.technical.liveUrl} target="_blank">
+                {project.liveUrl && (
+                  <Link href={project.liveUrl} target="_blank">
                     <Button variant="secondary" size="sm" className="gap-2">
                       <Globe className="w-4 h-4" />
                       Live Demo
                     </Button>
                   </Link>
                 )}
-                {project.technical.githubUrl && (
-                  <Link href={project.technical.githubUrl} target="_blank">
+                {project.githubUrl && (
+                  <Link href={project.githubUrl} target="_blank">
                     <Button variant="ghost" size="sm" className="gap-2">
                       <Github className="w-4 h-4" />
                       Source Code
@@ -86,20 +62,20 @@ export default function ProjectPage({ params }: ProjectPageProps) {
         {/* Hero Section */}
         <motion.section 
           className="pt-16 pb-12 px-4 sm:px-6 lg:px-8"
-          initial="hidden"
-          animate="visible"
-          variants={containerVariants}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
         >
           <div className="max-w-7xl mx-auto">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               {/* Left Column - Content */}
-              <motion.div className="space-y-6" variants={itemVariants}>
+              <div className="space-y-6">
                 <div className="inline-block">
-                  <GlassPanel level="accent" className="px-4 py-2">
+                  <div className="glass-accent px-4 py-2 rounded-full">
                     <span className="text-sm font-medium capitalize">
                       {project.category.replace('-', ' ')}
                     </span>
-                  </GlassPanel>
+                  </div>
                 </div>
                 
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-text-primary">
@@ -107,170 +83,97 @@ export default function ProjectPage({ params }: ProjectPageProps) {
                 </h1>
                 
                 <p className="text-xl text-text-secondary leading-relaxed">
-                  {project.description}
+                  {project.longDescription || project.description}
                 </p>
 
-                {/* Key Features */}
-                <div className="grid grid-cols-2 gap-4 pt-4">
-                  <GlassPanel level="light" className="p-4">
-                    <Zap className="w-5 h-5 text-accent-blue mb-2" />
-                    <h4 className="font-medium text-sm">Performance</h4>
-                    <p className="text-xs text-text-secondary mt-1">
-                      {project.technical?.performance?.lighthouse?.performance || 95}+ Lighthouse Score
-                    </p>
-                  </GlassPanel>
-                  
-                  <GlassPanel level="light" className="p-4">
-                    <Shield className="w-5 h-5 text-accent-green mb-2" />
-                    <h4 className="font-medium text-sm">Security</h4>
-                    <p className="text-xs text-text-secondary mt-1">
-                      Enterprise-grade protection
-                    </p>
-                  </GlassPanel>
-                  
-                  <GlassPanel level="light" className="p-4">
-                    <Users className="w-5 h-5 text-accent-purple mb-2" />
-                    <h4 className="font-medium text-sm">User Experience</h4>
-                    <p className="text-xs text-text-secondary mt-1">
-                      Intuitive & accessible design
-                    </p>
-                  </GlassPanel>
-                  
-                  <GlassPanel level="light" className="p-4">
-                    <TrendingUp className="w-5 h-5 text-accent-orange mb-2" />
-                    <h4 className="font-medium text-sm">Business Impact</h4>
-                    <p className="text-xs text-text-secondary mt-1">
-                      Measurable results
-                    </p>
-                  </GlassPanel>
-                </div>
+                {/* Key Metrics */}
+                {project.metrics && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
+                    <FloatingTile className="glass-primary p-4 text-center">
+                      <Zap className="w-5 h-5 text-yellow-500 mx-auto mb-2" />
+                      <p className="text-xs text-text-secondary">Load Time</p>
+                      <p className="font-semibold">{project.loadTime}</p>
+                    </FloatingTile>
+                    
+                    <FloatingTile className="glass-primary p-4 text-center">
+                      <TrendingUp className="w-5 h-5 text-green-600 mx-auto mb-2" />
+                      <p className="text-xs text-text-secondary">Desktop Score</p>
+                      <p className="font-semibold">{project.metrics.desktop}/100</p>
+                    </FloatingTile>
+                    
+                    <FloatingTile className="glass-primary p-4 text-center">
+                      <Users className="w-5 h-5 text-blue-600 mx-auto mb-2" />
+                      <p className="text-xs text-text-secondary">Mobile Score</p>
+                      <p className="font-semibold">{project.metrics.mobile}/100</p>
+                    </FloatingTile>
+                    
+                    <FloatingTile className="glass-primary p-4 text-center">
+                      <Shield className="w-5 h-5 text-purple-600 mx-auto mb-2" />
+                      <p className="text-xs text-text-secondary">Security</p>
+                      <p className="font-semibold">A+ Grade</p>
+                    </FloatingTile>
+                  </div>
+                )}
 
                 {/* Tech Stack Pills */}
                 <div className="flex flex-wrap gap-2 pt-4">
-                  {project.technical.stack.map((tech) => (
-                    <SmartTooltip
-                      key={tech}
-                      concept={tech}
-                      trigger="hover"
-                    >
-                      <GlassPanel level="secondary" className="px-3 py-1.5">
-                        <span className="text-sm font-medium">{tech}</span>
-                      </GlassPanel>
-                    </SmartTooltip>
-                  ))}
+                  {project.techStack.map((tech) => {
+                    const techConcept = tech.toLowerCase().includes('react') ? tooltips.react :
+                                       tech.toLowerCase().includes('api') ? tooltips.api :
+                                       tech.toLowerCase().includes('next') ? tooltips.react :
+                                       null;
+                    
+                    return techConcept ? (
+                      <EducationalTooltip key={tech} {...techConcept}>
+                        <span className="glass-secondary px-3 py-1.5 rounded-full text-sm font-medium cursor-help">
+                          {tech}
+                        </span>
+                      </EducationalTooltip>
+                    ) : (
+                      <span key={tech} className="glass-secondary px-3 py-1.5 rounded-full text-sm font-medium">
+                        {tech}
+                      </span>
+                    );
+                  })}
                 </div>
-              </motion.div>
+              </div>
 
-              {/* Right Column - Preview */}
-              <motion.div variants={itemVariants}>
-                <GlassPanel level="primary" className="overflow-hidden">
-                  <QuickPreview
-                    type={project.showcase?.quickPreview?.type || 'widget'}
-                    config={{
-                      widget: {
-                        size: 'large',
-                        interaction: 'Interactive Demo',
-                        realtime: true,
-                        example: project.title
-                      }
-                    }}
-                    projectTitle={project.title}
-                    isActive={true}
-                  />
-                </GlassPanel>
-              </motion.div>
-            </div>
-          </div>
-        </motion.section>
-
-        {/* Challenge & Solution */}
-        <motion.section 
-          className="py-16 px-4 sm:px-6 lg:px-8"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="max-w-7xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-8">
-              <GlassPanel level="primary" className="p-8 space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-accent-red/20 flex items-center justify-center">
-                    <span className="text-lg">🎯</span>
-                  </div>
-                  <h3 className="text-2xl font-bold">The Challenge</h3>
-                </div>
-                <p className="text-text-secondary leading-relaxed">
-                  {"Modern businesses need web applications that not only look great but also perform exceptionally well across all devices and use cases."}
-                </p>
-              </GlassPanel>
-              
-              <GlassPanel level="primary" className="p-8 space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-accent-green/20 flex items-center justify-center">
-                    <span className="text-lg">💡</span>
-                  </div>
-                  <h3 className="text-2xl font-bold">The Solution</h3>
-                </div>
-                <p className="text-text-secondary leading-relaxed">
-                  {"A carefully crafted application using modern web technologies, focusing on performance, user experience, and maintainability."}
-                </p>
-              </GlassPanel>
-            </div>
-          </div>
-        </motion.section>
-
-        {/* Technical Features */}
-        <motion.section 
-          className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-transparent to-glass-light/30"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
-                Technical Excellence
-              </h2>
-              <p className="text-xl text-text-secondary max-w-3xl mx-auto">
-                Built with modern best practices and cutting-edge technologies
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-6">
-              {project.technical?.features?.slice(0, 6).map((feature, index) => (
-                <motion.div
-                  key={feature.name}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <GlassPanel level="secondary" className="p-6 h-full">
-                    <h4 className="font-semibold text-lg mb-2">{feature.name}</h4>
-                    <p className="text-text-secondary text-sm mb-3">
-                      {feature.description}
-                    </p>
-                    {feature.educationalConceptId && (
-                      <div>
-                        <Button variant="ghost" size="sm" className="gap-2">
-                          <Code className="w-4 h-4" />
-                          Learn More
-                        </Button>
+              {/* Right Column - Demo Preview */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+              >
+                <div className="glass-primary p-2 rounded-2xl">
+                  {project.demoUrl ? (
+                    <div className="relative aspect-video rounded-xl overflow-hidden bg-gradient-to-br from-blue-100 to-purple-100">
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Link href={project.demoUrl}>
+                          <motion.div
+                            className="glass-accent p-6 rounded-full cursor-pointer"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <Play className="w-12 h-12 text-white" />
+                          </motion.div>
+                        </Link>
                       </div>
-                    )}
-                  </GlassPanel>
-                </motion.div>
-              ))}
+                    </div>
+                  ) : (
+                    <div className="aspect-video rounded-xl bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                      <p className="text-text-secondary">Demo Coming Soon</p>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
             </div>
           </div>
         </motion.section>
 
-        {/* Educational Comparison */}
-        {project.educational?.comparisons && project.educational.comparisons.length > 0 && (
+        {/* Features Section */}
+        {project.features && project.features.length > 0 && (
           <motion.section 
-            className="py-16 px-4 sm:px-6 lg:px-8"
+            className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-transparent to-glass-light/30"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -279,32 +182,64 @@ export default function ProjectPage({ params }: ProjectPageProps) {
             <div className="max-w-7xl mx-auto">
               <div className="text-center mb-12">
                 <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
-                  Understanding the Technology
+                  Key Features
                 </h2>
                 <p className="text-xl text-text-secondary max-w-3xl mx-auto">
-                  See how modern approaches create better experiences
+                  Built with modern best practices and cutting-edge technologies
                 </p>
               </div>
 
-              <ComparisonWidget
-                title={project.educational.comparisons[0].title}
-                traditional={{
-                  demo: undefined,
-                  issues: project.educational.comparisons[0].traditional.issues,
-                  time: project.educational.comparisons[0].traditional.metric
-                }}
-                modern={{
-                  demo: undefined,
-                  benefits: project.educational.comparisons[0].modern.benefits,
-                  time: project.educational.comparisons[0].modern.metric
-                }}
-                businessImpact={project.educational.comparisons[0].businessImpact}
-              />
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {project.features.map((feature, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <FloatingTile className="glass-primary p-6 h-full">
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-full bg-accent-blue/20 flex items-center justify-center flex-shrink-0">
+                          <Code className="w-4 h-4 text-accent-blue" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-lg mb-2">{feature}</h4>
+                        </div>
+                      </div>
+                    </FloatingTile>
+                  </motion.div>
+                ))}
+              </div>
             </div>
           </motion.section>
         )}
 
-        {/* Results & Impact */}
+        {/* Testimonial Section */}
+        {project.testimonial && (
+          <motion.section 
+            className="py-16 px-4 sm:px-6 lg:px-8"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="max-w-4xl mx-auto">
+              <div className="glass-accent p-8 md:p-12 rounded-3xl text-center">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 mx-auto mb-6" />
+                <blockquote className="text-xl md:text-2xl font-medium text-text-primary mb-6">
+                  "{project.testimonial.content}"
+                </blockquote>
+                <div>
+                  <p className="font-semibold">{project.testimonial.client}</p>
+                  <p className="text-text-secondary">{project.testimonial.role}</p>
+                </div>
+              </div>
+            </div>
+          </motion.section>
+        )}
+
+        {/* CTA Section */}
         <motion.section 
           className="py-16 px-4 sm:px-6 lg:px-8"
           initial={{ opacity: 0, y: 20 }}
@@ -313,30 +248,34 @@ export default function ProjectPage({ params }: ProjectPageProps) {
           transition={{ duration: 0.6 }}
         >
           <div className="max-w-7xl mx-auto">
-            <GlassPanel level="accent" className="p-8 md:p-12 text-center">
+            <div className="glass-primary p-8 md:p-12 rounded-3xl text-center">
               <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
-                Business Impact
+                Want Something Similar?
               </h2>
               <p className="text-xl text-text-secondary max-w-3xl mx-auto mb-8">
-                {"This project demonstrates how modern web development can create tangible business value through improved user experience and technical excellence."}
+                Let's discuss how modern web technology can transform your business
               </p>
               
               <div className="flex flex-wrap gap-4 justify-center">
-                <Button variant="primary" size="lg" className="gap-2">
-                  <Play className="w-5 h-5" />
-                  View Live Demo
-                </Button>
+                {project.demoUrl && (
+                  <Link href={project.demoUrl}>
+                    <Button variant="primary" size="lg" className="gap-2">
+                      <Play className="w-5 h-5" />
+                      Try Live Demo
+                    </Button>
+                  </Link>
+                )}
                 <Link href="/contact">
                   <Button variant="secondary" size="lg">
-                    Discuss Your Project
+                    Start Your Project
                   </Button>
                 </Link>
               </div>
-            </GlassPanel>
+            </div>
           </div>
         </motion.section>
 
-        {/* Navigation to Other Projects */}
+        {/* Related Projects */}
         <motion.section 
           className="py-16 px-4 sm:px-6 lg:px-8"
           initial={{ opacity: 0, y: 20 }}
@@ -346,7 +285,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
         >
           <div className="max-w-7xl mx-auto">
             <h3 className="text-2xl font-bold text-text-primary mb-8 text-center">
-              Explore More Projects
+              More Projects
             </h3>
             
             <div className="grid md:grid-cols-3 gap-6">
@@ -355,16 +294,16 @@ export default function ProjectPage({ params }: ProjectPageProps) {
                 .slice(0, 3)
                 .map((otherProject) => (
                   <Link key={otherProject.id} href={`/projects/${otherProject.slug}`}>
-                    <GlassPanel level="primary" className="p-6 h-full hover:scale-[1.02] transition-transform">
+                    <FloatingTile className="glass-primary p-6 h-full hover:scale-[1.02] transition-transform cursor-pointer">
                       <h4 className="font-semibold text-lg mb-2">{otherProject.title}</h4>
-                      <p className="text-text-secondary text-sm line-clamp-2">
+                      <p className="text-text-secondary text-sm line-clamp-2 mb-3">
                         {otherProject.description}
                       </p>
-                      <div className="flex items-center gap-2 mt-4 text-accent-blue">
+                      <div className="flex items-center gap-2 text-accent-blue">
                         <span className="text-sm font-medium">View Project</span>
                         <ExternalLink className="w-4 h-4" />
                       </div>
-                    </GlassPanel>
+                    </FloatingTile>
                   </Link>
                 ))}
             </div>

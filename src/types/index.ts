@@ -239,7 +239,7 @@ export interface GlassPanelProps {
 
 export interface SmartTooltipProps {
   term: string;
-  concept: {
+  concept: string | {
     simple: string;
     detailed: string;
     businessValue: string;

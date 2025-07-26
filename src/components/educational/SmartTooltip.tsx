@@ -113,7 +113,7 @@ export function SmartTooltip({
                           transition={{ duration: 0.15 }}
                         >
                           <p className="text-sm text-text-secondary leading-relaxed">
-                            {concept[currentView]}
+                            {typeof concept === 'string' ? concept : concept[currentView]}
                           </p>
                         </motion.div>
                       </AnimatePresence>
