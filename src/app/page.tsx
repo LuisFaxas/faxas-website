@@ -281,8 +281,8 @@ export default function Home() {
                 transition={{ delay: 0.3, duration: 0.8 }}
                 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight"
               >
-                Transform Your Business
-                <span className="block gradient-text mt-2">With Modern Web Technology</span>
+                Building Lightning-Fast
+                <span className="block gradient-text mt-2">Web Experiences</span>
               </motion.h1>
               
               {/* Subtitle - Value and Education Focused */}
