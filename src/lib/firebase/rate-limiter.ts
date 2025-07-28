@@ -7,7 +7,7 @@ interface RateLimitEntry {
   blockedUntil?: number;
 }
 
-class RateLimiter {
+export class RateLimiter {
   private storage: Map<string, RateLimitEntry> = new Map();
   private readonly maxAttempts: number;
   private readonly windowMs: number;

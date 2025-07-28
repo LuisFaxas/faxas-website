@@ -1,195 +1,202 @@
 import { 
   collection, 
-  addDoc, 
-  serverTimestamp,
-  Timestamp,
   getDocs,
   doc,
   updateDoc,
   query,
   orderBy,
-  where
+  where,
+  limit,
+  startAfter,
+  getDoc,
+  Timestamp,
+  serverTimestamp
 } from 'firebase/firestore';
 import { db } from './config';
+import { 
+  Lead, 
+  ContactFormData, 
+  LeadStatus, 
+  LeadSource,
+  DashboardStats 
+} from '@/types/firebase';
+import { createLead, trackAnalyticsEvent } from './db';
+import { authRateLimiter, getRateLimitKey, formatRemainingTime } from './rate-limiter';
 
-export interface LeadData {
-  name: string;
-  email: string;
-  company?: string;
-  phone?: string;
-  message: string;
-  budget?: string;
-  timeline?: string;
-  projectType?: string;
-  source?: string;
-  referrer?: string;
-}
+// Import RateLimiter class
+import { RateLimiter } from './rate-limiter';
 
-export interface ContactFormData {
-  name: string;
-  email: string;
-  message: string;
-  company?: string;
-}
+// Rate limiter for form submissions (3 per 10 minutes)
+const formRateLimiter = new RateLimiter(3, 10 * 60 * 1000, 30 * 60 * 1000);
 
-export interface Lead {
-  id?: string;
-  name: string;
-  email: string;
-  company?: string;
-  phone?: string;
-  message: string;
-  budget?: string;
-  timeline?: string;
-  projectType?: string;
-  source: string;
-  score: number;
-  status: 'new' | 'contacted' | 'qualified' | 'converted' | 'archived';
-  createdAt: Timestamp;
-  lastUpdated: Timestamp;
-  metadata?: {
-    budget?: string;
-    timeline?: string;
-    projectType?: string;
-  };
-}
-
-const LEADS_COLLECTION = 'leads';
-const CONTACTS_COLLECTION = 'contacts';
-
-// Calculate lead score based on various factors
-const calculateLeadScore = (data: LeadData): number => {
-  let score = 0;
-  
-  // Budget scoring
-  if (data.budget) {
-    if (data.budget.includes('20k') || data.budget.includes('50k')) score += 30;
-    else if (data.budget.includes('10k')) score += 20;
-    else if (data.budget.includes('5k')) score += 10;
-  }
-  
-  // Timeline scoring
-  if (data.timeline) {
-    if (data.timeline.toLowerCase().includes('immediate') || data.timeline.toLowerCase().includes('asap')) score += 30;
-    else if (data.timeline.includes('1-3')) score += 20;
-    else if (data.timeline.includes('3+')) score += 10;
-  }
-  
-  // Company presence
-  if (data.company) score += 10;
-  
-  // Phone number provided
-  if (data.phone) score += 10;
-  
-  // Message length (shows engagement)
-  if (data.message.length > 200) score += 10;
-  
-  return Math.min(score, 100); // Cap at 100
-};
-
-// Submit a lead from project inquiry
-export const submitLead = async (leadData: LeadData): Promise<{ success: boolean; error?: string }> => {
+// Submit contact form with rate limiting and duplicate detection
+export const submitContactForm = async (
+  formData: ContactFormData
+): Promise<{ success: boolean; error?: string; leadId?: string }> => {
   try {
-    const score = calculateLeadScore(leadData);
+    // Check rate limiting by email
+    const rateLimitKey = getRateLimitKey('email', formData.email);
+    const { blocked, remainingTime } = formRateLimiter.isBlocked(rateLimitKey);
     
-    const docRef = await addDoc(collection(db, LEADS_COLLECTION), {
-      ...leadData,
-      score,
-      status: 'new',
-      createdAt: serverTimestamp(),
-      lastUpdated: serverTimestamp(),
-      source: leadData.source || 'website',
-      engagement: {
-        emailsOpened: 0,
-        linksClicked: 0,
-        projectsViewed: [],
-        totalTimeOnSite: 0
-      }
-    });
-    
-    // In production, you'd trigger email notifications here
-    console.log('New lead submitted:', docRef.id, 'Score:', score);
-    
-    return { success: true };
-  } catch (error: any) {
-    console.error('Error submitting lead:', error);
-    return { success: false, error: error.message };
-  }
-};
+    if (blocked && remainingTime) {
+      return { 
+        success: false, 
+        error: `Too many submissions. Please try again in ${formatRemainingTime(remainingTime)}.` 
+      };
+    }
 
-// Submit a general contact form
-export const submitContactForm = async (formData: ContactFormData): Promise<{ success: boolean; error?: string }> => {
-  try {
-    const docRef = await addDoc(collection(db, CONTACTS_COLLECTION), {
-      ...formData,
-      status: 'unread',
-      createdAt: serverTimestamp(),
-      source: 'contact-form'
+    // Check for duplicate submissions (same email within 24 hours)
+    const isDuplicate = await checkDuplicateSubmission(formData.email);
+    if (isDuplicate) {
+      return { 
+        success: false, 
+        error: 'You have already submitted a form recently. We\'ll get back to you soon!' 
+      };
+    }
+
+    // Create the lead
+    const leadId = await createLead(formData);
+    
+    // Record successful submission
+    formRateLimiter.recordAttempt(rateLimitKey, true);
+    
+    // Track analytics event
+    await trackAnalyticsEvent('contact_form_submit', {
+      leadId,
+      source: formData.source || 'contact_form',
+      hasCompany: !!formData.company,
+      hasProjectDetails: !!(formData.projectType || formData.budget || formData.timeline)
     });
     
-    // Also create a lead for tracking
-    await submitLead({
-      name: formData.name,
-      email: formData.email,
-      message: formData.message,
-      company: formData.company,
-      source: 'contact-form'
-    });
+    // TODO: Trigger email notification
+    // await sendEmailNotification(leadId, formData);
     
-    console.log('Contact form submitted:', docRef.id);
-    
-    return { success: true };
+    return { success: true, leadId };
   } catch (error: any) {
     console.error('Error submitting contact form:', error);
-    return { success: false, error: error.message };
-  }
-};
-
-// Subscribe to newsletter
-export const subscribeToNewsletter = async (email: string): Promise<{ success: boolean; error?: string }> => {
-  try {
-    await addDoc(collection(db, 'newsletter'), {
-      email,
-      subscribed: true,
-      subscribedAt: serverTimestamp(),
-      source: 'website'
-    });
     
-    return { success: true };
-  } catch (error: any) {
-    console.error('Error subscribing to newsletter:', error);
-    return { success: false, error: error.message };
+    // Record failed attempt
+    const rateLimitKey = getRateLimitKey('email', formData.email);
+    formRateLimiter.recordAttempt(rateLimitKey, false);
+    
+    return { 
+      success: false, 
+      error: 'Failed to submit form. Please try again later.' 
+    };
   }
 };
 
-// Get all leads
-export const getLeads = async (): Promise<Lead[]> => {
+// Check for duplicate submissions within 24 hours
+async function checkDuplicateSubmission(email: string): Promise<boolean> {
   try {
-    const q = query(collection(db, LEADS_COLLECTION), orderBy('createdAt', 'desc'));
+    const twentyFourHoursAgo = new Date();
+    twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+    
+    const q = query(
+      collection(db, 'leads'),
+      where('email', '==', email),
+      where('createdAt', '>', twentyFourHoursAgo),
+      limit(1)
+    );
+    
     const snapshot = await getDocs(q);
+    return !snapshot.empty;
+  } catch (error) {
+    console.error('Error checking duplicate:', error);
+    return false; // Don't block on error
+  }
+}
+
+// Get all leads for admin dashboard
+export const getLeads = async (
+  filters?: {
+    status?: LeadStatus;
+    source?: LeadSource;
+    startDate?: Date;
+    endDate?: Date;
+  },
+  pagination?: {
+    pageSize?: number;
+    lastDoc?: any;
+  }
+): Promise<{ leads: Lead[]; hasMore: boolean }> => {
+  try {
+    let q = query(collection(db, 'leads'), orderBy('createdAt', 'desc'));
     
-    return snapshot.docs.map(doc => ({
+    // Apply filters
+    if (filters?.status) {
+      q = query(q, where('status', '==', filters.status));
+    }
+    if (filters?.source) {
+      q = query(q, where('source', '==', filters.source));
+    }
+    if (filters?.startDate) {
+      q = query(q, where('createdAt', '>=', filters.startDate));
+    }
+    if (filters?.endDate) {
+      q = query(q, where('createdAt', '<=', filters.endDate));
+    }
+    
+    // Apply pagination
+    const pageSize = pagination?.pageSize || 50;
+    q = query(q, limit(pageSize + 1)); // Get one extra to check if there's more
+    
+    if (pagination?.lastDoc) {
+      q = query(q, startAfter(pagination.lastDoc));
+    }
+    
+    const snapshot = await getDocs(q);
+    const docs = snapshot.docs;
+    const hasMore = docs.length > pageSize;
+    
+    // Remove the extra doc if present
+    if (hasMore) {
+      docs.pop();
+    }
+    
+    const leads = docs.map(doc => ({
       id: doc.id,
-      ...doc.data(),
-      metadata: {
-        budget: doc.data().budget,
-        timeline: doc.data().timeline,
-        projectType: doc.data().projectType,
-      }
+      ...doc.data()
     } as Lead));
+    
+    return { leads, hasMore };
   } catch (error) {
     console.error('Error fetching leads:', error);
-    return [];
+    return { leads: [], hasMore: false };
   }
 };
 
 // Update lead status
-export const updateLeadStatus = async (leadId: string, status: Lead['status']): Promise<boolean> => {
+export const updateLeadStatus = async (
+  leadId: string, 
+  status: LeadStatus,
+  userId: string
+): Promise<boolean> => {
   try {
-    await updateDoc(doc(db, LEADS_COLLECTION, leadId), {
+    const leadRef = doc(db, 'leads', leadId);
+    const leadDoc = await getDoc(leadRef);
+    
+    const updateData: any = {
       status,
-      lastUpdated: serverTimestamp()
+      updatedAt: serverTimestamp()
+    };
+    
+    // Add timestamp for specific status changes
+    if (status === 'contacted' && !leadDoc.data()?.contactedAt) {
+      updateData.contactedAt = serverTimestamp();
+    } else if (status === 'converted' && !leadDoc.data()?.convertedAt) {
+      updateData.convertedAt = serverTimestamp();
+    }
+    
+    await updateDoc(leadRef, updateData);
+    
+    // Track analytics
+    await trackAnalyticsEvent('lead_status_updated', {
+      leadId,
+      newStatus: status,
+      updatedBy: userId
     });
+    
     return true;
   } catch (error) {
     console.error('Error updating lead status:', error);
@@ -197,33 +204,228 @@ export const updateLeadStatus = async (leadId: string, status: Lead['status']): 
   }
 };
 
-// Get lead quality color based on score
-export const getLeadQuality = (score: number) => {
-  if (score >= 80) return { label: 'Hot', color: 'red' };
-  if (score >= 60) return { label: 'Warm', color: 'orange' };
-  if (score >= 40) return { label: 'Cool', color: 'yellow' };
-  if (score >= 20) return { label: 'Cold', color: 'blue' };
-  return { label: 'New', color: 'gray' };
+// Add note to lead
+export const addLeadNote = async (
+  leadId: string,
+  note: string,
+  authorId: string,
+  authorName: string
+): Promise<boolean> => {
+  try {
+    const leadRef = doc(db, 'leads', leadId);
+    const leadDoc = await getDoc(leadRef);
+    
+    if (!leadDoc.exists()) {
+      throw new Error('Lead not found');
+    }
+    
+    const currentNotes = leadDoc.data().notes || [];
+    const newNote = {
+      content: note,
+      authorId,
+      authorName,
+      createdAt: new Date()
+    };
+    
+    await updateDoc(leadRef, {
+      notes: [...currentNotes, newNote],
+      updatedAt: serverTimestamp()
+    });
+    
+    return true;
+  } catch (error) {
+    console.error('Error adding note:', error);
+    return false;
+  }
 };
 
-// Get lead statistics
-export const getLeadStats = async () => {
+// Get lead statistics for dashboard
+export const getLeadStats = async (): Promise<DashboardStats> => {
   try {
-    const snapshot = await getDocs(collection(db, LEADS_COLLECTION));
-    const leads = snapshot.docs.map(doc => doc.data());
+    const leadsSnapshot = await getDocs(collection(db, 'leads'));
+    const leads = leadsSnapshot.docs.map(doc => doc.data() as Lead);
     
-    const byStatus = leads.reduce((acc, lead) => {
-      const status = lead.status || 'new';
-      acc[status] = (acc[status] || 0) + 1;
+    // Calculate statistics
+    const totalLeads = leads.length;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const newLeadsToday = leads.filter(lead => {
+      const createdAt = lead.createdAt instanceof Timestamp 
+        ? lead.createdAt.toDate() 
+        : lead.createdAt;
+      return createdAt >= today;
+    }).length;
+    
+    const qualifiedLeads = leads.filter(lead => 
+      lead.status === 'qualified' || lead.status === 'converted'
+    ).length;
+    
+    const convertedLeads = leads.filter(lead => lead.status === 'converted').length;
+    const conversionRate = totalLeads > 0 ? (convertedLeads / totalLeads) * 100 : 0;
+    
+    const totalScore = leads.reduce((sum, lead) => sum + lead.score, 0);
+    const averageLeadScore = totalLeads > 0 ? totalScore / totalLeads : 0;
+    
+    // Group by status
+    const leadsByStatus = leads.reduce((acc, lead) => {
+      acc[lead.status] = (acc[lead.status] || 0) + 1;
       return acc;
-    }, {} as Record<string, number>);
+    }, {} as Record<LeadStatus, number>);
+    
+    // Group by source
+    const leadsBySource = leads.reduce((acc, lead) => {
+      acc[lead.source] = (acc[lead.source] || 0) + 1;
+      return acc;
+    }, {} as Record<LeadSource, number>);
+    
+    // Recent activity (last 10 events)
+    const recentActivity = leads
+      .sort((a, b) => {
+        const aTime = a.updatedAt instanceof Timestamp ? a.updatedAt.toDate() : a.updatedAt;
+        const bTime = b.updatedAt instanceof Timestamp ? b.updatedAt.toDate() : b.updatedAt;
+        return bTime.getTime() - aTime.getTime();
+      })
+      .slice(0, 10)
+      .map(lead => ({
+        type: 'new_lead',
+        description: `New lead: ${lead.name} (${lead.email})`,
+        timestamp: lead.createdAt instanceof Timestamp ? lead.createdAt.toDate() : lead.createdAt
+      }));
+    
+    // Top projects (placeholder - would need project view tracking)
+    const topProjects: any[] = [];
     
     return {
-      total: leads.length,
-      byStatus
+      totalLeads,
+      newLeadsToday,
+      qualifiedLeads,
+      conversionRate,
+      averageLeadScore,
+      leadsByStatus,
+      leadsBySource,
+      recentActivity,
+      topProjects
     };
   } catch (error) {
     console.error('Error fetching lead stats:', error);
-    return { total: 0, byStatus: {} };
+    return {
+      totalLeads: 0,
+      newLeadsToday: 0,
+      qualifiedLeads: 0,
+      conversionRate: 0,
+      averageLeadScore: 0,
+      leadsByStatus: {} as Record<LeadStatus, number>,
+      leadsBySource: {} as Record<LeadSource, number>,
+      recentActivity: [],
+      topProjects: []
+    };
   }
+};
+
+// Get lead quality label and color
+export const getLeadQuality = (score: number): { label: string; color: string; bgColor: string } => {
+  if (score >= 80) return { 
+    label: 'Hot', 
+    color: 'text-red-600', 
+    bgColor: 'bg-red-100' 
+  };
+  if (score >= 60) return { 
+    label: 'Warm', 
+    color: 'text-orange-600', 
+    bgColor: 'bg-orange-100' 
+  };
+  if (score >= 40) return { 
+    label: 'Cool', 
+    color: 'text-yellow-600', 
+    bgColor: 'bg-yellow-100' 
+  };
+  if (score >= 20) return { 
+    label: 'Cold', 
+    color: 'text-blue-600', 
+    bgColor: 'bg-blue-100' 
+  };
+  return { 
+    label: 'New', 
+    color: 'text-gray-600', 
+    bgColor: 'bg-gray-100' 
+  };
+};
+
+// Search leads by name, email, or company
+export const searchLeads = async (searchTerm: string): Promise<Lead[]> => {
+  if (!searchTerm || searchTerm.length < 2) {
+    return [];
+  }
+  
+  try {
+    // Firestore doesn't support full-text search, so we'll do a simple prefix search on email
+    // For production, consider using Algolia or ElasticSearch
+    const emailQuery = query(
+      collection(db, 'leads'),
+      where('email', '>=', searchTerm.toLowerCase()),
+      where('email', '<=', searchTerm.toLowerCase() + '\uf8ff'),
+      limit(10)
+    );
+    
+    const snapshot = await getDocs(emailQuery);
+    
+    const leads = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    } as Lead));
+    
+    // Client-side filtering for name and company
+    const searchLower = searchTerm.toLowerCase();
+    return leads.filter(lead => 
+      lead.name.toLowerCase().includes(searchLower) ||
+      lead.email.toLowerCase().includes(searchLower) ||
+      (lead.company && lead.company.toLowerCase().includes(searchLower))
+    );
+  } catch (error) {
+    console.error('Error searching leads:', error);
+    return [];
+  }
+};
+
+// Export leads to CSV (returns CSV string)
+export const exportLeadsToCSV = (leads: Lead[]): string => {
+  const headers = [
+    'Name',
+    'Email',
+    'Company',
+    'Phone',
+    'Status',
+    'Score',
+    'Source',
+    'Budget',
+    'Timeline',
+    'Project Type',
+    'Created At',
+    'Message'
+  ];
+  
+  const rows = leads.map(lead => [
+    lead.name,
+    lead.email,
+    lead.company || '',
+    lead.phone || '',
+    lead.status,
+    lead.score.toString(),
+    lead.source,
+    lead.budget || '',
+    lead.timeline || '',
+    lead.projectType || '',
+    lead.createdAt instanceof Timestamp 
+      ? lead.createdAt.toDate().toISOString() 
+      : lead.createdAt.toISOString(),
+    lead.message.replace(/"/g, '""') // Escape quotes in message
+  ]);
+  
+  const csvContent = [
+    headers.join(','),
+    ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+  ].join('\n');
+  
+  return csvContent;
 };

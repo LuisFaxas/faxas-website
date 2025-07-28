@@ -6,12 +6,13 @@ import { Mail, Phone, MapPin, Clock, MessageSquare, Briefcase } from 'lucide-rea
 import { PageLayout } from '@/components/layout/PageLayout';
 import { GlassPanel } from '@/components/ui/glass/glass-panel';
 import { ContactForm } from '@/components/forms/ContactForm';
+import { EnhancedContactForm } from '@/components/forms/EnhancedContactForm';
 import { ProjectInquiryForm } from '@/components/forms/ProjectInquiryForm';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 export default function ContactPage() {
-  const [formType, setFormType] = useState<'contact' | 'project'>('contact');
+  const [formType, setFormType] = useState<'contact' | 'enhanced' | 'project'>('enhanced');
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -58,6 +59,14 @@ export default function ContactPage() {
             variants={itemVariants}
           >
             <GlassPanel level="light" className="p-1 flex gap-1">
+              <Button
+                variant={formType === 'enhanced' ? 'primary' : 'ghost'}
+                onClick={() => setFormType('enhanced')}
+                className="gap-2"
+              >
+                <MessageSquare className="w-4 h-4" />
+                Get Started
+              </Button>
               <Button
                 variant={formType === 'contact' ? 'primary' : 'ghost'}
                 onClick={() => setFormType('contact')}
@@ -164,7 +173,15 @@ export default function ContactPage() {
 
             {/* Form Section */}
             <motion.div className="lg:col-span-2" variants={itemVariants}>
-              {formType === 'contact' ? (
+              {formType === 'enhanced' ? (
+                <EnhancedContactForm 
+                  source="contact_page"
+                  onSuccess={() => {
+                    // Could show a success modal or redirect
+                    console.log('Enhanced contact form submitted successfully');
+                  }} 
+                />
+              ) : formType === 'contact' ? (
                 <ContactForm 
                   onSuccess={() => {
                     // Could show a success modal or redirect
