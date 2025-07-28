@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import { MonitoringProvider } from "@/components/providers/MonitoringProvider";
 import { ToastContainer } from "@/components/ui/toast";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { StructuredData, organizationSchema, websiteSchema } from "@/components/seo/StructuredData";
@@ -70,8 +71,10 @@ export default function RootLayout({
       >
         <ErrorBoundary>
           <AuthProvider>
-            {children}
-            <ToastContainer />
+            <MonitoringProvider>
+              {children}
+              <ToastContainer />
+            </MonitoringProvider>
           </AuthProvider>
         </ErrorBoundary>
       </body>
