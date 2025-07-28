@@ -17,10 +17,7 @@ Sentry.init({
   debug: false,
 
   // Server-specific integrations
-  integrations: [
-    // Automatically instrument Node.js libraries and frameworks
-    ...Sentry.autoDiscoverNodePerformanceMonitoringIntegrations(),
-  ],
+  integrations: [],
 
   // Additional server options
   beforeSend(event, hint) {
