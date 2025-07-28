@@ -27,6 +27,23 @@ const preview: Preview = {
       ],
     },
     layout: 'centered',
+    options: {
+      storySort: {
+        order: [
+          'Getting Started',
+          'UI',
+          ['Button', 'GlassPanel', 'GlassCard'],
+          'Forms',
+          ['Input', 'Textarea', 'Select', 'Checkbox', 'Radio', 'FormField'],
+          'Feedback',
+          ['Alert', 'Toast', 'Spinner', 'Skeleton', 'EmptyState'],
+          'Showcase',
+          ['ProjectCard'],
+          'Layout',
+          'Navigation',
+        ],
+      },
+    },
   },
   decorators: [
     (Story) => (
