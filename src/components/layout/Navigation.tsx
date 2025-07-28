@@ -12,6 +12,7 @@ const navItems = [
   { href: '/projects', label: 'Projects' },
   { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
+  { href: '/portal', label: 'Portal', accent: 'accent-green' },
 ];
 
 export function Navigation() {
@@ -72,13 +73,13 @@ export function Navigation() {
                   href={item.href}
                   className={cn(
                     'text-sm font-medium transition-colors relative group',
-                    pathname === item.href
-                      ? 'text-accent-blue'
+                    pathname.startsWith(item.href)
+                      ? item.accent || 'text-accent-blue'
                       : 'text-text-secondary hover:text-text-primary'
                   )}
                 >
                   {item.label}
-                  {pathname === item.href && (
+                  {pathname.startsWith(item.href) && (
                     <motion.div
                       layoutId="navbar-underline"
                       className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-accent-blue to-accent-purple rounded-full"
