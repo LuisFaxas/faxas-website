@@ -9,18 +9,18 @@ const meta = {
   },
   tags: ['autodocs'],
   argTypes: {
-    glassLevel: {
+    level: {
       control: 'select',
-      options: ['primary', 'secondary', 'accent', 'light', 'lighter'],
+      options: ['primary', 'secondary', 'accent'],
       description: 'The level of glass effect applied',
     },
     className: {
       control: 'text',
       description: 'Additional CSS classes',
     },
-    animate: {
+    float: {
       control: 'boolean',
-      description: 'Enable hover animations',
+      description: 'Enable floating effect',
     },
   },
 } satisfies Meta<typeof GlassPanel>;
@@ -31,11 +31,11 @@ type Story = StoryObj<typeof meta>;
 // Glass level variations
 export const Primary: Story = {
   args: {
-    glassLevel: 'primary',
+    level: 'primary',
     children: (
       <div className="p-8">
         <h3 className="text-2xl font-bold mb-2">Primary Glass</h3>
-        <p className="text-gray-600">Strong glass effect with 70% opacity and 20px blur</p>
+        <p className="text-gray-600">Strong glass effect with higher opacity and blur</p>
       </div>
     ),
   },
@@ -43,11 +43,11 @@ export const Primary: Story = {
 
 export const Secondary: Story = {
   args: {
-    glassLevel: 'secondary',
+    level: 'secondary',
     children: (
       <div className="p-8">
         <h3 className="text-2xl font-bold mb-2">Secondary Glass</h3>
-        <p className="text-gray-600">Subtle glass effect with 50% opacity and 12px blur</p>
+        <p className="text-gray-600">Subtle glass effect with medium opacity</p>
       </div>
     ),
   },
@@ -55,7 +55,7 @@ export const Secondary: Story = {
 
 export const Accent: Story = {
   args: {
-    glassLevel: 'accent',
+    level: 'accent',
     children: (
       <div className="p-8">
         <h3 className="text-2xl font-bold mb-2">Accent Glass</h3>
@@ -65,52 +65,28 @@ export const Accent: Story = {
   },
 };
 
-export const Light: Story = {
-  args: {
-    glassLevel: 'light',
-    children: (
-      <div className="p-8">
-        <h3 className="text-2xl font-bold mb-2">Light Glass</h3>
-        <p className="text-gray-600">Light variant with 30% opacity and 8px blur</p>
-      </div>
-    ),
-  },
-};
-
-export const Lighter: Story = {
-  args: {
-    glassLevel: 'lighter',
-    children: (
-      <div className="p-8">
-        <h3 className="text-2xl font-bold mb-2">Lighter Glass</h3>
-        <p className="text-gray-600">Minimal glass with 20% opacity and 4px blur</p>
-      </div>
-    ),
-  },
-};
-
 // Interactive examples
-export const WithAnimation: Story = {
+export const WithFloat: Story = {
   args: {
-    glassLevel: 'primary',
-    animate: true,
+    level: 'primary',
+    float: true,
     children: (
       <div className="p-8">
-        <h3 className="text-2xl font-bold mb-2">Animated Panel</h3>
-        <p className="text-gray-600">Hover over this panel to see the animation</p>
+        <h3 className="text-2xl font-bold mb-2">Floating Panel</h3>
+        <p className="text-gray-600">Hover over this panel to see the floating effect</p>
       </div>
     ),
   },
 };
 
-export const NoAnimation: Story = {
+export const NoFloat: Story = {
   args: {
-    glassLevel: 'primary',
-    animate: false,
+    level: 'primary',
+    float: false,
     children: (
       <div className="p-8">
         <h3 className="text-2xl font-bold mb-2">Static Panel</h3>
-        <p className="text-gray-600">This panel has no hover effects</p>
+        <p className="text-gray-600">This panel has no floating effects</p>
       </div>
     ),
   },
@@ -120,34 +96,22 @@ export const NoAnimation: Story = {
 export const AllGlassLevels: Story = {
   render: () => (
     <div className="space-y-4 w-full max-w-2xl">
-      <GlassPanel glassLevel="primary">
+      <GlassPanel level="primary">
         <div className="p-6">
           <h3 className="font-bold">Primary Glass</h3>
-          <p className="text-sm text-gray-600">70% opacity, 20px blur</p>
+          <p className="text-sm text-gray-600">glass-primary class</p>
         </div>
       </GlassPanel>
-      <GlassPanel glassLevel="secondary">
+      <GlassPanel level="secondary">
         <div className="p-6">
           <h3 className="font-bold">Secondary Glass</h3>
-          <p className="text-sm text-gray-600">50% opacity, 12px blur</p>
+          <p className="text-sm text-gray-600">glass-secondary class</p>
         </div>
       </GlassPanel>
-      <GlassPanel glassLevel="accent">
+      <GlassPanel level="accent">
         <div className="p-6">
           <h3 className="font-bold">Accent Glass</h3>
-          <p className="text-sm text-gray-600">Gradient with blue/purple tint</p>
-        </div>
-      </GlassPanel>
-      <GlassPanel glassLevel="light">
-        <div className="p-6">
-          <h3 className="font-bold">Light Glass</h3>
-          <p className="text-sm text-gray-600">30% opacity, 8px blur</p>
-        </div>
-      </GlassPanel>
-      <GlassPanel glassLevel="lighter">
-        <div className="p-6">
-          <h3 className="font-bold">Lighter Glass</h3>
-          <p className="text-sm text-gray-600">20% opacity, 4px blur</p>
+          <p className="text-sm text-gray-600">glass-accent class</p>
         </div>
       </GlassPanel>
     </div>
@@ -157,8 +121,8 @@ export const AllGlassLevels: Story = {
 // Practical examples
 export const ContactCard: Story = {
   args: {
-    glassLevel: 'primary',
-    animate: true,
+    level: 'primary',
+    float: true,
     children: (
       <div className="p-8 w-96">
         <h2 className="text-3xl font-bold mb-4">Get In Touch</h2>
@@ -175,8 +139,8 @@ export const ContactCard: Story = {
 
 export const FeatureCard: Story = {
   args: {
-    glassLevel: 'secondary',
-    animate: true,
+    level: 'secondary',
+    float: true,
     className: 'hover:shadow-2xl transition-shadow duration-300',
     children: (
       <div className="p-6">
@@ -192,11 +156,11 @@ export const FeatureCard: Story = {
 
 export const Nested: Story = {
   args: {
-    glassLevel: 'light',
+    level: 'primary',
     children: (
       <div className="p-8 space-y-4">
         <h2 className="text-2xl font-bold">Nested Glass Panels</h2>
-        <GlassPanel glassLevel="secondary">
+        <GlassPanel level="secondary">
           <div className="p-4">
             <h3 className="font-bold">Inner Panel</h3>
             <p className="text-sm">Creating depth with layered glass effects</p>

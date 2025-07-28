@@ -1,27 +1,80 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { ProjectCard } from './ProjectCard';
-import { Project } from '@/types/project';
+import { Project } from '@/types';
 
 const sampleProject: Project = {
   id: '1',
-  title: 'E-Commerce Platform',
   slug: 'ecommerce-platform',
+  status: 'active',
+  title: 'E-Commerce Platform',
+  subtitle: 'Modern Shopping Experience',
   description: 'A modern e-commerce platform built with Next.js, featuring real-time inventory management, secure payment processing, and a responsive design that increased conversions by 45%.',
-  category: 'E-Commerce',
+  category: 'web-app',
   featured: true,
-  image: '/placeholder-ecommerce.jpg',
-  images: ['/placeholder-ecommerce.jpg', '/placeholder-dashboard.jpg'],
-  techStack: ['Next.js', 'TypeScript', 'Tailwind CSS', 'Stripe', 'PostgreSQL'],
-  liveUrl: 'https://example-ecommerce.com',
-  githubUrl: 'https://github.com/example/ecommerce',
-  metrics: {
-    performanceScore: {
-      desktop: 98,
-      mobile: 95,
+  priority: 1,
+  showcase: {
+    tier: 1,
+    quickPreview: {
+      type: 'widget',
+      hookMessage: 'See real-time inventory updates in action',
     },
-    loadTime: 0.8,
-    improvement: 276,
+    standardShowcase: {
+      template: 'business',
+      demoUrl: 'https://demo.example.com',
+      mobileStrategy: 'responsive',
+    },
   },
+  technical: {
+    stack: ['Next.js', 'TypeScript', 'Tailwind CSS', 'Stripe', 'PostgreSQL'],
+    features: [
+      { name: 'Real-time Inventory', description: 'Live stock updates across all channels' },
+      { name: 'Secure Payments', description: 'PCI-compliant payment processing' },
+    ],
+    liveUrl: 'https://example-ecommerce.com',
+    githubUrl: 'https://github.com/example/ecommerce',
+    performance: {
+      lighthouse: {
+        performance: 98,
+        accessibility: 100,
+        bestPractices: 95,
+        seo: 100,
+      },
+      webVitals: {
+        lcp: 0.8,
+        fid: 10,
+        cls: 0.01,
+      },
+      loadTime: 0.8,
+    },
+  },
+  results: {
+    metrics: [
+      { label: 'Conversion Rate', value: '+45%', icon: 'TrendingUp' },
+      { label: 'Load Time', value: '0.8s', icon: 'Zap' },
+      { label: 'Mobile Score', value: '98/100', icon: 'Smartphone' },
+    ],
+  },
+  educational: {
+    concepts: [],
+    comparisons: [],
+    learningPath: [],
+  },
+  analytics: {
+    views: 1250,
+    engagement: {
+      timeSpent: 180,
+      interactions: 25,
+      scrollDepth: 85,
+      educationalEngagement: 65,
+    },
+    conversion: {
+      viewToLead: 12,
+      leadToDiscovery: 45,
+      discoveryToClient: 25,
+    },
+  },
+  createdAt: new Date('2024-01-01'),
+  updatedAt: new Date('2024-01-15'),
 };
 
 const meta = {
@@ -63,10 +116,12 @@ export const MinimalProject: Story = {
   args: {
     project: {
       ...sampleProject,
-      liveUrl: undefined,
-      githubUrl: undefined,
-      metrics: undefined,
-      techStack: ['React', 'Node.js'],
+      technical: {
+        ...sampleProject.technical,
+        liveUrl: undefined,
+        githubUrl: undefined,
+        stack: ['React', 'Node.js'],
+      },
     },
   },
 };
@@ -77,12 +132,26 @@ export const WebAppProject: Story = {
     project: {
       ...sampleProject,
       title: 'Task Management App',
-      category: 'Web App',
+      category: 'web-app',
       description: 'A collaborative task management application with real-time updates, team workflows, and advanced analytics.',
-      metrics: {
-        performanceScore: { desktop: 96, mobile: 92 },
-        loadTime: 1.2,
-        improvement: 150,
+      technical: {
+        ...sampleProject.technical,
+        performance: {
+          ...sampleProject.technical.performance,
+          lighthouse: {
+            ...sampleProject.technical.performance.lighthouse,
+            performance: 96,
+          },
+          loadTime: 1.2,
+        },
+      },
+      results: {
+        ...sampleProject.results,
+        metrics: [
+          { label: 'Performance', value: '96/100', icon: 'Gauge' },
+          { label: 'Load Time', value: '1.2s', icon: 'Clock' },
+          { label: 'Improvement', value: '+150%', icon: 'TrendingUp' },
+        ],
       },
     },
   },
@@ -93,9 +162,12 @@ export const PortfolioProject: Story = {
     project: {
       ...sampleProject,
       title: 'Creative Portfolio',
-      category: 'Portfolio',
+      category: 'interactive',
       description: 'A stunning portfolio website showcasing creative work with smooth animations and an immersive user experience.',
-      techStack: ['Next.js', 'Framer Motion', 'Three.js'],
+      technical: {
+        ...sampleProject.technical,
+        stack: ['Next.js', 'Framer Motion', 'Three.js'],
+      },
     },
   },
 };
@@ -105,9 +177,12 @@ export const CorporateProject: Story = {
     project: {
       ...sampleProject,
       title: 'Corporate Website',
-      category: 'Corporate',
+      category: 'technical',
       description: 'A professional corporate website with multi-language support, CMS integration, and enterprise-grade security.',
-      techStack: ['Next.js', 'Contentful', 'i18n'],
+      technical: {
+        ...sampleProject.technical,
+        stack: ['Next.js', 'Contentful', 'i18n'],
+      },
     },
   },
 };
@@ -118,10 +193,24 @@ export const HighPerformance: Story = {
     project: {
       ...sampleProject,
       title: 'Ultra-Fast Blog Platform',
-      metrics: {
-        performanceScore: { desktop: 100, mobile: 99 },
-        loadTime: 0.4,
-        improvement: 380,
+      technical: {
+        ...sampleProject.technical,
+        performance: {
+          ...sampleProject.technical.performance,
+          lighthouse: {
+            ...sampleProject.technical.performance.lighthouse,
+            performance: 100,
+          },
+          loadTime: 0.4,
+        },
+      },
+      results: {
+        ...sampleProject.results,
+        metrics: [
+          { label: 'Performance', value: '100/100', icon: 'Star' },
+          { label: 'Load Time', value: '0.4s', icon: 'Zap' },
+          { label: 'Improvement', value: '+380%', icon: 'Rocket' },
+        ],
       },
     },
   },
@@ -132,10 +221,24 @@ export const ImprovedPerformance: Story = {
     project: {
       ...sampleProject,
       title: 'Optimized News Portal',
-      metrics: {
-        performanceScore: { desktop: 85, mobile: 80 },
-        loadTime: 1.8,
-        improvement: 125,
+      technical: {
+        ...sampleProject.technical,
+        performance: {
+          ...sampleProject.technical.performance,
+          lighthouse: {
+            ...sampleProject.technical.performance.lighthouse,
+            performance: 85,
+          },
+          loadTime: 1.8,
+        },
+      },
+      results: {
+        ...sampleProject.results,
+        metrics: [
+          { label: 'Performance', value: '85/100', icon: 'Gauge' },
+          { label: 'Load Time', value: '1.8s', icon: 'Clock' },
+          { label: 'Improvement', value: '+125%', icon: 'TrendingUp' },
+        ],
       },
     },
   },
@@ -160,7 +263,7 @@ export const ProjectGrid: Story = {
         project={{
           ...sampleProject,
           title: 'E-Commerce Platform',
-          category: 'E-Commerce',
+          category: 'web-app',
         }}
       />
       <ProjectCard
@@ -168,7 +271,7 @@ export const ProjectGrid: Story = {
           ...sampleProject,
           id: '2',
           title: 'SaaS Dashboard',
-          category: 'Web App',
+          category: 'web-app',
           featured: true,
         }}
       />
@@ -177,7 +280,7 @@ export const ProjectGrid: Story = {
           ...sampleProject,
           id: '3',
           title: 'Marketing Website',
-          category: 'Corporate',
+          category: 'technical',
         }}
       />
       <ProjectCard
@@ -185,7 +288,7 @@ export const ProjectGrid: Story = {
           ...sampleProject,
           id: '4',
           title: 'Mobile App Landing',
-          category: 'Landing Page',
+          category: 'interactive',
         }}
       />
       <ProjectCard
@@ -193,7 +296,7 @@ export const ProjectGrid: Story = {
           ...sampleProject,
           id: '5',
           title: 'Developer Portfolio',
-          category: 'Portfolio',
+          category: 'interactive',
         }}
       />
       <ProjectCard
@@ -201,7 +304,7 @@ export const ProjectGrid: Story = {
           ...sampleProject,
           id: '6',
           title: 'Blog Platform',
-          category: 'Web App',
+          category: 'web-app',
         }}
       />
     </div>

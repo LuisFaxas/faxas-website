@@ -11,12 +11,12 @@ const meta = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['default', 'outline', 'ghost', 'link'],
+      options: ['primary', 'secondary', 'ghost', 'glass', 'outline'],
       description: 'The visual style of the button',
     },
     size: {
       control: 'select',
-      options: ['default', 'sm', 'lg', 'icon'],
+      options: ['sm', 'md', 'lg', 'xl', 'icon'],
       description: 'The size of the button',
     },
     asChild: {
@@ -34,11 +34,11 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Default variant stories
-export const Default: Story = {
+// Primary variant stories
+export const Primary: Story = {
   args: {
-    children: 'Default Button',
-    variant: 'default',
+    children: 'Primary Button',
+    variant: 'primary',
   },
 };
 
@@ -56,10 +56,17 @@ export const Ghost: Story = {
   },
 };
 
-export const Link: Story = {
+export const Glass: Story = {
   args: {
-    children: 'Link Button',
-    variant: 'link',
+    children: 'Glass Button',
+    variant: 'glass',
+  },
+};
+
+export const Secondary: Story = {
+  args: {
+    children: 'Secondary Button',
+    variant: 'secondary',
   },
 };
 
@@ -121,14 +128,15 @@ export const AllVariants: Story = {
   render: () => (
     <div className="flex flex-col gap-4">
       <div className="flex gap-4 items-center">
-        <Button variant="default">Default</Button>
+        <Button variant="primary">Primary</Button>
+        <Button variant="secondary">Secondary</Button>
         <Button variant="outline">Outline</Button>
         <Button variant="ghost">Ghost</Button>
-        <Button variant="link">Link</Button>
+        <Button variant="glass">Glass</Button>
       </div>
       <div className="flex gap-4 items-center">
         <Button size="sm">Small</Button>
-        <Button size="default">Default</Button>
+        <Button size="md">Medium</Button>
         <Button size="lg">Large</Button>
         <Button size="icon">✨</Button>
       </div>
