@@ -75,3 +75,6 @@ temp/
 *.backup
 *.bak
 *.old
+
+*storybook.log
+storybook-static
