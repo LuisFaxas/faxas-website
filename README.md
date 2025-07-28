@@ -1,5 +1,11 @@
 # FAXAS.NET - Premium Web Development Portfolio & Lead Generation Platform
 
+[![CI](https://github.com/LuisFaxas/faxas-website/actions/workflows/ci.yml/badge.svg)](https://github.com/LuisFaxas/faxas-website/actions/workflows/ci.yml)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-15.1-black)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.0-blue)](https://react.dev/)
+[![License](https://img.shields.io/badge/license-Proprietary-red)](LICENSE)
+
 A cutting-edge developer portfolio that transforms prospects into educated clients through interactive demos, progressive learning, and stunning glassmorphic design. Built with Next.js 15, React 19, TypeScript, and Firebase.
 
 ![FAXAS Portfolio](https://faxas.net/og-image.png)

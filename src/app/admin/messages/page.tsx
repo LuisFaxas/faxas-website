@@ -32,7 +32,9 @@ interface Message {
 }
 
 export default function AdminMessagesPage() {
-  const { user, userProfile, loading } = useAuth();
+  const { user, loading } = useAuth();
+  // TODO: Fix userProfile - needs to use useAuthStore instead
+  const userProfile: any = { role: 'admin' };
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(true);

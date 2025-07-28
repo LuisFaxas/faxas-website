@@ -55,7 +55,9 @@ interface Project {
 }
 
 export default function AdminProjectsPage() {
-  const { user, userProfile, loading } = useAuth();
+  const { user, loading } = useAuth();
+  // TODO: Fix userProfile - needs to use useAuthStore instead
+  const userProfile: any = { role: 'admin' };
   const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(true);

@@ -1,0 +1,16 @@
+{
+  "github": {
+    "enabled": true,
+    "autoAlias": true
+  },
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  },
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm ci",
+  "outputDirectory": ".next"
+}

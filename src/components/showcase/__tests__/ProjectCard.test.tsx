@@ -42,12 +42,15 @@ const mockProject: Project = {
   tags: ['React', 'TypeScript', 'Firebase'],
   showcase: {
     quickPreview: {
-      type: 'stats' as const,
+      type: 'widget' as const,
       hookMessage: 'Watch sales grow in real-time',
-      stats: [
-        { label: 'Orders', value: 156, trend: 15 },
-        { label: 'Revenue', value: 12543, trend: 23, prefix: '$' },
-      ],
+      component: 'stats',
+      data: {
+        stats: [
+          { label: 'Orders', value: '156', trend: '+15%' },
+          { label: 'Revenue', value: '$12,543', trend: '+23%' },
+        ],
+      },
     },
     thumbnail: '/projects/ecommerce-thumb.jpg',
     gallery: [],
@@ -55,23 +58,25 @@ const mockProject: Project = {
   },
   technical: {
     stack: ['React', 'Next.js', 'TypeScript', 'Firebase', 'Tailwind CSS'],
-    features: ['Real-time updates', 'Responsive design'],
+    features: {
+      core: ['Real-time updates', 'Responsive design'],
+      advanced: [],
+    },
     performance: {
       lighthouse: { performance: 98, accessibility: 100, bestPractices: 95, seo: 100 },
       loadTime: 0.8,
-      coreWebVitals: { lcp: 1.2, fid: 10, cls: 0.05 },
+      webVitals: { lcp: 1.2, fid: 10, cls: 0.05 },
     },
   },
   results: {
     metrics: [
-      { label: 'Revenue Increase', value: '+276%', improvement: true },
-      { label: 'Processing Time', value: '-80%', improvement: true },
+      { label: 'Revenue Increase', value: '+276%' },
+      { label: 'Processing Time', value: '-80%' },
     ],
     testimonial: {
       content: 'This dashboard transformed our business',
       author: 'John Doe',
       role: 'CEO, Example Corp',
-      avatar: '/avatars/john.jpg',
     },
   },
 }

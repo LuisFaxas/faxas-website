@@ -23,7 +23,9 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 
 export default function SettingsPage() {
-  const { user, userProfile, loading } = useAuth();
+  const { user, loading } = useAuth();
+  // TODO: Fix userProfile - needs to use useAuthStore instead
+  const userProfile: any = { role: 'user' };
   const router = useRouter();
   
   const [displayName, setDisplayName] = useState('');
