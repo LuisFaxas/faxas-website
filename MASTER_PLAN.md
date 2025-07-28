@@ -50,16 +50,16 @@ This master plan outlines a comprehensive, version-based approach to building FA
 Establish professional development practices, testing infrastructure, and monitoring before adding new features.
 
 ### ✅ Progress Checklist:
-- [ ] **1.1.1 Testing Infrastructure**
-  - [ ] Install and configure Jest + React Testing Library
-  - [ ] Create test setup files and utilities
-  - [ ] Write unit tests for core components
-    - [ ] GlassPanel component tests
-    - [ ] Button component tests
-    - [ ] ProjectCard component tests
-  - [ ] Write integration tests for contact form
-  - [ ] Set up test coverage reporting
-  - [ ] Achieve 80%+ test coverage
+- [x] **1.1.1 Testing Infrastructure**
+  - [x] Install and configure Jest + React Testing Library
+  - [x] Create test setup files and utilities
+  - [x] Write unit tests for core components
+    - [x] GlassPanel component tests
+    - [x] Button component tests
+    - [x] ProjectCard component tests
+  - [x] Write integration tests for contact form
+  - [x] Set up test coverage reporting
+  - [ ] Achieve 80%+ test coverage (currently ~5%, need more tests)
   - [ ] Add snapshot tests for UI consistency
 - [ ] **1.1.2 CI/CD Pipeline**
   - [ ] Create GitHub Actions workflow file
