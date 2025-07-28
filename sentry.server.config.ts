@@ -39,7 +39,4 @@ Sentry.init({
 
     return event;
   },
-
-  // Capture unhandled promise rejections
-  onUnhandledRejection: 'strict',
 });

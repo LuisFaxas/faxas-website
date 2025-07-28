@@ -31,10 +31,7 @@ Sentry.init({
       maskAllText: false,
       blockAllMedia: false,
     }),
-    Sentry.browserTracingIntegration({
-      // Disable automatic route change tracking
-      routingInstrumentation: Sentry.nextRouterInstrumentation,
-    }),
+    Sentry.browserTracingIntegration(),
   ],
 
   // Additional client options

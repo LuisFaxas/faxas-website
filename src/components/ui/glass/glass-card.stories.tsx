@@ -219,6 +219,9 @@ export const StatsCard: Story = {
 
 // Grid example
 export const CardGrid: Story = {
+  args: {
+    children: 'Card content',
+  },
   render: () => (
     <div className="grid grid-cols-3 gap-6 w-full max-w-4xl">
       <GlassCard

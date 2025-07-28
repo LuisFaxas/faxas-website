@@ -246,6 +246,9 @@ export const ImprovedPerformance: Story = {
 
 // State variations
 export const Loading: Story = {
+  args: {
+    project: sampleProject,
+  },
   render: () => (
     <div className="animate-pulse">
       <div className="bg-gray-200 rounded-lg h-64 w-96 mb-4"></div>
@@ -257,6 +260,9 @@ export const Loading: Story = {
 
 // Grid showcase
 export const ProjectGrid: Story = {
+  args: {
+    project: sampleProject,
+  },
   render: () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl">
       <ProjectCard

@@ -204,6 +204,11 @@ export const InboxZero: Story = {
 
 // Complex example with custom styling
 export const CustomStyled: Story = {
+  args: {
+    icon: Database,
+    title: 'No data to display',
+    description: 'Connect a data source to see analytics and insights about your projects.',
+  },
   render: () => (
     <div className="w-[600px] h-[400px] bg-white rounded-xl border border-gray-200 p-8">
       <EmptyState
@@ -226,6 +231,11 @@ export const CustomStyled: Story = {
 
 // Multiple empty states
 export const EmptyDashboard: Story = {
+  args: {
+    icon: Folder,
+    title: 'No projects',
+    description: 'Start your first project',
+  },
   render: () => (
     <div className="grid grid-cols-3 gap-4 w-full max-w-6xl">
       <div className="bg-white rounded-lg border border-gray-200 p-4">

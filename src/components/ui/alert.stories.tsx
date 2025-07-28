@@ -171,7 +171,7 @@ export const FeatureAnnouncement: Story = {
   render: () => {
     const [dismissed, setDismissed] = useState(false);
 
-    if (dismissed) return null;
+    if (dismissed) return <div></div>;
 
     return (
       <Alert

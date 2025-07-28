@@ -34,10 +34,12 @@ export function trackPagePerformance(pageName: string): void {
 
           logger.info(`Page Performance: ${pageName}`, metrics);
           
-          // Send to Sentry
-          Sentry.addMeasurement('ttfb', metrics.ttfb, 'millisecond');
-          Sentry.addMeasurement('dom_content_loaded', metrics.domContentLoaded, 'millisecond');
-          Sentry.addMeasurement('page_load', metrics.totalDuration, 'millisecond');
+          // Send metrics as context
+          Sentry.setContext('performance_metrics', {
+            ttfb: metrics.ttfb,
+            dom_content_loaded: metrics.domContentLoaded,
+            page_load: metrics.totalDuration,
+          });
         }
       });
     });
@@ -60,7 +62,7 @@ export function trackWebVitals(): void {
     const lastEntry = entries[entries.length - 1];
     
     logger.info('Web Vitals: LCP', { value: lastEntry.startTime });
-    Sentry.addMeasurement('lcp', lastEntry.startTime, 'millisecond');
+    Sentry.setContext('web_vitals_lcp', { value: lastEntry.startTime });
   }).observe({ entryTypes: ['largest-contentful-paint'] });
 
   // Track First Input Delay
@@ -70,7 +72,7 @@ export function trackWebVitals(): void {
       const fid = entry.processingStart - entry.startTime;
       
       logger.info('Web Vitals: FID', { value: fid });
-      Sentry.addMeasurement('fid', fid, 'millisecond');
+      Sentry.setContext('web_vitals_fid', { value: fid });
     });
   }).observe({ entryTypes: ['first-input'] });
 
@@ -84,7 +86,7 @@ export function trackWebVitals(): void {
     }
     
     logger.info('Web Vitals: CLS', { value: clsValue });
-    Sentry.addMeasurement('cls', clsValue, 'none');
+    Sentry.setContext('web_vitals_cls', { value: clsValue });
   }).observe({ entryTypes: ['layout-shift'] });
 }
 
@@ -97,7 +99,7 @@ export function trackMetric(
   unit: 'millisecond' | 'second' | 'byte' | 'percent' | 'none' = 'millisecond'
 ): void {
   logger.info(`Performance Metric: ${name}`, { value, unit });
-  Sentry.addMeasurement(name, value, unit);
+  Sentry.setContext(`metric_${name}`, { value, unit });
 }
 
 /**

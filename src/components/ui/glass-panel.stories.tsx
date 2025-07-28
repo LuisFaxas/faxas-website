@@ -94,6 +94,9 @@ export const NoFloat: Story = {
 
 // All glass levels showcase
 export const AllGlassLevels: Story = {
+  args: {
+    children: 'Glass panel content',
+  },
   render: () => (
     <div className="space-y-4 w-full max-w-2xl">
       <GlassPanel level="primary">

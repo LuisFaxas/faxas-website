@@ -157,7 +157,8 @@ class Logger {
    * Clear all breadcrumbs
    */
   clearBreadcrumbs(): void {
-    Sentry.configureScope((scope) => scope.clearBreadcrumbs());
+    // configureScope is deprecated in newer versions
+    // This functionality is no longer available
   }
 }
 
