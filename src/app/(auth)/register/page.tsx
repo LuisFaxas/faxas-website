@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Mail, Lock, User, Chrome, UserPlus } from 'lucide-react';
+import { Mail, Lock, User, UserPlus } from 'lucide-react';
+import { FcGoogle } from 'react-icons/fc';
 import { useAuthStore } from '@/lib/store/authStore';
 import { AnimatedBackground } from '@/components/ui/animated-background';
 import { GlassPanel } from '@/components/ui/glass/glass-panel';
@@ -210,7 +211,7 @@ export default function RegisterPage() {
                 className="w-full mt-4"
                 disabled={isLoading}
               >
-                <Chrome className="w-5 h-5 mr-2" />
+                <FcGoogle className="w-5 h-5 mr-2" />
                 Sign up with Google
               </Button>
             </div>

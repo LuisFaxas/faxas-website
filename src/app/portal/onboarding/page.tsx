@@ -17,7 +17,7 @@ import {
   Check
 } from 'lucide-react';
 import { FcGoogle } from 'react-icons/fc';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { PortalUser, getPortalFeatures } from '@/types/portal';
 import { createLead } from '@/lib/firebase/db';
@@ -35,6 +35,28 @@ export default function PortalOnboardingPage() {
     company: '',
     phone: '',
   });
+  const [checkingExistingUser, setCheckingExistingUser] = useState(true);
+
+  // Check if user already has a portal account
+  useEffect(() => {
+    const checkExistingUser = async () => {
+      if (!loading && user) {
+        try {
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          if (userDoc.exists()) {
+            // User already has a portal account, redirect to dashboard
+            router.push('/portal/dashboard');
+            return;
+          }
+        } catch (error) {
+          console.error('Error checking existing user:', error);
+        }
+      }
+      setCheckingExistingUser(false);
+    };
+
+    checkExistingUser();
+  }, [user, loading, router]);
 
   useEffect(() => {
     if (user && step === 'auth') {
@@ -349,6 +371,23 @@ export default function PortalOnboardingPage() {
         );
     }
   };
+
+  // Show loading while checking if user exists
+  if (loading || checkingExistingUser) {
+    return (
+      <div className="min-h-screen relative flex items-center justify-center p-4">
+        <AnimatedBackground />
+        <div className="relative z-10">
+          <GlassPanel level="primary" className="p-8">
+            <div className="flex items-center gap-3">
+              <Loader2 className="w-6 h-6 animate-spin text-accent-blue" />
+              <p className="text-text-secondary">Loading portal...</p>
+            </div>
+          </GlassPanel>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen relative flex items-center justify-center p-4">

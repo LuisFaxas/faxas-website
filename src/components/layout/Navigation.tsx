@@ -8,17 +8,17 @@ import { Menu, X, LogOut, Settings, LayoutDashboard } from 'lucide-react';
 import { useAuthStore } from '@/lib/store/authStore';
 import { cn } from '@/lib/utils';
 
-const navItems = [
-  { href: '/projects', label: 'Projects' },
-  { href: '/about', label: 'About' },
-  { href: '/contact', label: 'Contact' },
-  { href: '/portal', label: 'Portal', accent: 'accent-green' },
-];
-
 export function Navigation() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, userProfile, isAdmin, signOut } = useAuthStore();
+  
+  const navItems = [
+    { href: '/projects', label: 'Projects' },
+    { href: '/about', label: 'About' },
+    { href: '/contact', label: 'Contact' },
+    ...(user ? [{ href: '/portal', label: 'Portal', accent: 'accent-green' }] : []),
+  ];
   
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -74,7 +74,7 @@ export function Navigation() {
                   className={cn(
                     'text-sm font-medium transition-colors relative group',
                     pathname.startsWith(item.href)
-                      ? item.accent || 'text-accent-blue'
+                      ? (item.accent ? `text-${item.accent}` : 'text-accent-blue')
                       : 'text-text-secondary hover:text-text-primary'
                   )}
                 >

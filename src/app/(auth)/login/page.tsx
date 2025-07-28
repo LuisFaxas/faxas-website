@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Mail, Lock, LogIn, Chrome, Loader2 } from 'lucide-react';
+import { Mail, Lock, LogIn, Loader2 } from 'lucide-react';
+import { FcGoogle } from 'react-icons/fc';
 import { useAuthStore } from '@/lib/store/authStore';
 import { AnimatedBackground } from '@/components/ui/animated-background';
 import { GlassPanel } from '@/components/ui/glass/glass-panel';
@@ -206,7 +207,7 @@ export default function LoginPage() {
                 className="w-full mt-4"
                 disabled={isLoading}
               >
-                <Chrome className="w-5 h-5 mr-2" />
+                <FcGoogle className="w-5 h-5 mr-2" />
                 Sign in with Google
               </Button>
             </div>

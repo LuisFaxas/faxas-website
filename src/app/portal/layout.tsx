@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { PortalUser, getPortalFeatures } from '@/types/portal';
 import { doc, getDoc } from 'firebase/firestore';
@@ -18,21 +18,30 @@ interface PortalLayoutProps {
 }
 
 export default function PortalLayout({ children }: PortalLayoutProps) {
-  const { user, loading, logout } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const [portalUser, setPortalUser] = useState<PortalUser | null>(null);
   const [loadingPortal, setLoadingPortal] = useState(true);
+  
+  // Check if we're on the onboarding page
+  const isOnboarding = pathname?.includes('/portal/onboarding');
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/portal/onboarding');
+    // Skip auth check for onboarding page
+    if (isOnboarding) {
+      setLoadingPortal(false);
       return;
     }
 
-    if (user) {
-      loadPortalUser();
+    if (!loading) {
+      if (!user) {
+        router.push('/portal/onboarding');
+      } else {
+        loadPortalUser();
+      }
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, isOnboarding]);
 
   const loadPortalUser = async () => {
     if (!user) return;
@@ -54,9 +63,14 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
   };
 
   const handleLogout = async () => {
-    await logout();
+    await signOut();
     router.push('/');
   };
+
+  // For onboarding page, don't show the portal chrome
+  if (isOnboarding) {
+    return <>{children}</>;
+  }
 
   if (loading || loadingPortal) {
     return (
