@@ -145,11 +145,11 @@ export default function ProjectsPage() {
             className="inline-flex items-center gap-2 glass-accent px-4 py-2 rounded-full mb-6"
           >
             <Sparkles className="w-4 h-4" />
-            <span className="text-sm font-medium">Featured Projects</span>
+            <span className="text-lg font-large font-bold">Featured Projects</span>
           </motion.div>
           
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 text-gradient">
-            My Portfolio
+            
           </h1>
           
           <p className="text-lg sm:text-xl text-text-secondary max-w-2xl mx-auto mb-8">

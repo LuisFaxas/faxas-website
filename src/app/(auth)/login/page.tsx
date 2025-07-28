@@ -1,30 +1,58 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Mail, Lock, LogIn, Chrome } from 'lucide-react';
+import { Mail, Lock, LogIn, Chrome, Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/lib/store/authStore';
 import { AnimatedBackground } from '@/components/ui/animated-background';
 import { GlassPanel } from '@/components/ui/glass/glass-panel';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/toast';
+import { isSignInWithEmailLink } from 'firebase/auth';
+import { auth } from '@/lib/firebase/config';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { signIn, signInWithGoogle, error, clearError, isLoading } = useAuthStore();
+  const searchParams = useSearchParams();
+  const { signIn, signInWithGoogle, verifyMagicLink, error, clearError, isLoading } = useAuthStore();
   
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    rememberMe: false,
   });
+  const [isMagicLinkVerifying, setIsMagicLinkVerifying] = useState(false);
+  
+  // Check for magic link on mount
+  useEffect(() => {
+    const checkMagicLink = async () => {
+      if (isSignInWithEmailLink(auth, window.location.href)) {
+        setIsMagicLinkVerifying(true);
+        
+        const result = await verifyMagicLink();
+        
+        if (result.success) {
+          toast.success('Welcome!', 'Successfully signed in with magic link.');
+          const returnUrl = searchParams.get('from') || '/';
+          router.push(returnUrl);
+        } else {
+          toast.error('Magic link failed', result.error || 'Invalid or expired link.');
+        }
+        
+        setIsMagicLinkVerifying(false);
+      }
+    };
+    
+    checkMagicLink();
+  }, [verifyMagicLink, router, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
     
-    const result = await signIn(formData.email, formData.password);
+    const result = await signIn(formData.email, formData.password, formData.rememberMe);
     
     if (result.success) {
       toast.success('Welcome back!', 'Successfully signed in.');
@@ -42,6 +70,23 @@ export default function LoginPage() {
       router.push('/');
     }
   };
+
+  // Show loading state while verifying magic link
+  if (isMagicLinkVerifying) {
+    return (
+      <div className="relative min-h-screen bg-white">
+        <AnimatedBackground />
+        
+        <div className="relative z-10 min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
+          <GlassPanel className="p-8 text-center">
+            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-accent-blue" />
+            <h2 className="text-xl font-bold text-text-primary mb-2">Verifying your magic link...</h2>
+            <p className="text-text-secondary">Please wait while we sign you in.</p>
+          </GlassPanel>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen bg-white">
@@ -109,6 +154,8 @@ export default function LoginPage() {
                 <label className="flex items-center">
                   <input
                     type="checkbox"
+                    checked={formData.rememberMe}
+                    onChange={(e) => setFormData({ ...formData, rememberMe: e.target.checked })}
                     className="w-4 h-4 text-accent-blue border-glass-lighter rounded focus:ring-accent-blue"
                   />
                   <span className="ml-2 text-sm text-text-secondary">Remember me</span>

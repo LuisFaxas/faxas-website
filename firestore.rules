@@ -6,66 +6,158 @@ service cloud.firestore {
       return request.auth != null;
     }
     
-    function isAdmin() {
-      return isAuthenticated() && 
-        request.auth.token.admin == true;
-    }
-    
     function isOwner(userId) {
-      return isAuthenticated() && 
-        request.auth.uid == userId;
+      return isAuthenticated() && request.auth.uid == userId;
     }
     
-    // Test collection (temporary - remove in production)
-    match /test/{document} {
-      allow read, write: if true;
+    function getUserRole() {
+      return isAuthenticated() ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role : null;
     }
     
-    // Projects collection - public read, admin write
-    match /projects/{projectId} {
-      allow read: if true;
-      allow create, update, delete: if isAdmin();
+    function isAdmin() {
+      return getUserRole() == 'admin';
     }
     
-    // Leads collection - write for all, read for admin only
-    match /leads/{leadId} {
-      allow create: if true;
-      allow read, update, delete: if isAdmin();
+    function isActiveUser() {
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'active';
     }
     
-    // Users collection - users can only access their own data
+    function hasRole(role) {
+      return getUserRole() == role;
+    }
+    
+    // Validation functions
+    function isValidEmail(email) {
+      return email.matches('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$');
+    }
+    
+    function isValidLeadStatus(status) {
+      return status in ['new', 'contacted', 'qualified', 'converted', 'lost'];
+    }
+    
+    function isValidProjectStatus(status) {
+      return status in ['draft', 'published', 'archived'];
+    }
+    
+    function isValidUserRole(role) {
+      return role in ['user', 'admin'];
+    }
+    
+    function isValidUserStatus(status) {
+      return status in ['active', 'suspended', 'deleted'];
+    }
+    
+    // Users collection
     match /users/{userId} {
-      allow read, update: if isOwner(userId);
-      allow create: if isAuthenticated() && request.auth.uid == userId;
-      allow delete: if false; // Never allow deletion
+      // Users can read their own profile
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Users can update their own profile (except role and status)
+      allow update: if isOwner(userId) && isActiveUser() &&
+        request.resource.data.role == resource.data.role &&
+        request.resource.data.status == resource.data.status &&
+        request.resource.data.uid == resource.data.uid;
+      
+      // Only admins can create users or update role/status
+      allow create: if isAdmin() &&
+        request.resource.data.uid == userId &&
+        isValidEmail(request.resource.data.email) &&
+        isValidUserRole(request.resource.data.role) &&
+        isValidUserStatus(request.resource.data.status);
+      
+      allow update: if isAdmin();
+      
+      // Only admins can delete users
+      allow delete: if isAdmin();
     }
     
-    // Analytics collection - admin only
-    match /analytics/{document} {
-      allow read, write: if isAdmin();
+    // Leads collection
+    match /leads/{leadId} {
+      // Only admins can read leads
+      allow read: if isAdmin();
+      
+      // Anyone can create a lead (public contact form)
+      // But certain fields are restricted
+      allow create: if 
+        request.resource.data.keys().hasAll(['name', 'email', 'message', 'createdAt']) &&
+        isValidEmail(request.resource.data.email) &&
+        request.resource.data.status == 'new' &&
+        request.resource.data.score >= 0 &&
+        request.resource.data.score <= 100 &&
+        request.resource.data.createdAt == request.time;
+      
+      // Only admins can update leads
+      allow update: if isAdmin() &&
+        isValidLeadStatus(request.resource.data.status);
+      
+      // Only admins can delete leads
+      allow delete: if isAdmin();
+      
+      // Subcollection for lead notes
+      match /notes/{noteId} {
+        allow read: if isAdmin();
+        allow create: if isAdmin() &&
+          request.resource.data.authorId == request.auth.uid &&
+          request.resource.data.createdAt == request.time;
+        allow update: if false; // Notes are immutable
+        allow delete: if isAdmin();
+      }
     }
     
-    // Blog posts - public read, admin write
-    match /posts/{postId} {
-      allow read: if true;
-      allow create, update, delete: if isAdmin();
+    // Projects collection
+    match /projects/{projectId} {
+      // Anyone can read published projects
+      allow read: if resource.data.status == 'published' || isAdmin();
+      
+      // Only admins can create projects
+      allow create: if isAdmin() &&
+        isValidProjectStatus(request.resource.data.status) &&
+        request.resource.data.createdBy == request.auth.uid &&
+        request.resource.data.createdAt == request.time;
+      
+      // Only admins can update projects
+      allow update: if isAdmin() &&
+        isValidProjectStatus(request.resource.data.status) &&
+        request.resource.data.updatedBy == request.auth.uid &&
+        request.resource.data.updatedAt == request.time;
+      
+      // Only admins can delete projects
+      allow delete: if isAdmin();
     }
     
-    // Comments - authenticated users can create, admin can manage
-    match /comments/{commentId} {
-      allow read: if true;
+    // Analytics collection
+    match /analytics/{eventId} {
+      // Only admins can read analytics
+      allow read: if isAdmin();
+      
+      // Anyone can create analytics events (for tracking)
+      allow create: if 
+        request.resource.data.keys().hasAll(['type', 'sessionId', 'context', 'timestamp']) &&
+        request.resource.data.timestamp == request.time;
+      
+      // Analytics events are immutable
+      allow update: if false;
+      
+      // Only admins can delete analytics
+      allow delete: if isAdmin();
+    }
+    
+    // Admin-only collections
+    match /settings/{document=**} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+    
+    match /logs/{document=**} {
+      allow read: if isAdmin();
       allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && 
-        request.auth.uid == resource.data.authorId;
-      allow delete: if isAdmin() || 
-        (isAuthenticated() && request.auth.uid == resource.data.authorId);
+      allow update: if false;
+      allow delete: if isAdmin();
     }
     
-    // Client project updates - admin write, specific client read
-    match /projectUpdates/{updateId} {
-      allow read: if isAuthenticated() && 
-        (isAdmin() || request.auth.uid in resource.data.clientIds);
-      allow create, update, delete: if isAdmin();
+    // Deny all other access by default
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
