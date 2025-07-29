@@ -1,50 +1,68 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, 
-  Download, 
-  Mail, 
-  Star
+  Filter,
+  SortDesc,
+  RefreshCw,
+  X,
+  Phone,
+  Mail,
+  MessageSquare,
+  Building,
+  Calendar,
+  TrendingUp,
+  Download,
+  ChevronRight
 } from 'lucide-react';
-import { GlassPanel } from '@/components/ui/glass/glass-panel';
+import { GlassPanel } from '@/components/ui/glass-panel';
 import { Button } from '@/components/ui/button';
-import { getLeads, updateLeadStatus, getLeadQuality, type Lead } from '@/lib/firebase/leads';
+import { updateLeadStatus, type Lead } from '@/lib/firebase/leads';
+import { subscribeToLeads, EnhancedLead } from '@/lib/firebase/admin-leads';
+import { LeadCard } from '@/components/admin/LeadCard';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { TableRowSkeleton } from '@/components/ui/skeleton';
 import { toast } from '@/components/ui/toast';
+import { AnimatedBackground } from '@/components/ui/animated-background';
+import { getTemperatureEmoji } from '@/types/portal';
 
 export default function AdminLeadsPage() {
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [filteredLeads, setFilteredLeads] = useState<Lead[]>([]);
+  const [leads, setLeads] = useState<EnhancedLead[]>([]);
+  const [filteredLeads, setFilteredLeads] = useState<EnhancedLead[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [selectedLead, setSelectedLead] = useState<EnhancedLead | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<Lead['status'] | 'all'>('all');
   const [sortBy, setSortBy] = useState<'date' | 'score'>('date');
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
-    loadLeads();
-  }, []);
+    // Set up real-time listener
+    const unsubscribe = subscribeToLeads(
+      (updatedLeads) => {
+        setLeads(updatedLeads);
+        setIsLoading(false);
+      },
+      (error) => {
+        console.error('Error loading leads:', error);
+        toast.error('Failed to load leads', 'Please check your connection.');
+        setIsLoading(false);
+      },
+      {
+        orderByScore: sortBy === 'score'
+      }
+    );
+
+    // Cleanup listener on unmount
+    return () => unsubscribe();
+  }, [sortBy]);
 
   useEffect(() => {
     filterAndSortLeads();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [leads, searchQuery, statusFilter, sortBy]);
-
-  const loadLeads = async () => {
-    try {
-      const fetchedLeads = await getLeads();
-      setLeads(fetchedLeads);
-    } catch (error) {
-      console.error('Error loading leads:', error);
-      toast.error('Failed to load leads', 'Please refresh the page to try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [leads, searchQuery, statusFilter]);
 
   const filterAndSortLeads = () => {
     let filtered = [...leads];
@@ -100,36 +118,35 @@ export default function AdminLeadsPage() {
     }
   };
 
-  const statusColors = {
-    new: 'bg-blue-100 text-blue-700',
-    contacted: 'bg-yellow-100 text-yellow-700',
-    qualified: 'bg-purple-100 text-purple-700',
-    converted: 'bg-green-100 text-green-700',
-    archived: 'bg-gray-100 text-gray-700',
-  };
-
-  const getScoreColor = (score: number) => {
-    const quality = getLeadQuality(score);
-    const colors = {
-      red: 'text-red-500',
-      orange: 'text-orange-500',
-      yellow: 'text-yellow-500',
-      blue: 'text-blue-500',
-      gray: 'text-gray-500',
+  // Get temperature-based stats
+  const getLeadStats = () => {
+    const stats = {
+      hot: 0,
+      warm: 0,
+      qualified: 0,
+      cool: 0,
+      early: 0,
+      total: leads.length
     };
-    return colors[quality.color as keyof typeof colors] || 'text-gray-500';
+
+    leads.forEach(lead => {
+      const score = lead.questionnaire?.score || lead.score;
+      if (score >= 80) stats.hot++;
+      else if (score >= 60) stats.warm++;
+      else if (score >= 40) stats.qualified++;
+      else if (score >= 20) stats.cool++;
+      else stats.early++;
+    });
+
+    return stats;
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-text-secondary">Loading leads...</p>
-      </div>
-    );
-  }
+  const stats = getLeadStats();
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen relative bg-gradient-to-br from-background-start via-background-middle to-background-end">
+      <AnimatedBackground />
+      <div className="relative z-10 p-4 sm:p-6 lg:p-8 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -193,110 +210,81 @@ export default function AdminLeadsPage() {
         </div>
       </GlassPanel>
 
-      {/* Leads Table */}
-      <GlassPanel className="overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-glass-light">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
-                  Lead
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
-                  Score
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
-                  Source
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-glass-lighter">
-              {isLoading ? (
-                <>
-                  {[...Array(5)].map((_, i) => (
-                    <TableRowSkeleton key={i} />
-                  ))}
-                </>
-              ) : filteredLeads.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-text-secondary">
-                    {searchQuery || statusFilter !== 'all' 
-                      ? 'No leads found matching your filters.' 
-                      : 'No leads yet. They will appear here when people contact you.'}
-                  </td>
-                </tr>
-              ) : (
-                filteredLeads.map((lead) => (
-                <motion.tr
-                  key={lead.id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="hover:bg-glass-light/50 transition-colors cursor-pointer"
-                  onClick={() => setSelectedLead(lead)}
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <p className="text-sm font-medium text-text-primary">
-                        {lead.name}
-                      </p>
-                      <p className="text-sm text-text-secondary">{lead.email}</p>
-                      {lead.company && (
-                        <p className="text-xs text-text-tertiary">{lead.company}</p>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <Star className={cn('w-5 h-5 mr-1', getScoreColor(lead.score))} />
-                      <span className="text-sm font-medium">{lead.score}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={cn(
-                      'px-2 py-1 text-xs font-medium rounded-full',
-                      statusColors[lead.status]
-                    )}>
-                      {lead.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">
-                    {lead.source}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">
-                    {lead.createdAt && formatDistanceToNow(lead.createdAt.toDate(), { addSuffix: true })}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <select
-                      value={lead.status}
-                      onChange={(e) => {
-                        e.stopPropagation();
-                        handleStatusUpdate(lead.id!, e.target.value as Lead['status']);
-                      }}
-                      className="px-3 py-1 bg-white/50 border border-glass-lighter rounded text-xs focus:outline-none focus:ring-2 focus:ring-accent-blue/50"
-                    >
-                      <option value="new">New</option>
-                      <option value="contacted">Contacted</option>
-                      <option value="qualified">Qualified</option>
-                      <option value="converted">Converted</option>
-                      <option value="archived">Archived</option>
-                    </select>
-                  </td>
-                </motion.tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </GlassPanel>
+      {/* Temperature Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        <GlassPanel className="p-4 text-center">
+          <div className="text-2xl mb-1">🔥</div>
+          <div className="text-2xl font-bold text-red-600">{stats.hot}</div>
+          <div className="text-xs text-text-secondary">Hot Leads</div>
+        </GlassPanel>
+        <GlassPanel className="p-4 text-center">
+          <div className="text-2xl mb-1">🌟</div>
+          <div className="text-2xl font-bold text-yellow-600">{stats.warm}</div>
+          <div className="text-xs text-text-secondary">Warm Leads</div>
+        </GlassPanel>
+        <GlassPanel className="p-4 text-center">
+          <div className="text-2xl mb-1">💎</div>
+          <div className="text-2xl font-bold text-blue-600">{stats.qualified}</div>
+          <div className="text-xs text-text-secondary">Qualified</div>
+        </GlassPanel>
+        <GlassPanel className="p-4 text-center">
+          <div className="text-2xl mb-1">❄️</div>
+          <div className="text-2xl font-bold text-cyan-600">{stats.cool}</div>
+          <div className="text-xs text-text-secondary">Cool Leads</div>
+        </GlassPanel>
+        <GlassPanel className="p-4 text-center">
+          <div className="text-2xl mb-1">🌱</div>
+          <div className="text-2xl font-bold text-green-600">{stats.early}</div>
+          <div className="text-xs text-text-secondary">Early Stage</div>
+        </GlassPanel>
+      </div>
+
+      {/* Leads Grid */}
+      <div className="space-y-4">
+        {isLoading ? (
+          <>
+            {[...Array(5)].map((_, i) => (
+              <GlassPanel key={i} className="p-6 animate-pulse">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-glass-lighter rounded-full"></div>
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-glass-lighter rounded w-1/4"></div>
+                    <div className="h-3 bg-glass-lighter rounded w-1/3"></div>
+                  </div>
+                  <div className="w-16 h-16 bg-glass-lighter rounded-xl"></div>
+                </div>
+              </GlassPanel>
+            ))}
+          </>
+        ) : filteredLeads.length === 0 ? (
+          <GlassPanel className="p-12 text-center">
+            <div className="max-w-md mx-auto">
+              <MessageSquare className="w-16 h-16 mx-auto mb-4 text-text-tertiary" />
+              <h3 className="text-lg font-semibold text-text-primary mb-2">
+                {searchQuery || statusFilter !== 'all' 
+                  ? 'No leads found' 
+                  : 'No leads yet'}
+              </h3>
+              <p className="text-text-secondary">
+                {searchQuery || statusFilter !== 'all' 
+                  ? 'Try adjusting your filters to see more results.' 
+                  : 'They will appear here when people contact you or complete the questionnaire.'}
+              </p>
+            </div>
+          </GlassPanel>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {filteredLeads.map((lead, index) => (
+              <LeadCard
+                key={lead.id}
+                lead={lead}
+                onClick={() => setSelectedLead(lead)}
+                isSelected={selectedLead?.id === lead.id}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Lead Detail Modal */}
       {selectedLead && (
@@ -309,95 +297,155 @@ export default function AdminLeadsPage() {
           <motion.div
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
-            className="max-w-2xl w-full"
+            className="max-w-3xl w-full"
             onClick={(e) => e.stopPropagation()}
           >
             <GlassPanel className="p-6 max-h-[90vh] overflow-y-auto">
-              <h3 className="text-xl font-semibold text-text-primary mb-4">
-                Lead Details
-              </h3>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-text-primary">
+                  Lead Details
+                </h3>
+                <button
+                  onClick={() => setSelectedLead(null)}
+                  className="p-2 rounded-lg hover:bg-glass-light transition-colors"
+                >
+                  <X className="w-5 h-5 text-text-secondary" />
+                </button>
+              </div>
               
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-text-secondary">Name</p>
-                  <p className="text-text-primary font-medium">{selectedLead.name}</p>
-                </div>
-                
-                <div>
-                  <p className="text-sm text-text-secondary">Email</p>
-                  <a href={`mailto:${selectedLead.email}`} className="text-accent-blue hover:underline">
-                    {selectedLead.email}
-                  </a>
-                </div>
-                
-                {selectedLead.phone && (
+              <div className="space-y-6">
+                {/* Contact Info */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-text-secondary">Phone</p>
-                    <a href={`tel:${selectedLead.phone}`} className="text-accent-blue hover:underline">
-                      {selectedLead.phone}
+                    <p className="text-sm text-text-secondary mb-1">Name</p>
+                    <p className="text-text-primary font-medium">{selectedLead.name}</p>
+                  </div>
+                  
+                  <div>
+                    <p className="text-sm text-text-secondary mb-1">Email</p>
+                    <a href={`mailto:${selectedLead.email}`} className="text-accent-blue hover:underline">
+                      {selectedLead.email}
                     </a>
                   </div>
-                )}
+                  
+                  {selectedLead.phone && (
+                    <div>
+                      <p className="text-sm text-text-secondary mb-1">Phone</p>
+                      <a href={`tel:${selectedLead.phone}`} className="text-accent-blue hover:underline">
+                        {selectedLead.phone}
+                      </a>
+                    </div>
+                  )}
+                  
+                  {selectedLead.company && (
+                    <div>
+                      <p className="text-sm text-text-secondary mb-1">Company</p>
+                      <p className="text-text-primary">{selectedLead.company}</p>
+                    </div>
+                  )}
+                </div>
                 
-                {selectedLead.company && (
+                {/* Score and Status */}
+                <div className="flex items-center gap-4 p-4 bg-glass-light rounded-lg">
+                  <div className="text-center">
+                    <div className="text-3xl mb-1">{getTemperatureEmoji(selectedLead.questionnaire?.score || selectedLead.score)}</div>
+                    <div className="text-sm text-text-secondary">Score: {selectedLead.questionnaire?.score || selectedLead.score}</div>
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-sm text-text-secondary block mb-2">Status</label>
+                    <select
+                      value={selectedLead.status}
+                      onChange={(e) => handleStatusUpdate(selectedLead.id!, e.target.value as Lead['status'])}
+                      className="w-full px-3 py-2 bg-white/50 border border-glass-lighter rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-blue/50"
+                    >
+                      <option value="new">New</option>
+                      <option value="contacted">Contacted</option>
+                      <option value="qualified">Qualified</option>
+                      <option value="converted">Converted</option>
+                      <option value="archived">Archived</option>
+                    </select>
+                  </div>
+                </div>
+                
+                {/* Message */}
+                {selectedLead.message && (
                   <div>
-                    <p className="text-sm text-text-secondary">Company</p>
-                    <p className="text-text-primary">{selectedLead.company}</p>
+                    <p className="text-sm text-text-secondary mb-2">Message</p>
+                    <div className="p-4 bg-glass-light rounded-lg">
+                      <p className="text-text-primary whitespace-pre-wrap">{selectedLead.message}</p>
+                    </div>
                   </div>
                 )}
                 
-                <div>
-                  <p className="text-sm text-text-secondary">Message</p>
-                  <p className="text-text-primary whitespace-pre-wrap">{selectedLead.message}</p>
-                </div>
+                {/* Questionnaire Responses */}
+                {selectedLead.questionnaire && selectedLead.questionnaire.responses && (
+                  <div>
+                    <p className="text-sm text-text-secondary mb-2">Questionnaire Responses</p>
+                    <div className="space-y-3">
+                      {selectedLead.questionnaire.responses.map((response, index) => (
+                        <div key={index} className="p-4 bg-glass-light rounded-lg">
+                          <p className="text-xs text-text-tertiary mb-1">Question {index + 1}</p>
+                          <p className="text-sm text-text-secondary mb-2">{response.question}</p>
+                          <p className="text-text-primary font-medium">{response.answer}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 
+                {/* Metadata */}
                 {selectedLead.metadata && (
-                  <>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {selectedLead.metadata.budget && (
-                      <div>
-                        <p className="text-sm text-text-secondary">Budget</p>
-                        <p className="text-text-primary">{selectedLead.metadata.budget}</p>
+                      <div className="p-4 bg-glass-light rounded-lg">
+                        <p className="text-sm text-text-secondary mb-1">Budget</p>
+                        <p className="text-text-primary font-medium">{selectedLead.metadata.budget}</p>
                       </div>
                     )}
                     
                     {selectedLead.metadata.timeline && (
-                      <div>
-                        <p className="text-sm text-text-secondary">Timeline</p>
-                        <p className="text-text-primary">{selectedLead.metadata.timeline}</p>
+                      <div className="p-4 bg-glass-light rounded-lg">
+                        <p className="text-sm text-text-secondary mb-1">Timeline</p>
+                        <p className="text-text-primary font-medium">{selectedLead.metadata.timeline}</p>
                       </div>
                     )}
                     
                     {selectedLead.metadata.projectType && (
-                      <div>
-                        <p className="text-sm text-text-secondary">Project Type</p>
-                        <p className="text-text-primary">{selectedLead.metadata.projectType}</p>
+                      <div className="p-4 bg-glass-light rounded-lg">
+                        <p className="text-sm text-text-secondary mb-1">Project Type</p>
+                        <p className="text-text-primary font-medium">{selectedLead.metadata.projectType}</p>
                       </div>
                     )}
-                  </>
+                  </div>
                 )}
                 
-                <div className="pt-4 flex gap-3">
+                {/* Actions */}
+                <div className="pt-4 flex gap-3 border-t border-glass-lighter">
                   <Button
                     variant="primary"
-                    size="sm"
+                    size="md"
                     onClick={() => window.location.href = `mailto:${selectedLead.email}`}
                   >
                     <Mail className="w-4 h-4" />
                     Send Email
                   </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setSelectedLead(null)}
-                  >
-                    Close
-                  </Button>
+                  {selectedLead.phone && (
+                    <Button
+                      variant="secondary"
+                      size="md"
+                      onClick={() => window.location.href = `tel:${selectedLead.phone}`}
+                    >
+                      <Phone className="w-4 h-4" />
+                      Call
+                    </Button>
+                  )}
                 </div>
               </div>
             </GlassPanel>
           </motion.div>
         </motion.div>
       )}
+      </div>
     </div>
   );
 }

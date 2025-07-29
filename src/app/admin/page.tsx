@@ -13,6 +13,7 @@ import { GlassPanel } from '@/components/ui/glass/glass-panel';
 import { getLeadStats } from '@/lib/firebase/leads';
 import { collection, getDocs, query, where, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
+import { subscribeToDashboardStats } from '@/lib/firebase/admin-leads';
 import { DashboardStatSkeleton } from '@/components/ui/skeleton';
 import { toast } from '@/components/ui/toast';
 import { useAuthStore } from '@/lib/store/authStore';
@@ -43,10 +44,32 @@ export default function AdminDashboardPage() {
     leadsByStatus: {},
     recentActivity: []
   });
+  const [realtimeStats, setRealtimeStats] = useState({
+    hotLeads: 0,
+    warmLeads: 0,
+    newToday: 0,
+    completedQuestionnaires: 0
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     loadDashboardStats();
+    
+    // Set up real-time listener for lead stats
+    const unsubscribe = subscribeToDashboardStats((liveStats) => {
+      setRealtimeStats({
+        hotLeads: liveStats.hotLeads,
+        warmLeads: liveStats.warmLeads,
+        newToday: liveStats.newToday,
+        completedQuestionnaires: liveStats.completedQuestionnaires
+      });
+      setStats(prev => ({
+        ...prev,
+        totalLeads: liveStats.totalLeads
+      }));
+    });
+    
+    return () => unsubscribe();
   }, []);
 
   const loadDashboardStats = async () => {
@@ -151,6 +174,30 @@ export default function AdminDashboardPage() {
             </Button>
           </div>
         </div>
+      </div>
+
+      {/* Real-time Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <GlassPanel className="p-4 text-center">
+          <div className="text-2xl mb-1">🔥</div>
+          <div className="text-2xl font-bold text-red-600">{realtimeStats.hotLeads}</div>
+          <div className="text-xs text-text-secondary">Hot Leads</div>
+        </GlassPanel>
+        <GlassPanel className="p-4 text-center">
+          <div className="text-2xl mb-1">🌟</div>
+          <div className="text-2xl font-bold text-yellow-600">{realtimeStats.warmLeads}</div>
+          <div className="text-xs text-text-secondary">Warm Leads</div>
+        </GlassPanel>
+        <GlassPanel className="p-4 text-center">
+          <div className="text-2xl mb-1">🆕</div>
+          <div className="text-2xl font-bold text-green-600">{realtimeStats.newToday}</div>
+          <div className="text-xs text-text-secondary">New Today</div>
+        </GlassPanel>
+        <GlassPanel className="p-4 text-center">
+          <div className="text-2xl mb-1">✅</div>
+          <div className="text-2xl font-bold text-purple-600">{realtimeStats.completedQuestionnaires}</div>
+          <div className="text-xs text-text-secondary">Completed Forms</div>
+        </GlassPanel>
       </div>
 
       {/* Stats Grid */}
