@@ -30,7 +30,6 @@ import { db } from '@/lib/firebase/config';
 import { PortalUser, getPortalFeatures } from '@/types/portal';
 import { createLead } from '@/lib/firebase/db';
 import { trackAnalyticsEvent } from '@/lib/firebase/db';
-import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
 type ViewState = 'welcome' | 'signin' | 'signup' | 'profile' | 'redirecting';
