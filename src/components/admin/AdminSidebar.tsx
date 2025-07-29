@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutDashboard, 
   Users, 
@@ -15,7 +15,9 @@ import {
   X,
   BarChart3,
   FileText,
-  Image
+  Image,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/store/authStore';
 import { GlassPanel } from '@/components/ui/glass/glass-panel';
@@ -64,7 +66,13 @@ const sidebarItems = [
   },
 ];
 
-export function AdminSidebar() {
+interface AdminSidebarProps {
+  collapsed?: boolean;
+  onToggle?: () => void;
+  className?: string;
+}
+
+export function AdminSidebar({ collapsed = false, onToggle, className }: AdminSidebarProps) {
   const pathname = usePathname();
   const { userProfile, signOut } = useAuthStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -88,78 +96,156 @@ export function AdminSidebar() {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed top-0 left-0 h-full w-64 transform transition-transform duration-300 z-40',
+          'fixed top-0 left-0 h-full transform transition-all duration-300 z-40',
+          collapsed ? 'w-20' : 'w-64',
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full',
-          'lg:translate-x-0'
+          'lg:translate-x-0',
+          className
         )}
       >
-        <GlassPanel className="h-full flex flex-col">
-          {/* Header */}
-          <div className="p-6 border-b border-glass-lighter">
-            <Link href="/admin" className="block">
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="flex items-center gap-3"
+        <div className="h-full p-4">
+          <GlassPanel level="primary" className="h-full flex flex-col relative overflow-hidden">
+            {/* Collapse Toggle - Desktop Only */}
+            {onToggle && (
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={onToggle}
+                className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-gradient-to-br from-accent-blue to-accent-purple items-center justify-center shadow-lg z-10"
               >
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-blue to-accent-purple flex items-center justify-center">
-                  <span className="text-white font-bold">F</span>
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-text-primary">FAXAS</h2>
-                  <p className="text-xs text-text-secondary">Admin Panel</p>
-                </div>
-              </motion.div>
-            </Link>
-            <div className="mt-6 p-3 rounded-lg bg-glass-light">
-              <p className="text-xs text-text-secondary">Logged in as</p>
-              <p className="text-sm text-text-primary font-medium truncate">
-                {userProfile?.email || 'Admin'}
-              </p>
-            </div>
-          </div>
-
-          {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-            {sidebarItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href || 
-                (item.href !== '/admin' && pathname.startsWith(item.href));
-              
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
+                {collapsed ? (
+                  <ChevronRight className="w-4 h-4 text-white" />
+                ) : (
+                  <ChevronLeft className="w-4 h-4 text-white" />
+                )}
+              </motion.button>
+            )}
+            
+            {/* Header */}
+            <div className={cn(
+              "p-6 border-b border-glass-lighter transition-all duration-300",
+              collapsed && "p-4"
+            )}>
+              <Link href="/admin" className="block">
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  className="flex items-center gap-3"
                 >
-                  <motion.div
-                    whileHover={{ x: 4 }}
-                    whileTap={{ scale: 0.98 }}
-                    className={cn(
-                      'flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors',
-                      isActive
-                        ? 'bg-glass-light text-accent-blue'
-                        : 'text-text-secondary hover:bg-glass-light hover:text-text-primary'
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-blue to-accent-purple flex items-center justify-center flex-shrink-0">
+                    <span className="text-white font-bold">F</span>
+                  </div>
+                  <AnimatePresence>
+                    {!collapsed && (
+                      <motion.div
+                        initial={{ opacity: 0, width: 0 }}
+                        animate={{ opacity: 1, width: 'auto' }}
+                        exit={{ opacity: 0, width: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <h2 className="text-xl font-bold text-text-primary">FAXAS</h2>
+                        <p className="text-xs text-text-secondary">Admin Panel</p>
+                      </motion.div>
                     )}
+                  </AnimatePresence>
+                </motion.div>
+              </Link>
+              <AnimatePresence>
+                {!collapsed && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mt-6 p-3 rounded-lg bg-glass-light overflow-hidden"
                   >
-                    <Icon className="w-5 h-5" />
-                    <span className="font-medium">{item.label}</span>
+                    <p className="text-xs text-text-secondary">Logged in as</p>
+                    <p className="text-sm text-text-primary font-medium truncate">
+                      {userProfile?.email || 'Admin'}
+                    </p>
                   </motion.div>
-                </Link>
-              );
-            })}
-          </nav>
+                )}
+              </AnimatePresence>
+            </div>
 
-          {/* Footer */}
-          <div className="p-4 border-t border-glass-lighter">
-            <button
-              onClick={signOut}
-              className="flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:bg-glass-light hover:text-text-primary transition-colors w-full"
-            >
-              <LogOut className="w-5 h-5" />
-              <span className="font-medium">Sign Out</span>
-            </button>
-          </div>
-        </GlassPanel>
+            {/* Navigation */}
+            <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+              {sidebarItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = pathname === item.href || 
+                  (item.href !== '/admin' && pathname.startsWith(item.href));
+                
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    title={collapsed ? item.label : undefined}
+                  >
+                    <motion.div
+                      whileHover={{ x: collapsed ? 0 : 4 }}
+                      whileTap={{ scale: 0.98 }}
+                      className={cn(
+                        'flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200',
+                        isActive
+                          ? 'bg-gradient-to-br from-accent-blue/20 to-accent-purple/20 text-accent-blue'
+                          : 'text-text-secondary hover:bg-white/10 hover:text-text-primary',
+                        collapsed && 'justify-center px-3'
+                      )}
+                    >
+                      <Icon className={cn(
+                        "w-5 h-5 flex-shrink-0",
+                        isActive && "text-accent-blue"
+                      )} />
+                      <AnimatePresence>
+                        {!collapsed && (
+                          <motion.span
+                            initial={{ opacity: 0, width: 0 }}
+                            animate={{ opacity: 1, width: 'auto' }}
+                            exit={{ opacity: 0, width: 0 }}
+                            className="font-medium overflow-hidden whitespace-nowrap"
+                          >
+                            {item.label}
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                      {isActive && !collapsed && (
+                        <motion.div
+                          layoutId="activeIndicator"
+                          className="absolute right-0 w-1 h-8 bg-gradient-to-b from-accent-blue to-accent-purple rounded-l-full"
+                        />
+                      )}
+                    </motion.div>
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-glass-lighter">
+              <button
+                onClick={signOut}
+                className={cn(
+                  "flex items-center space-x-3 px-4 py-3 rounded-lg text-text-secondary hover:bg-white/10 hover:text-text-primary transition-colors w-full",
+                  collapsed && "justify-center px-3"
+                )}
+                title={collapsed ? "Sign Out" : undefined}
+              >
+                <LogOut className="w-5 h-5 flex-shrink-0" />
+                <AnimatePresence>
+                  {!collapsed && (
+                    <motion.span
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: 'auto' }}
+                      exit={{ opacity: 0, width: 0 }}
+                      className="font-medium overflow-hidden whitespace-nowrap"
+                    >
+                      Sign Out
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </button>
+            </div>
+          </GlassPanel>
+        </div>
       </aside>
 
       {/* Mobile Overlay */}

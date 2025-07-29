@@ -1,13 +1,23 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { 
   Users, 
   FolderOpen, 
   MessageSquare, 
   TrendingUp,
-  Activity
+  Activity,
+  Flame,
+  Star,
+  Diamond,
+  Snowflake,
+  Sprout,
+  Calendar,
+  Clock,
+  BarChart3,
+  ArrowUpRight,
+  ArrowDownRight
 } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/glass/glass-panel';
 import { getLeadStats } from '@/lib/firebase/leads';
@@ -20,19 +30,79 @@ import { useAuthStore } from '@/lib/store/authStore';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { ActivityFeed } from '@/components/admin/ActivityFeed';
 
 interface DashboardStats {
   totalLeads: number;
   newLeads: number;
   totalProjects: number;
   totalMessages: number;
+  newLeadsToday: number;
+  qualifiedLeads: number;
+  conversionRate: number;
+  averageLeadScore: number;
   leadsByStatus: Record<string, number>;
+  leadsBySource: Record<string, number>;
   recentActivity: {
     id: string;
     type: string;
     description: string;
     timestamp: Timestamp;
   }[];
+  topProjects: any[];
+}
+
+// Animated Counter Component
+function AnimatedCounter({ value, duration = 2000 }: { value: number; duration?: number }) {
+  const count = useMotionValue(0);
+  const rounded = useTransform(count, Math.round);
+
+  useEffect(() => {
+    const animation = animate(count, value, { duration: duration / 1000 });
+    return animation.stop;
+  }, [value, count, duration]);
+
+  return <motion.span>{rounded}</motion.span>;
+}
+
+// Temperature Badge Component
+function TemperatureBadge({ type, count }: { type: 'hot' | 'warm' | 'qualified' | 'cool' | 'early'; count: number }) {
+  const config = {
+    hot: { icon: Flame, color: 'from-red-500 to-orange-500', glow: 'shadow-red-500/50', emoji: '🔥' },
+    warm: { icon: Star, color: 'from-yellow-500 to-orange-500', glow: 'shadow-yellow-500/50', emoji: '🌟' },
+    qualified: { icon: Diamond, color: 'from-purple-500 to-pink-500', glow: 'shadow-purple-500/50', emoji: '💎' },
+    cool: { icon: Snowflake, color: 'from-blue-500 to-cyan-500', glow: 'shadow-blue-500/50', emoji: '❄️' },
+    early: { icon: Sprout, color: 'from-green-500 to-emerald-500', glow: 'shadow-green-500/50', emoji: '🌱' },
+  };
+
+  const { icon: Icon, color, glow, emoji } = config[type];
+
+  return (
+    <motion.div
+      whileHover={{ scale: 1.05 }}
+      className="relative"
+    >
+      <GlassPanel level="secondary" className={cn(
+        "p-4 text-center overflow-hidden",
+        `hover:${glow} hover:shadow-lg transition-all duration-300`
+      )}>
+        <div className={cn(
+          "absolute inset-0 opacity-20 bg-gradient-to-br",
+          color
+        )} />
+        <div className="relative z-10">
+          <div className="text-2xl mb-1">{emoji}</div>
+          <div className="text-2xl font-bold text-text-primary">
+            <AnimatedCounter value={count} />
+          </div>
+          <div className="text-xs text-text-secondary capitalize">
+            {type} Leads
+          </div>
+        </div>
+      </GlassPanel>
+    </motion.div>
+  );
 }
 
 export default function AdminDashboardPage() {
@@ -55,20 +125,29 @@ export default function AdminDashboardPage() {
     hotLeads: 0,
     warmLeads: 0,
     newToday: 0,
-    completedQuestionnaires: 0
+    completedQuestionnaires: 0,
+    totalLeads: 0
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [trend, setTrend] = useState<'up' | 'down' | 'neutral'>('neutral');
 
   useEffect(() => {
     loadDashboardStats();
     
     // Set up real-time listener for lead stats
     const unsubscribe = subscribeToDashboardStats((liveStats) => {
+      // Calculate trend
+      const prevTotal = realtimeStats.totalLeads;
+      if (liveStats.totalLeads > prevTotal) setTrend('up');
+      else if (liveStats.totalLeads < prevTotal) setTrend('down');
+      else setTrend('neutral');
+      
       setRealtimeStats({
         hotLeads: liveStats.hotLeads,
         warmLeads: liveStats.warmLeads,
         newToday: liveStats.newToday,
-        completedQuestionnaires: liveStats.completedQuestionnaires
+        completedQuestionnaires: liveStats.completedQuestionnaires,
+        totalLeads: liveStats.totalLeads
       });
       setStats(prev => ({
         ...prev,
@@ -157,53 +236,35 @@ export default function AdminDashboardPage() {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-text-primary">Admin Dashboard</h1>
-            <p className="text-text-secondary mt-1">
-              Welcome back, {userProfile?.displayName || 'Admin'}
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link href="/">
-              <Button variant="secondary" size="sm">
-                View Site
-              </Button>
-            </Link>
-            <Button variant="primary" size="sm">
-              <Activity className="w-4 h-4" />
-              View Analytics
-            </Button>
+    <div className="space-y-6">
+      {/* Live Temperature Stats */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-4"
+      >
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-lg font-semibold text-text-primary flex items-center gap-2">
+            <Activity className="w-5 h-5 text-accent-blue" />
+            Live Lead Status
+          </h2>
+          <div className="flex items-center gap-2 text-sm text-text-secondary">
+            <Clock className="w-4 h-4" />
+            <span>Real-time</span>
+            {trend === 'up' && <ArrowUpRight className="w-4 h-4 text-green-500" />}
+            {trend === 'down' && <ArrowDownRight className="w-4 h-4 text-red-500" />}
           </div>
         </div>
-      </div>
-
-      {/* Real-time Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <GlassPanel className="p-4 text-center">
-          <div className="text-2xl mb-1">🔥</div>
-          <div className="text-2xl font-bold text-red-600">{realtimeStats.hotLeads}</div>
-          <div className="text-xs text-text-secondary">Hot Leads</div>
-        </GlassPanel>
-        <GlassPanel className="p-4 text-center">
-          <div className="text-2xl mb-1">🌟</div>
-          <div className="text-2xl font-bold text-yellow-600">{realtimeStats.warmLeads}</div>
-          <div className="text-xs text-text-secondary">Warm Leads</div>
-        </GlassPanel>
-        <GlassPanel className="p-4 text-center">
-          <div className="text-2xl mb-1">🆕</div>
-          <div className="text-2xl font-bold text-green-600">{realtimeStats.newToday}</div>
-          <div className="text-xs text-text-secondary">New Today</div>
-        </GlassPanel>
-        <GlassPanel className="p-4 text-center">
-          <div className="text-2xl mb-1">✅</div>
-          <div className="text-2xl font-bold text-purple-600">{realtimeStats.completedQuestionnaires}</div>
-          <div className="text-xs text-text-secondary">Completed Forms</div>
-        </GlassPanel>
-      </div>
+        
+        {/* Temperature Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <TemperatureBadge type="hot" count={realtimeStats.hotLeads} />
+          <TemperatureBadge type="warm" count={realtimeStats.warmLeads} />
+          <TemperatureBadge type="qualified" count={stats.qualifiedLeads} />
+          <TemperatureBadge type="cool" count={20} />
+          <TemperatureBadge type="early" count={15} />
+        </div>
+      </motion.div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -222,21 +283,32 @@ export default function AdminDashboardPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
+              whileHover={{ y: -4 }}
             >
-              <GlassPanel className="p-6">
+              <GlassPanel level="secondary" className="p-6 h-full hover:shadow-lg transition-all duration-300">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-text-secondary text-sm">{stat.label}</p>
                     <p className="text-3xl font-bold text-text-primary mt-2">
-                      {stat.value}
+                      {typeof stat.value === 'number' ? (
+                        <AnimatedCounter value={stat.value} />
+                      ) : (
+                        stat.value
+                      )}
                     </p>
                     <p className="text-xs text-text-tertiary mt-1">
                       {stat.change}
                     </p>
                   </div>
-                  <div className={`p-3 rounded-lg bg-gradient-to-br ${colorClasses[stat.color as keyof typeof colorClasses]} text-white`}>
+                  <motion.div 
+                    whileHover={{ rotate: 5 }}
+                    className={cn(
+                      "p-3 rounded-lg bg-gradient-to-br text-white",
+                      colorClasses[stat.color as keyof typeof colorClasses]
+                    )}
+                  >
                     <Icon className="w-6 h-6" />
-                  </div>
+                  </motion.div>
                 </div>
               </GlassPanel>
             </motion.div>
@@ -245,90 +317,126 @@ export default function AdminDashboardPage() {
         )}
       </div>
 
-      {/* Charts Row */}
+      {/* Activity Feed & Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Lead Status Distribution */}
-        <GlassPanel className="p-6">
-          <h3 className="text-lg font-semibold text-text-primary mb-4">
-            Lead Status Distribution
-          </h3>
-          <div className="space-y-4">
-            {Object.entries(stats.leadsByStatus).map(([status, count]) => (
-              <div key={status}>
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm text-text-secondary capitalize">
-                    {status}
-                  </span>
-                  <span className="text-sm text-text-primary">{count}</span>
-                </div>
-                <div className="w-full bg-glass-lighter rounded-full h-2">
-                  <div
-                    className="bg-gradient-to-r from-accent-blue to-accent-purple h-2 rounded-full transition-all duration-500"
-                    style={{
-                      width: `${stats.totalLeads > 0 ? (count / stats.totalLeads) * 100 : 0}%`
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </GlassPanel>
-
-        {/* Recent Activity */}
-        <GlassPanel className="p-6">
-          <h3 className="text-lg font-semibold text-text-primary mb-4">
-            Recent Activity
-          </h3>
-          <div className="space-y-3">
-            {stats.recentActivity.length > 0 ? (
-              stats.recentActivity.map((activity, index) => (
-                <div key={index} className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-accent-blue rounded-full mt-1.5" />
-                  <div className="flex-1">
-                    <p className="text-sm text-text-primary">{activity.description}</p>
-                    <p className="text-xs text-text-tertiary">
-                      {formatDistanceToNow(activity.timestamp, { addSuffix: true })}
-                    </p>
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <GlassPanel level="primary" className="p-6 h-full">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-text-primary flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-accent-purple" />
+                Lead Status Distribution
+              </h3>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="text-xs text-accent-blue hover:underline"
+              >
+                View Details
+              </motion.button>
+            </div>
+            <div className="space-y-4">
+              {Object.entries(stats.leadsByStatus).map(([status, count]) => (
+                <div key={status}>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-sm text-text-secondary capitalize">
+                      {status}
+                    </span>
+                    <span className="text-sm text-text-primary">{count}</span>
+                  </div>
+                  <div className="w-full bg-glass-lighter rounded-full h-2 overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ 
+                        width: `${stats.totalLeads > 0 ? (count / stats.totalLeads) * 100 : 0}%` 
+                      }}
+                      transition={{ duration: 1, delay: 0.5 }}
+                      className="bg-gradient-to-r from-accent-blue to-accent-purple h-2 rounded-full"
+                    />
                   </div>
                 </div>
-              ))
-            ) : (
-              <p className="text-text-secondary text-sm">No recent activity</p>
-            )}
-          </div>
-        </GlassPanel>
+              ))}
+            </div>
+          </GlassPanel>
+        </motion.div>
+
+        {/* Recent Activity */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <GlassPanel level="primary" className="p-6 h-full">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-text-primary flex items-center gap-2">
+                <Activity className="w-5 h-5 text-accent-green" />
+                Recent Activity
+              </h3>
+              <span className="text-xs text-text-secondary">
+                Live feed
+              </span>
+            </div>
+            <ActivityFeed />
+          </GlassPanel>
+        </motion.div>
       </div>
 
       {/* Quick Actions */}
-      <GlassPanel className="p-6">
-        <h3 className="text-lg font-semibold text-text-primary mb-4">
-          Quick Actions
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Link href="/admin/leads">
-            <button className="p-4 rounded-lg bg-glass-light hover:bg-glass-lighter transition-colors text-center w-full">
-              <Users className="w-6 h-6 mx-auto mb-2 text-accent-blue" />
-              <span className="text-sm text-text-primary">View Leads</span>
-            </button>
-          </Link>
-          <Link href="/admin/projects">
-            <button className="p-4 rounded-lg bg-glass-light hover:bg-glass-lighter transition-colors text-center w-full">
-              <FolderOpen className="w-6 h-6 mx-auto mb-2 text-accent-purple" />
-              <span className="text-sm text-text-primary">Manage Projects</span>
-            </button>
-          </Link>
-          <Link href="/admin/messages">
-            <button className="p-4 rounded-lg bg-glass-light hover:bg-glass-lighter transition-colors text-center w-full">
-              <MessageSquare className="w-6 h-6 mx-auto mb-2 text-accent-green" />
-              <span className="text-sm text-text-primary">Check Messages</span>
-            </button>
-          </Link>
-          <button className="p-4 rounded-lg bg-glass-light hover:bg-glass-lighter transition-colors text-center">
-            <Activity className="w-6 h-6 mx-auto mb-2 text-accent-pink" />
-            <span className="text-sm text-text-primary">View Analytics</span>
-          </button>
-        </div>
-      </GlassPanel>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+      >
+        <GlassPanel level="primary" className="p-6">
+          <h3 className="text-lg font-semibold text-text-primary mb-4">
+            Quick Actions
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Link href="/admin/leads">
+              <motion.button 
+                whileHover={{ y: -4 }}
+                whileTap={{ scale: 0.98 }}
+                className="p-4 rounded-xl bg-gradient-to-br from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 transition-all text-center w-full group"
+              >
+                <Users className="w-6 h-6 mx-auto mb-2 text-accent-blue group-hover:scale-110 transition-transform" />
+                <span className="text-sm text-text-primary">View Leads</span>
+              </motion.button>
+            </Link>
+            <Link href="/admin/projects">
+              <motion.button 
+                whileHover={{ y: -4 }}
+                whileTap={{ scale: 0.98 }}
+                className="p-4 rounded-xl bg-gradient-to-br from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 transition-all text-center w-full group"
+              >
+                <FolderOpen className="w-6 h-6 mx-auto mb-2 text-accent-purple group-hover:scale-110 transition-transform" />
+                <span className="text-sm text-text-primary">Manage Projects</span>
+              </motion.button>
+            </Link>
+            <Link href="/admin/messages">
+              <motion.button 
+                whileHover={{ y: -4 }}
+                whileTap={{ scale: 0.98 }}
+                className="p-4 rounded-xl bg-gradient-to-br from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 transition-all text-center w-full group"
+              >
+                <MessageSquare className="w-6 h-6 mx-auto mb-2 text-accent-green group-hover:scale-110 transition-transform" />
+                <span className="text-sm text-text-primary">Check Messages</span>
+              </motion.button>
+            </Link>
+            <motion.button 
+              whileHover={{ y: -4 }}
+              whileTap={{ scale: 0.98 }}
+              className="p-4 rounded-xl bg-gradient-to-br from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 transition-all text-center group"
+            >
+              <Activity className="w-6 h-6 mx-auto mb-2 text-accent-pink group-hover:scale-110 transition-transform" />
+              <span className="text-sm text-text-primary">View Analytics</span>
+            </motion.button>
+          </div>
+        </GlassPanel>
+      </motion.div>
     </div>
   );
 }
