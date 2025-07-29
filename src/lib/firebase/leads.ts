@@ -169,8 +169,7 @@ export const getLeads = async (
 // Update lead status
 export const updateLeadStatus = async (
   leadId: string, 
-  status: LeadStatus,
-  userId: string
+  status: LeadStatus
 ): Promise<boolean> => {
   try {
     const leadRef = doc(db, 'leads', leadId);
@@ -193,8 +192,7 @@ export const updateLeadStatus = async (
     // Track analytics
     await trackAnalyticsEvent('lead_status_updated', {
       leadId,
-      newStatus: status,
-      updatedBy: userId
+      newStatus: status
     });
     
     return true;
@@ -235,6 +233,62 @@ export const addLeadNote = async (
     return true;
   } catch (error) {
     console.error('Error adding note:', error);
+    return false;
+  }
+};
+
+// Add tags to lead
+export const addLeadTags = async (
+  leadId: string,
+  tags: string[]
+): Promise<boolean> => {
+  try {
+    const leadRef = doc(db, 'leads', leadId);
+    const leadDoc = await getDoc(leadRef);
+    
+    if (!leadDoc.exists()) {
+      throw new Error('Lead not found');
+    }
+    
+    const currentTags = leadDoc.data().tags || [];
+    const uniqueTags = Array.from(new Set([...currentTags, ...tags]));
+    
+    await updateDoc(leadRef, {
+      tags: uniqueTags,
+      updatedAt: serverTimestamp()
+    });
+    
+    return true;
+  } catch (error) {
+    console.error('Error adding tags:', error);
+    return false;
+  }
+};
+
+// Remove tag from lead
+export const removeLeadTag = async (
+  leadId: string,
+  tag: string
+): Promise<boolean> => {
+  try {
+    const leadRef = doc(db, 'leads', leadId);
+    const leadDoc = await getDoc(leadRef);
+    
+    if (!leadDoc.exists()) {
+      throw new Error('Lead not found');
+    }
+    
+    const currentTags = leadDoc.data().tags || [];
+    const updatedTags = currentTags.filter((t: string) => t !== tag);
+    
+    await updateDoc(leadRef, {
+      tags: updatedTags,
+      updatedAt: serverTimestamp()
+    });
+    
+    return true;
+  } catch (error) {
+    console.error('Error removing tag:', error);
     return false;
   }
 };

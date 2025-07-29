@@ -1,7 +1,7 @@
 import { Resend } from 'resend';
 
-// Initialize Resend with API key
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend with API key (only if configured)
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 // Email configuration
 export const EMAIL_CONFIG = {
@@ -25,6 +25,11 @@ export async function sendEmail({
   replyTo?: string;
 }) {
   try {
+    if (!resend) {
+      console.warn('Email not sent - Resend API key not configured');
+      return { success: true, data: { id: 'mock-id' } }; // Mock success for development
+    }
+
     const { data, error } = await resend.emails.send({
       from: EMAIL_CONFIG.from,
       to: Array.isArray(to) ? to : [to],

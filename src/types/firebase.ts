@@ -100,6 +100,9 @@ export interface Lead {
     createdAt: Date;
   }>;
   
+  // Tags for categorization
+  tags?: string[];
+  
   // Attribution
   attribution?: {
     utm_source?: string;

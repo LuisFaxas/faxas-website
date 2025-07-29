@@ -11,7 +11,8 @@ import {
   MessageSquare,
   ChevronRight,
   Clock,
-  Star
+  Star,
+  Tag
 } from 'lucide-react';
 import { Lead } from '@/lib/firebase/leads';
 import { PortalUser, QuestionnaireSession, getTemperatureEmoji } from '@/types/portal';
@@ -153,6 +154,26 @@ export function LeadCard({ lead, onClick, isSelected }: LeadCardProps) {
               <p className="text-sm text-text-secondary line-clamp-2">
                 {lead.message}
               </p>
+            )}
+
+            {/* Tags */}
+            {lead.tags && lead.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {lead.tags.slice(0, 3).map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-accent-blue/10 to-accent-purple/10 rounded-full text-xs text-text-primary"
+                  >
+                    <Tag className="w-3 h-3" />
+                    {tag}
+                  </span>
+                ))}
+                {lead.tags.length > 3 && (
+                  <span className="px-2 py-1 bg-glass-light rounded-full text-xs text-text-secondary">
+                    +{lead.tags.length - 3} more
+                  </span>
+                )}
+              </div>
             )}
 
             {/* Bottom info */}

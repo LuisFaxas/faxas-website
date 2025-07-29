@@ -7,7 +7,6 @@ import {
   Filter,
   SortDesc,
   RefreshCw,
-  X,
   Phone,
   Mail,
   MessageSquare,
@@ -22,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { updateLeadStatus, type Lead } from '@/lib/firebase/leads';
 import { subscribeToLeads, EnhancedLead } from '@/lib/firebase/admin-leads';
 import { LeadCard } from '@/components/admin/LeadCard';
+import { LeadDetailModal } from '@/components/admin/LeadDetailModal';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { toast } from '@/components/ui/toast';
@@ -97,25 +97,12 @@ export default function AdminLeadsPage() {
     setFilteredLeads(filtered);
   };
 
-  const handleStatusUpdate = async (leadId: string, newStatus: Lead['status']) => {
-    try {
-      const success = await updateLeadStatus(leadId, newStatus);
-      if (success) {
-        // Update local state
-        setLeads(leads.map(lead => 
-          lead.id === leadId ? { ...lead, status: newStatus } : lead
-        ));
-        if (selectedLead?.id === leadId) {
-          setSelectedLead({ ...selectedLead, status: newStatus });
-        }
-        toast.success('Status updated', `Lead status changed to ${newStatus}`);
-      } else {
-        toast.error('Update failed', 'Could not update lead status');
-      }
-    } catch (error) {
-      console.error('Error updating lead status:', error);
-      toast.error('Update failed', 'An error occurred while updating the lead');
-    }
+  const handleLeadUpdate = (updatedLead: EnhancedLead) => {
+    // Update local state
+    setLeads(leads.map(lead => 
+      lead.id === updatedLead.id ? updatedLead : lead
+    ));
+    setSelectedLead(updatedLead);
   };
 
   // Get temperature-based stats
@@ -195,7 +182,7 @@ export default function AdminLeadsPage() {
             <option value="contacted">Contacted</option>
             <option value="qualified">Qualified</option>
             <option value="converted">Converted</option>
-            <option value="archived">Archived</option>
+            <option value="lost">Lost</option>
           </select>
 
           {/* Sort */}
@@ -287,164 +274,15 @@ export default function AdminLeadsPage() {
       </div>
 
       {/* Lead Detail Modal */}
-      {selectedLead && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={() => setSelectedLead(null)}
-        >
-          <motion.div
-            initial={{ scale: 0.9 }}
-            animate={{ scale: 1 }}
-            className="max-w-3xl w-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <GlassPanel className="p-6 max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-text-primary">
-                  Lead Details
-                </h3>
-                <button
-                  onClick={() => setSelectedLead(null)}
-                  className="p-2 rounded-lg hover:bg-glass-light transition-colors"
-                >
-                  <X className="w-5 h-5 text-text-secondary" />
-                </button>
-              </div>
-              
-              <div className="space-y-6">
-                {/* Contact Info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-text-secondary mb-1">Name</p>
-                    <p className="text-text-primary font-medium">{selectedLead.name}</p>
-                  </div>
-                  
-                  <div>
-                    <p className="text-sm text-text-secondary mb-1">Email</p>
-                    <a href={`mailto:${selectedLead.email}`} className="text-accent-blue hover:underline">
-                      {selectedLead.email}
-                    </a>
-                  </div>
-                  
-                  {selectedLead.phone && (
-                    <div>
-                      <p className="text-sm text-text-secondary mb-1">Phone</p>
-                      <a href={`tel:${selectedLead.phone}`} className="text-accent-blue hover:underline">
-                        {selectedLead.phone}
-                      </a>
-                    </div>
-                  )}
-                  
-                  {selectedLead.company && (
-                    <div>
-                      <p className="text-sm text-text-secondary mb-1">Company</p>
-                      <p className="text-text-primary">{selectedLead.company}</p>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Score and Status */}
-                <div className="flex items-center gap-4 p-4 bg-glass-light rounded-lg">
-                  <div className="text-center">
-                    <div className="text-3xl mb-1">{getTemperatureEmoji(selectedLead.questionnaire?.score || selectedLead.score)}</div>
-                    <div className="text-sm text-text-secondary">Score: {selectedLead.questionnaire?.score || selectedLead.score}</div>
-                  </div>
-                  <div className="flex-1">
-                    <label className="text-sm text-text-secondary block mb-2">Status</label>
-                    <select
-                      value={selectedLead.status}
-                      onChange={(e) => handleStatusUpdate(selectedLead.id!, e.target.value as Lead['status'])}
-                      className="w-full px-3 py-2 bg-white/50 border border-glass-lighter rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-blue/50"
-                    >
-                      <option value="new">New</option>
-                      <option value="contacted">Contacted</option>
-                      <option value="qualified">Qualified</option>
-                      <option value="converted">Converted</option>
-                      <option value="archived">Archived</option>
-                    </select>
-                  </div>
-                </div>
-                
-                {/* Message */}
-                {selectedLead.message && (
-                  <div>
-                    <p className="text-sm text-text-secondary mb-2">Message</p>
-                    <div className="p-4 bg-glass-light rounded-lg">
-                      <p className="text-text-primary whitespace-pre-wrap">{selectedLead.message}</p>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Questionnaire Responses */}
-                {selectedLead.questionnaire && selectedLead.questionnaire.responses && (
-                  <div>
-                    <p className="text-sm text-text-secondary mb-2">Questionnaire Responses</p>
-                    <div className="space-y-3">
-                      {selectedLead.questionnaire.responses.map((response, index) => (
-                        <div key={index} className="p-4 bg-glass-light rounded-lg">
-                          <p className="text-xs text-text-tertiary mb-1">Question {index + 1}</p>
-                          <p className="text-sm text-text-secondary mb-2">{response.question}</p>
-                          <p className="text-text-primary font-medium">{response.answer}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {/* Metadata */}
-                {selectedLead.metadata && (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {selectedLead.metadata.budget && (
-                      <div className="p-4 bg-glass-light rounded-lg">
-                        <p className="text-sm text-text-secondary mb-1">Budget</p>
-                        <p className="text-text-primary font-medium">{selectedLead.metadata.budget}</p>
-                      </div>
-                    )}
-                    
-                    {selectedLead.metadata.timeline && (
-                      <div className="p-4 bg-glass-light rounded-lg">
-                        <p className="text-sm text-text-secondary mb-1">Timeline</p>
-                        <p className="text-text-primary font-medium">{selectedLead.metadata.timeline}</p>
-                      </div>
-                    )}
-                    
-                    {selectedLead.metadata.projectType && (
-                      <div className="p-4 bg-glass-light rounded-lg">
-                        <p className="text-sm text-text-secondary mb-1">Project Type</p>
-                        <p className="text-text-primary font-medium">{selectedLead.metadata.projectType}</p>
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                {/* Actions */}
-                <div className="pt-4 flex gap-3 border-t border-glass-lighter">
-                  <Button
-                    variant="primary"
-                    size="md"
-                    onClick={() => window.location.href = `mailto:${selectedLead.email}`}
-                  >
-                    <Mail className="w-4 h-4" />
-                    Send Email
-                  </Button>
-                  {selectedLead.phone && (
-                    <Button
-                      variant="secondary"
-                      size="md"
-                      onClick={() => window.location.href = `tel:${selectedLead.phone}`}
-                    >
-                      <Phone className="w-4 h-4" />
-                      Call
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </GlassPanel>
-          </motion.div>
-        </motion.div>
-      )}
+      <AnimatePresence>
+        {selectedLead && (
+          <LeadDetailModal
+            lead={selectedLead}
+            onClose={() => setSelectedLead(null)}
+            onUpdate={handleLeadUpdate}
+          />
+        )}
+      </AnimatePresence>
       </div>
     </div>
   );
