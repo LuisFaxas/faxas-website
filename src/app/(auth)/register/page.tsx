@@ -4,12 +4,16 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Mail, Lock, User, UserPlus } from 'lucide-react';
+import { 
+  Mail, 
+  Lock, 
+  User,
+  ArrowRight
+} from 'lucide-react';
 import { FcGoogle } from 'react-icons/fc';
 import { useAuthStore } from '@/lib/store/authStore';
 import { AnimatedBackground } from '@/components/ui/animated-background';
-import { GlassPanel } from '@/components/ui/glass/glass-panel';
-import { Button } from '@/components/ui/button';
+import { GlassPanel } from '@/components/ui/glass-panel';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -173,25 +177,29 @@ export default function RegisterPage() {
                 </label>
               </div>
 
-              <Button
+              <button
                 type="submit"
-                variant="primary"
-                size="lg"
-                className="w-full"
                 disabled={isLoading}
+                className="w-full relative group"
               >
-                {isLoading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                    Creating account...
+                <div className="relative h-14 px-8 flex items-center justify-center rounded-2xl bg-gradient-to-r from-accent-blue to-accent-purple text-white font-semibold text-lg transition-all duration-300 group-hover:shadow-[0_8px_32px_rgba(59,130,246,0.5)] group-active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-50 rounded-2xl" />
+                  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                  <span className="relative z-10 flex items-center gap-3">
+                    {isLoading ? (
+                      <>
+                        <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                        <span>Creating account...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Sign Up</span>
+                        <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+                      </>
+                    )}
                   </span>
-                ) : (
-                  <span className="flex items-center justify-center gap-2">
-                    <UserPlus className="w-5 h-5" />
-                    Sign Up
-                  </span>
-                )}
-              </Button>
+                </div>
+              </button>
             </form>
 
             <div className="mt-6">
@@ -204,16 +212,20 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              <Button
-                onClick={handleGoogleSignIn}
-                variant="secondary"
-                size="lg"
-                className="w-full mt-4"
-                disabled={isLoading}
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="mt-6"
               >
-                <FcGoogle className="w-5 h-5 mr-2" />
-                Sign up with Google
-              </Button>
+                <button
+                  onClick={handleGoogleSignIn}
+                  disabled={isLoading}
+                  className="w-full glass-secondary px-6 py-3 rounded-2xl flex items-center justify-center gap-3 group hover:bg-white/80 transition-all duration-300"
+                >
+                  <FcGoogle className="w-6 h-6" />
+                  <span className="font-medium text-text-primary">Sign up with Google</span>
+                </button>
+              </motion.div>
             </div>
 
             <p className="mt-6 text-center text-sm text-text-secondary">

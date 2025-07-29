@@ -22,7 +22,7 @@ export interface RoleChange {
 export interface Milestone {
   type: MilestoneType;
   timestamp: Timestamp;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, string | number | boolean>;
 }
 
 export interface PortalFeatures {
@@ -79,14 +79,14 @@ export interface QuestionOption {
   label: string;
   description?: string;
   icon?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, string | number | boolean>;
 }
 
 export interface BranchRule {
   condition: {
     questionId: string;
     operator: 'equals' | 'contains' | 'greater_than' | 'less_than';
-    value: any;
+    value: string | number | boolean | string[];
   };
   nextQuestionId: string;
 }
@@ -114,7 +114,7 @@ export interface Question {
 
 export interface QuestionnaireResponse {
   questionId: string;
-  value: any;
+  value: string | number | boolean | string[] | null;
   answeredAt: Timestamp;
   timeSpent?: number; // seconds
 }

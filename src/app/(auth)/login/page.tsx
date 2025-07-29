@@ -14,14 +14,12 @@ import {
   ArrowRight,
   Eye,
   EyeOff,
-  CheckCircle,
   Zap
 } from 'lucide-react';
 import { FcGoogle } from 'react-icons/fc';
 import { useAuthStore } from '@/lib/store/authStore';
 import { AnimatedBackground } from '@/components/ui/animated-background';
 import { GlassPanel } from '@/components/ui/glass-panel';
-import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/toast';
 import { isSignInWithEmailLink } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
@@ -381,39 +379,37 @@ export default function LoginPage() {
                   </Link>
                 </div>
 
-                <Button
+                <button
                   type="submit"
-                  variant="glass"
-                  size="lg"
-                  className="w-full relative overflow-hidden group"
                   disabled={isLoading}
+                  className="w-full relative group overflow-hidden"
                 >
-                  <AnimatePresence mode="wait">
-                    {isLoading ? (
-                      <motion.span
-                        key="loading"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="flex items-center justify-center gap-3"
-                      >
-                        <span className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                        Signing in...
-                      </motion.span>
-                    ) : (
-                      <motion.span
-                        key="signin"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="flex items-center justify-center gap-3"
-                      >
-                        Sign In
-                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </Button>
+                  <div className="relative h-14 px-8 flex items-center justify-center rounded-2xl bg-gradient-to-r from-accent-blue to-accent-purple text-white font-semibold text-lg transition-all duration-300 group-hover:shadow-[0_8px_32px_rgba(59,130,246,0.5)] group-active:scale-[0.98]">
+                    {/* Glass overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-50 rounded-2xl" />
+                    
+                    {/* Shimmer effect */}
+                    <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                    
+                    {/* Content */}
+                    <span className="relative z-10 flex items-center gap-3">
+                      {isLoading ? (
+                        <>
+                          <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                          <span>Signing in...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Sign In</span>
+                          <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+                        </>
+                      )}
+                    </span>
+                  </div>
+                  
+                  {/* Focus ring */}
+                  <div className="absolute inset-0 rounded-2xl ring-2 ring-accent-blue ring-offset-2 ring-offset-transparent opacity-0 focus-visible:opacity-100 transition-opacity" />
+                </button>
               </form>
 
               <div className="mt-8">

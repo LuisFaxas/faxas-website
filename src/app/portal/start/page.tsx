@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { AnimatedBackground } from '@/components/ui/animated-background';
-import { GlassPanel } from '@/components/ui/glass/glass-panel';
-import { Button } from '@/components/ui/button';
+import { GlassPanel } from '@/components/ui/glass-panel';
 import { toast } from '@/components/ui/toast';
 import { 
   Sparkles, 
@@ -17,7 +16,12 @@ import {
   Lock,
   Loader2,
   Check,
-  LogIn
+  LogIn,
+  Eye,
+  EyeOff,
+  Rocket,
+  Target,
+  TrendingUp
 } from 'lucide-react';
 import { FcGoogle } from 'react-icons/fc';
 import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
@@ -26,8 +30,50 @@ import { PortalUser, getPortalFeatures } from '@/types/portal';
 import { createLead } from '@/lib/firebase/db';
 import { trackAnalyticsEvent } from '@/lib/firebase/db';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 type ViewState = 'welcome' | 'signin' | 'signup' | 'profile' | 'redirecting';
+
+// Floating animation variants
+const floatAnimation = {
+  initial: { y: 0 },
+  animate: {
+    y: [-10, 10, -10],
+    transition: {
+      duration: 6,
+      repeat: Infinity,
+      ease: "easeInOut"
+    }
+  }
+};
+
+// Decorative floating elements
+function FloatingElements() {
+  return (
+    <>
+      <motion.div
+        className="absolute top-10 left-10 w-24 h-24 bg-gradient-to-br from-accent-purple/20 to-accent-pink/20 rounded-full blur-2xl"
+        variants={floatAnimation}
+        initial="initial"
+        animate="animate"
+      />
+      <motion.div
+        className="absolute bottom-20 right-20 w-32 h-32 bg-gradient-to-tr from-accent-blue/20 to-accent-green/20 rounded-full blur-3xl"
+        variants={floatAnimation}
+        initial="initial"
+        animate="animate"
+        transition={{ delay: 2 }}
+      />
+      <motion.div
+        className="absolute top-1/3 right-1/3 w-20 h-20 bg-gradient-to-bl from-accent-green/30 to-accent-blue/30 rounded-full blur-xl"
+        variants={floatAnimation}
+        initial="initial"
+        animate="animate"
+        transition={{ delay: 4 }}
+      />
+    </>
+  );
+}
 
 export default function PortalStartPage() {
   const router = useRouter();
@@ -49,6 +95,11 @@ export default function PortalStartPage() {
     company: '',
     phone: '',
   });
+
+  // Focus states
+  const [focusedField, setFocusedField] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Check user status on mount
   useEffect(() => {
@@ -81,7 +132,7 @@ export default function PortalStartPage() {
     try {
       const result = await signInWithGoogle();
       if (result.success) {
-        // The useEffect will handle the redirect
+        toast.success('Welcome!', 'Successfully signed in with Google.');
       }
     } catch (error: any) {
       toast.error('Sign in failed', error.message);
@@ -93,7 +144,7 @@ export default function PortalStartPage() {
     try {
       const result = await signIn(signInData.email, signInData.password);
       if (result.success) {
-        // The useEffect will handle the redirect
+        toast.success('Welcome back!', 'Successfully signed in.');
       } else {
         toast.error('Sign in failed', result.error || 'Invalid credentials');
       }
@@ -204,15 +255,22 @@ export default function PortalStartPage() {
   // Loading state
   if (loading || checkingUser) {
     return (
-      <div className="min-h-screen relative flex items-center justify-center">
+      <div className="min-h-screen relative bg-gradient-to-br from-background-start via-background-middle to-background-end overflow-hidden">
         <AnimatedBackground />
-        <div className="relative z-10">
-          <GlassPanel level="primary" className="p-8">
-            <div className="flex items-center gap-3">
-              <Loader2 className="w-6 h-6 animate-spin text-accent-blue" />
-              <p className="text-text-secondary">Loading...</p>
-            </div>
-          </GlassPanel>
+        <FloatingElements />
+        <div className="relative z-10 min-h-screen flex items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <GlassPanel level="primary" className="p-8">
+              <div className="flex items-center gap-3">
+                <Loader2 className="w-6 h-6 animate-spin text-accent-blue" />
+                <p className="text-text-secondary">Loading...</p>
+              </div>
+            </GlassPanel>
+          </motion.div>
         </div>
       </div>
     );
@@ -228,72 +286,99 @@ export default function PortalStartPage() {
             exit={{ opacity: 0, y: -20 }}
             className="text-center max-w-2xl mx-auto"
           >
-            <div className="mb-8">
-              <div className="w-20 h-20 bg-gradient-to-br from-accent-blue to-accent-purple rounded-full flex items-center justify-center mx-auto mb-6">
-                <Sparkles className="w-10 h-10 text-white" />
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", duration: 0.5, delay: 0.2 }}
+              className="w-20 h-20 mx-auto mb-8 bg-gradient-to-br from-accent-blue to-accent-purple rounded-3xl flex items-center justify-center"
+            >
+              <Rocket className="w-10 h-10 text-white" />
+            </motion.div>
+
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
+              Start Your
+              <span className="block gradient-text mt-2">Project Journey</span>
+            </h1>
+            <p className="text-lg sm:text-xl text-text-secondary mb-10 sm:mb-12 px-4">
+              Join FAXAS Portal to get personalized solutions and pricing for your web project
+            </p>
+
+            {/* Feature Cards - Horizontal Layout */}
+            <div className="w-full px-4 mb-10 sm:mb-12 max-w-6xl mx-auto">
+              <div className="space-y-4">
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4, duration: 0.5 }}
+                  className="glass-secondary p-5 sm:p-6 rounded-2xl hover:shadow-lg transition-all duration-300 flex items-start gap-4"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-blue/20 to-accent-purple/20 flex items-center justify-center flex-shrink-0">
+                    <Target className="w-6 h-6 text-accent-blue" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-text-primary mb-1 text-lg">Quick Assessment</h3>
+                    <p className="text-sm text-text-secondary leading-relaxed">
+                      Answer a few questions to help us understand your needs
+                    </p>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.5, duration: 0.5 }}
+                  className="glass-secondary p-5 sm:p-6 rounded-2xl hover:shadow-lg transition-all duration-300 flex items-start gap-4"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-green/20 to-accent-blue/20 flex items-center justify-center flex-shrink-0">
+                    <TrendingUp className="w-6 h-6 text-accent-green" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-text-primary mb-1 text-lg">Instant Pricing</h3>
+                    <p className="text-sm text-text-secondary leading-relaxed">
+                      Get an estimated budget range based on your requirements
+                    </p>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.6, duration: 0.5 }}
+                  className="glass-secondary p-5 sm:p-6 rounded-2xl hover:shadow-lg transition-all duration-300 flex items-start gap-4"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-purple/20 to-accent-pink/20 flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="w-6 h-6 text-accent-purple" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-text-primary mb-1 text-lg">Personal Dashboard</h3>
+                    <p className="text-sm text-text-secondary leading-relaxed">
+                      Track your project from initial idea to launch
+                    </p>
+                  </div>
+                </motion.div>
               </div>
-              <h1 className="text-4xl font-bold text-text-primary mb-4">
-                Start Your Project Journey
-              </h1>
-              <p className="text-xl text-text-secondary">
-                Join FAXAS Portal to get personalized solutions and pricing for your project
-              </p>
             </div>
 
-            <div className="space-y-4 mb-8">
-              <div className="flex items-start gap-4 text-left">
-                <div className="w-8 h-8 rounded-full bg-accent-blue/20 flex items-center justify-center flex-shrink-0 mt-1">
-                  <Check className="w-4 h-4 text-accent-blue" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-text-primary">Quick Assessment</h3>
-                  <p className="text-sm text-text-secondary">
-                    Answer a few questions to help us understand your needs
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 text-left">
-                <div className="w-8 h-8 rounded-full bg-accent-purple/20 flex items-center justify-center flex-shrink-0 mt-1">
-                  <Check className="w-4 h-4 text-accent-purple" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-text-primary">Instant Pricing</h3>
-                  <p className="text-sm text-text-secondary">
-                    Get an estimated budget range based on your requirements
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 text-left">
-                <div className="w-8 h-8 rounded-full bg-accent-green/20 flex items-center justify-center flex-shrink-0 mt-1">
-                  <Check className="w-4 h-4 text-accent-green" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-text-primary">Personal Dashboard</h3>
-                  <p className="text-sm text-text-secondary">
-                    Track your project from initial idea to launch
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <Button
-                variant="primary"
-                size="lg"
+            <div className="space-y-4">
+              <button
                 onClick={() => setViewState('signup')}
-                className="w-full sm:w-auto gap-2"
+                className="w-full sm:w-auto relative group"
               >
-                <span>Create Account</span>
-                <ArrowRight className="w-5 h-5" />
-              </Button>
+                <div className="relative h-14 px-8 flex items-center justify-center rounded-2xl bg-gradient-to-r from-accent-blue to-accent-purple text-white font-semibold text-lg transition-all duration-300 group-hover:shadow-[0_8px_32px_rgba(59,130,246,0.5)] group-active:scale-[0.98]">
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-50 rounded-2xl" />
+                  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                  <span className="relative z-10 flex items-center gap-3">
+                    Create Account
+                    <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+                  </span>
+                </div>
+              </button>
               
               <div className="text-sm text-text-secondary">
                 Already have an account?{' '}
                 <button
                   onClick={() => setViewState('signin')}
-                  className="text-accent-blue hover:underline"
+                  className="text-accent-blue hover:text-accent-purple transition-colors font-semibold"
                 >
                   Sign in
                 </button>
@@ -311,6 +396,14 @@ export default function PortalStartPage() {
             className="max-w-md mx-auto"
           >
             <div className="text-center mb-8">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", duration: 0.5 }}
+                className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-accent-blue to-accent-purple rounded-2xl flex items-center justify-center"
+              >
+                <LogIn className="w-8 h-8 text-white" />
+              </motion.div>
               <h2 className="text-3xl font-bold text-text-primary mb-2">
                 Welcome Back
               </h2>
@@ -324,16 +417,35 @@ export default function PortalStartPage() {
                 <label className="block text-sm font-medium text-text-primary mb-2">
                   Email Address
                 </label>
-                <div className="relative">
+                <div className="relative group">
                   <input
                     type="email"
                     required
                     value={signInData.email}
                     onChange={(e) => setSignInData({ ...signInData, email: e.target.value })}
-                    className="w-full px-4 py-3 pl-11 bg-white/50 border border-glass-lighter rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-blue focus:border-transparent"
+                    onFocus={() => setFocusedField('signin-email')}
+                    onBlur={() => setFocusedField('')}
+                    className={cn(
+                      "w-full px-4 py-3 pl-12 bg-white/50 backdrop-blur-sm",
+                      "border-2 rounded-2xl transition-all duration-300",
+                      "focus:outline-none focus:ring-0",
+                      focusedField === 'signin-email'
+                        ? "border-accent-blue bg-white/70 shadow-lg"
+                        : "border-glass-lighter hover:border-glass-light"
+                    )}
                     placeholder="you@example.com"
                   />
-                  <Mail className="absolute left-3 top-3.5 w-5 h-5 text-text-tertiary" />
+                  <Mail className={cn(
+                    "absolute left-4 top-3.5 w-5 h-5 transition-colors duration-300",
+                    focusedField === 'signin-email' ? "text-accent-blue" : "text-text-tertiary"
+                  )} />
+                  {focusedField === 'signin-email' && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="absolute inset-0 -z-10 bg-gradient-to-r from-accent-blue/20 to-accent-purple/20 blur-xl rounded-2xl"
+                    />
+                  )}
                 </div>
               </div>
 
@@ -341,37 +453,67 @@ export default function PortalStartPage() {
                 <label className="block text-sm font-medium text-text-primary mb-2">
                   Password
                 </label>
-                <div className="relative">
+                <div className="relative group">
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     required
                     value={signInData.password}
                     onChange={(e) => setSignInData({ ...signInData, password: e.target.value })}
-                    className="w-full px-4 py-3 pl-11 bg-white/50 border border-glass-lighter rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-blue focus:border-transparent"
+                    onFocus={() => setFocusedField('signin-password')}
+                    onBlur={() => setFocusedField('')}
+                    className={cn(
+                      "w-full px-4 py-3 pl-12 pr-12 bg-white/50 backdrop-blur-sm",
+                      "border-2 rounded-2xl transition-all duration-300",
+                      "focus:outline-none focus:ring-0",
+                      focusedField === 'signin-password'
+                        ? "border-accent-blue bg-white/70 shadow-lg"
+                        : "border-glass-lighter hover:border-glass-light"
+                    )}
                     placeholder="••••••••"
                   />
-                  <Lock className="absolute left-3 top-3.5 w-5 h-5 text-text-tertiary" />
+                  <Lock className={cn(
+                    "absolute left-4 top-3.5 w-5 h-5 transition-colors duration-300",
+                    focusedField === 'signin-password' ? "text-accent-blue" : "text-text-tertiary"
+                  )} />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-3.5 text-text-tertiary hover:text-text-primary transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                  {focusedField === 'signin-password' && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="absolute inset-0 -z-10 bg-gradient-to-r from-accent-blue/20 to-accent-purple/20 blur-xl rounded-2xl"
+                    />
+                  )}
                 </div>
               </div>
 
-              <div className="flex items-center justify-between">
+              <div className="flex justify-end">
                 <Link
                   href="/forgot-password"
-                  className="text-sm text-accent-blue hover:underline"
+                  className="text-sm text-accent-blue hover:text-accent-purple transition-colors font-medium"
                 >
                   Forgot password?
                 </Link>
               </div>
 
-              <Button
+              <button
                 type="submit"
-                variant="primary"
-                size="lg"
-                className="w-full"
+                className="w-full relative group"
               >
-                <LogIn className="w-5 h-5 mr-2" />
-                Sign In
-              </Button>
+                <div className="relative h-14 px-8 flex items-center justify-center rounded-2xl bg-gradient-to-r from-accent-blue to-accent-purple text-white font-semibold text-lg transition-all duration-300 group-hover:shadow-[0_8px_32px_rgba(59,130,246,0.5)] group-active:scale-[0.98]">
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-50 rounded-2xl" />
+                  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                  <span className="relative z-10 flex items-center gap-3">
+                    Sign In
+                    <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+                  </span>
+                </div>
+              </button>
             </form>
 
             <div className="mt-6">
@@ -384,22 +526,26 @@ export default function PortalStartPage() {
                 </div>
               </div>
 
-              <Button
-                variant="secondary"
-                size="lg"
-                onClick={handleGoogleSignIn}
-                className="w-full mt-4 gap-3"
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="mt-6"
               >
-                <FcGoogle className="w-5 h-5" />
-                <span>Continue with Google</span>
-              </Button>
+                <button
+                  onClick={handleGoogleSignIn}
+                  className="w-full glass-secondary px-6 py-3 rounded-2xl flex items-center justify-center gap-3 group hover:bg-white/80 transition-all duration-300"
+                >
+                  <FcGoogle className="w-6 h-6" />
+                  <span className="font-medium text-text-primary">Continue with Google</span>
+                </button>
+              </motion.div>
             </div>
 
             <p className="mt-6 text-center text-sm text-text-secondary">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <button
                 onClick={() => setViewState('signup')}
-                className="font-medium text-accent-blue hover:underline"
+                className="font-semibold text-accent-blue hover:text-accent-purple transition-colors"
               >
                 Create one
               </button>
@@ -416,6 +562,14 @@ export default function PortalStartPage() {
             className="max-w-md mx-auto"
           >
             <div className="text-center mb-8">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", duration: 0.5 }}
+                className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-accent-blue to-accent-purple rounded-2xl flex items-center justify-center"
+              >
+                <Sparkles className="w-8 h-8 text-white" />
+              </motion.div>
               <h2 className="text-3xl font-bold text-text-primary mb-2">
                 Create Your Account
               </h2>
@@ -425,15 +579,18 @@ export default function PortalStartPage() {
             </div>
 
             <div className="mb-6">
-              <Button
-                variant="secondary"
-                size="lg"
-                onClick={handleGoogleSignIn}
-                className="w-full gap-3"
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
-                <FcGoogle className="w-5 h-5" />
-                <span>Sign up with Google</span>
-              </Button>
+                <button
+                  onClick={handleGoogleSignIn}
+                  className="w-full glass-secondary px-6 py-3 rounded-2xl flex items-center justify-center gap-3 group hover:bg-white/80 transition-all duration-300"
+                >
+                  <FcGoogle className="w-6 h-6" />
+                  <span className="font-medium text-text-primary">Sign up with Google</span>
+                </button>
+              </motion.div>
             </div>
 
             <div className="relative mb-6">
@@ -450,16 +607,35 @@ export default function PortalStartPage() {
                 <label className="block text-sm font-medium text-text-primary mb-2">
                   Full Name
                 </label>
-                <div className="relative">
+                <div className="relative group">
                   <input
                     type="text"
                     required
                     value={signUpData.name}
                     onChange={(e) => setSignUpData({ ...signUpData, name: e.target.value })}
-                    className="w-full px-4 py-3 pl-11 bg-white/50 border border-glass-lighter rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-blue focus:border-transparent"
+                    onFocus={() => setFocusedField('signup-name')}
+                    onBlur={() => setFocusedField('')}
+                    className={cn(
+                      "w-full px-4 py-3 pl-12 bg-white/50 backdrop-blur-sm",
+                      "border-2 rounded-2xl transition-all duration-300",
+                      "focus:outline-none focus:ring-0",
+                      focusedField === 'signup-name'
+                        ? "border-accent-blue bg-white/70 shadow-lg"
+                        : "border-glass-lighter hover:border-glass-light"
+                    )}
                     placeholder="John Doe"
                   />
-                  <User className="absolute left-3 top-3.5 w-5 h-5 text-text-tertiary" />
+                  <User className={cn(
+                    "absolute left-4 top-3.5 w-5 h-5 transition-colors duration-300",
+                    focusedField === 'signup-name' ? "text-accent-blue" : "text-text-tertiary"
+                  )} />
+                  {focusedField === 'signup-name' && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="absolute inset-0 -z-10 bg-gradient-to-r from-accent-blue/20 to-accent-purple/20 blur-xl rounded-2xl"
+                    />
+                  )}
                 </div>
               </div>
 
@@ -467,16 +643,35 @@ export default function PortalStartPage() {
                 <label className="block text-sm font-medium text-text-primary mb-2">
                   Email Address
                 </label>
-                <div className="relative">
+                <div className="relative group">
                   <input
                     type="email"
                     required
                     value={signUpData.email}
                     onChange={(e) => setSignUpData({ ...signUpData, email: e.target.value })}
-                    className="w-full px-4 py-3 pl-11 bg-white/50 border border-glass-lighter rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-blue focus:border-transparent"
+                    onFocus={() => setFocusedField('signup-email')}
+                    onBlur={() => setFocusedField('')}
+                    className={cn(
+                      "w-full px-4 py-3 pl-12 bg-white/50 backdrop-blur-sm",
+                      "border-2 rounded-2xl transition-all duration-300",
+                      "focus:outline-none focus:ring-0",
+                      focusedField === 'signup-email'
+                        ? "border-accent-blue bg-white/70 shadow-lg"
+                        : "border-glass-lighter hover:border-glass-light"
+                    )}
                     placeholder="you@example.com"
                   />
-                  <Mail className="absolute left-3 top-3.5 w-5 h-5 text-text-tertiary" />
+                  <Mail className={cn(
+                    "absolute left-4 top-3.5 w-5 h-5 transition-colors duration-300",
+                    focusedField === 'signup-email' ? "text-accent-blue" : "text-text-tertiary"
+                  )} />
+                  {focusedField === 'signup-email' && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="absolute inset-0 -z-10 bg-gradient-to-r from-accent-blue/20 to-accent-purple/20 blur-xl rounded-2xl"
+                    />
+                  )}
                 </div>
               </div>
 
@@ -484,16 +679,42 @@ export default function PortalStartPage() {
                 <label className="block text-sm font-medium text-text-primary mb-2">
                   Password
                 </label>
-                <div className="relative">
+                <div className="relative group">
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     required
                     value={signUpData.password}
                     onChange={(e) => setSignUpData({ ...signUpData, password: e.target.value })}
-                    className="w-full px-4 py-3 pl-11 bg-white/50 border border-glass-lighter rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-blue focus:border-transparent"
+                    onFocus={() => setFocusedField('signup-password')}
+                    onBlur={() => setFocusedField('')}
+                    className={cn(
+                      "w-full px-4 py-3 pl-12 pr-12 bg-white/50 backdrop-blur-sm",
+                      "border-2 rounded-2xl transition-all duration-300",
+                      "focus:outline-none focus:ring-0",
+                      focusedField === 'signup-password'
+                        ? "border-accent-blue bg-white/70 shadow-lg"
+                        : "border-glass-lighter hover:border-glass-light"
+                    )}
                     placeholder="••••••••"
                   />
-                  <Lock className="absolute left-3 top-3.5 w-5 h-5 text-text-tertiary" />
+                  <Lock className={cn(
+                    "absolute left-4 top-3.5 w-5 h-5 transition-colors duration-300",
+                    focusedField === 'signup-password' ? "text-accent-blue" : "text-text-tertiary"
+                  )} />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-3.5 text-text-tertiary hover:text-text-primary transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                  {focusedField === 'signup-password' && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="absolute inset-0 -z-10 bg-gradient-to-r from-accent-blue/20 to-accent-purple/20 blur-xl rounded-2xl"
+                    />
+                  )}
                 </div>
               </div>
 
@@ -501,16 +722,42 @@ export default function PortalStartPage() {
                 <label className="block text-sm font-medium text-text-primary mb-2">
                   Confirm Password
                 </label>
-                <div className="relative">
+                <div className="relative group">
                   <input
-                    type="password"
+                    type={showConfirmPassword ? "text" : "password"}
                     required
                     value={signUpData.confirmPassword}
                     onChange={(e) => setSignUpData({ ...signUpData, confirmPassword: e.target.value })}
-                    className="w-full px-4 py-3 pl-11 bg-white/50 border border-glass-lighter rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-blue focus:border-transparent"
+                    onFocus={() => setFocusedField('signup-confirm')}
+                    onBlur={() => setFocusedField('')}
+                    className={cn(
+                      "w-full px-4 py-3 pl-12 pr-12 bg-white/50 backdrop-blur-sm",
+                      "border-2 rounded-2xl transition-all duration-300",
+                      "focus:outline-none focus:ring-0",
+                      focusedField === 'signup-confirm'
+                        ? "border-accent-blue bg-white/70 shadow-lg"
+                        : "border-glass-lighter hover:border-glass-light"
+                    )}
                     placeholder="••••••••"
                   />
-                  <Lock className="absolute left-3 top-3.5 w-5 h-5 text-text-tertiary" />
+                  <Lock className={cn(
+                    "absolute left-4 top-3.5 w-5 h-5 transition-colors duration-300",
+                    focusedField === 'signup-confirm' ? "text-accent-blue" : "text-text-tertiary"
+                  )} />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-4 top-3.5 text-text-tertiary hover:text-text-primary transition-colors"
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                  {focusedField === 'signup-confirm' && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="absolute inset-0 -z-10 bg-gradient-to-r from-accent-blue/20 to-accent-purple/20 blur-xl rounded-2xl"
+                    />
+                  )}
                 </div>
               </div>
 
@@ -518,35 +765,40 @@ export default function PortalStartPage() {
                 <input
                   type="checkbox"
                   required
-                  className="w-4 h-4 text-accent-blue border-glass-lighter rounded focus:ring-accent-blue"
+                  className="w-4 h-4 text-accent-blue bg-white/50 border-glass-lighter rounded focus:ring-2 focus:ring-accent-blue/50 focus:ring-offset-0"
                 />
                 <label className="ml-2 text-sm text-text-secondary">
                   I agree to the{' '}
-                  <Link href="/terms" className="text-accent-blue hover:underline">
+                  <Link href="/terms" className="text-accent-blue hover:text-accent-purple transition-colors">
                     Terms of Service
                   </Link>{' '}
                   and{' '}
-                  <Link href="/privacy" className="text-accent-blue hover:underline">
+                  <Link href="/privacy" className="text-accent-blue hover:text-accent-purple transition-colors">
                     Privacy Policy
                   </Link>
                 </label>
               </div>
 
-              <Button
+              <button
                 type="submit"
-                variant="primary"
-                size="lg"
-                className="w-full"
+                className="w-full relative group"
               >
-                Create Account
-              </Button>
+                <div className="relative h-14 px-8 flex items-center justify-center rounded-2xl bg-gradient-to-r from-accent-blue to-accent-purple text-white font-semibold text-lg transition-all duration-300 group-hover:shadow-[0_8px_32px_rgba(59,130,246,0.5)] group-active:scale-[0.98]">
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-50 rounded-2xl" />
+                  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                  <span className="relative z-10 flex items-center gap-3">
+                    Create Account
+                    <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+                  </span>
+                </div>
+              </button>
             </form>
 
             <p className="mt-6 text-center text-sm text-text-secondary">
               Already have an account?{' '}
               <button
                 onClick={() => setViewState('signin')}
-                className="font-medium text-accent-blue hover:underline"
+                className="font-semibold text-accent-blue hover:text-accent-purple transition-colors"
               >
                 Sign in
               </button>
@@ -563,6 +815,14 @@ export default function PortalStartPage() {
             className="max-w-md mx-auto"
           >
             <div className="text-center mb-8">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", duration: 0.5 }}
+                className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-accent-green to-accent-blue rounded-2xl flex items-center justify-center"
+              >
+                <User className="w-8 h-8 text-white" />
+              </motion.div>
               <h2 className="text-3xl font-bold text-text-primary mb-2">
                 Complete Your Profile
               </h2>
@@ -574,58 +834,104 @@ export default function PortalStartPage() {
             <form onSubmit={handleProfileSubmit} className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-text-primary mb-2">
-                  <User className="w-4 h-4 inline mr-2" />
                   Your Name *
                 </label>
-                <input
-                  type="text"
-                  required
-                  value={profileData.displayName}
-                  onChange={(e) => setProfileData(prev => ({ 
-                    ...prev, 
-                    displayName: e.target.value 
-                  }))}
-                  className="w-full px-4 py-3 rounded-lg bg-white/50 backdrop-blur-sm border border-glass-lighter focus:outline-none focus:ring-2 focus:ring-accent-blue/50"
-                  placeholder="John Doe"
-                />
+                <div className="relative group">
+                  <input
+                    type="text"
+                    required
+                    value={profileData.displayName}
+                    onChange={(e) => setProfileData(prev => ({ 
+                      ...prev, 
+                      displayName: e.target.value 
+                    }))}
+                    onFocus={() => setFocusedField('profile-name')}
+                    onBlur={() => setFocusedField('')}
+                    className={cn(
+                      "w-full px-4 py-3 pl-12 bg-white/50 backdrop-blur-sm",
+                      "border-2 rounded-2xl transition-all duration-300",
+                      "focus:outline-none focus:ring-0",
+                      focusedField === 'profile-name'
+                        ? "border-accent-blue bg-white/70 shadow-lg"
+                        : "border-glass-lighter hover:border-glass-light"
+                    )}
+                    placeholder="John Doe"
+                  />
+                  <User className={cn(
+                    "absolute left-4 top-3.5 w-5 h-5 transition-colors duration-300",
+                    focusedField === 'profile-name' ? "text-accent-blue" : "text-text-tertiary"
+                  )} />
+                  {focusedField === 'profile-name' && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="absolute inset-0 -z-10 bg-gradient-to-r from-accent-blue/20 to-accent-purple/20 blur-xl rounded-2xl"
+                    />
+                  )}
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-text-primary mb-2">
-                  <Building className="w-4 h-4 inline mr-2" />
                   Company (Optional)
                 </label>
-                <input
-                  type="text"
-                  value={profileData.company}
-                  onChange={(e) => setProfileData(prev => ({ 
-                    ...prev, 
-                    company: e.target.value 
-                  }))}
-                  className="w-full px-4 py-3 rounded-lg bg-white/50 backdrop-blur-sm border border-glass-lighter focus:outline-none focus:ring-2 focus:ring-accent-blue/50"
-                  placeholder="Acme Inc."
-                />
+                <div className="relative group">
+                  <input
+                    type="text"
+                    value={profileData.company}
+                    onChange={(e) => setProfileData(prev => ({ 
+                      ...prev, 
+                      company: e.target.value 
+                    }))}
+                    onFocus={() => setFocusedField('profile-company')}
+                    onBlur={() => setFocusedField('')}
+                    className={cn(
+                      "w-full px-4 py-3 pl-12 bg-white/50 backdrop-blur-sm",
+                      "border-2 rounded-2xl transition-all duration-300",
+                      "focus:outline-none focus:ring-0",
+                      focusedField === 'profile-company'
+                        ? "border-accent-blue bg-white/70 shadow-lg"
+                        : "border-glass-lighter hover:border-glass-light"
+                    )}
+                    placeholder="Acme Inc."
+                  />
+                  <Building className={cn(
+                    "absolute left-4 top-3.5 w-5 h-5 transition-colors duration-300",
+                    focusedField === 'profile-company' ? "text-accent-blue" : "text-text-tertiary"
+                  )} />
+                  {focusedField === 'profile-company' && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="absolute inset-0 -z-10 bg-gradient-to-r from-accent-blue/20 to-accent-purple/20 blur-xl rounded-2xl"
+                    />
+                  )}
+                </div>
               </div>
 
-              <Button
+              <button
                 type="submit"
-                variant="primary"
-                size="lg"
                 disabled={isCreating || !profileData.displayName}
-                className="w-full"
+                className="w-full relative group"
               >
-                {isCreating ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                    <span>Setting up your portal...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Continue to Assessment</span>
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </>
-                )}
-              </Button>
+                <div className="relative h-14 px-8 flex items-center justify-center rounded-2xl bg-gradient-to-r from-accent-blue to-accent-purple text-white font-semibold text-lg transition-all duration-300 group-hover:shadow-[0_8px_32px_rgba(59,130,246,0.5)] group-active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-50 rounded-2xl" />
+                  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                  <span className="relative z-10 flex items-center gap-3">
+                    {isCreating ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span>Setting up your portal...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Continue to Assessment</span>
+                        <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+                      </>
+                    )}
+                  </span>
+                </div>
+              </button>
             </form>
           </motion.div>
         );
@@ -637,14 +943,14 @@ export default function PortalStartPage() {
             animate={{ opacity: 1, scale: 1 }}
             className="text-center max-w-md mx-auto"
           >
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Check className="w-10 h-10 text-green-600" />
+            <div className="w-20 h-20 bg-gradient-to-br from-accent-green/20 to-accent-blue/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Check className="w-10 h-10 text-accent-green" />
             </div>
-            <h2 className="text-3xl font-bold text-text-primary mb-2">
+            <h2 className="text-3xl font-bold gradient-text mb-2">
               Welcome to FAXAS Portal!
             </h2>
             <p className="text-text-secondary mb-6">
-              Let's start with a quick assessment...
+              Let&apos;s start with a quick assessment...
             </p>
             <div className="flex items-center justify-center gap-2 text-accent-blue">
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -656,15 +962,29 @@ export default function PortalStartPage() {
   };
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-4">
+    <div className="min-h-screen relative bg-gradient-to-br from-background-start via-background-middle to-background-end overflow-hidden">
       <AnimatedBackground />
+      <FloatingElements />
       
-      <div className="relative z-10 w-full max-w-4xl">
-        <GlassPanel level="primary" className="p-8 md:p-12">
-          <AnimatePresence mode="wait">
-            {renderContent()}
-          </AnimatePresence>
-        </GlassPanel>
+      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-4xl"
+        >
+          <GlassPanel level="primary" className="p-8 md:p-12">
+            <AnimatePresence mode="wait">
+              {renderContent()}
+            </AnimatePresence>
+          </GlassPanel>
+        </motion.div>
+      </div>
+
+      {/* Background Decorations */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-accent-purple/10 to-accent-pink/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-accent-blue/10 to-accent-green/10 rounded-full blur-3xl" />
       </div>
     </div>
   );

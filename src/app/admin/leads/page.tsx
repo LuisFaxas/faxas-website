@@ -37,6 +37,7 @@ export default function AdminLeadsPage() {
 
   useEffect(() => {
     filterAndSortLeads();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [leads, searchQuery, statusFilter, sortBy]);
 
   const loadLeads = async () => {

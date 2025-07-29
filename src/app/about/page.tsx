@@ -5,11 +5,9 @@ import Link from 'next/link';
 import { 
   Rocket, 
   Code2, 
-  Palette, 
   Users, 
   Target, 
-  Sparkles, 
-  Calendar,
+  Sparkles,
   Award,
   Heart,
   MessageSquare,
@@ -69,7 +67,7 @@ export default function AboutPage() {
               variants={fadeInUp}
               className="text-xl text-text-secondary max-w-3xl mx-auto mb-8"
             >
-              I'm Luis Faxas, a full-stack developer passionate about creating web experiences 
+              I&apos;m Luis Faxas, a full-stack developer passionate about creating web experiences 
               that not only look beautiful but deliver real business value through modern technology.
             </motion.p>
             
@@ -181,7 +179,7 @@ export default function AboutPage() {
               <span className="gradient-text"> Differently</span>
             </h2>
             <p className="text-xl text-text-secondary max-w-3xl mx-auto">
-              I don't just build websites. I create digital experiences that educate, 
+              I don&apos;t just build websites. I create digital experiences that educate, 
               engage, and convert your visitors into loyal customers.
             </p>
           </motion.div>
@@ -372,8 +370,8 @@ export default function AboutPage() {
             
             <div className="prose prose-lg max-w-none">
               <p className="text-text-secondary leading-relaxed mb-6">
-                Hi, I'm Luis Faxas. My journey into web development began with a simple question: 
-                "Why do small businesses struggle to get the same quality websites as big corporations?"
+                Hi, I&apos;m Luis Faxas. My journey into web development began with a simple question: 
+                &ldquo;Why do small businesses struggle to get the same quality websites as big corporations?&rdquo;
               </p>
               
               <p className="text-text-secondary leading-relaxed mb-6">
@@ -385,13 +383,13 @@ export default function AboutPage() {
               </p>
               
               <p className="text-text-secondary leading-relaxed mb-6">
-                Today, I don't just build websites. I create digital experiences that educate visitors 
+                Today, I don&apos;t just build websites. I create digital experiences that educate visitors 
                 about your value proposition, guide them through their journey, and convert them into 
                 loyal customers. Every line of code I write is designed to impact your bottom line.
               </p>
               
               <p className="text-text-secondary leading-relaxed">
-                When I'm not coding, you'll find me exploring new technologies, contributing to 
+                When I&apos;m not coding, you&apos;ll find me exploring new technologies, contributing to 
                 open-source projects, or sharing my knowledge with the developer community. I believe 
                 in continuous learning and bringing the best of what I discover to my clients.
               </p>
@@ -401,7 +399,7 @@ export default function AboutPage() {
               <p className="text-lg font-medium mb-4">Ready to transform your digital presence?</p>
               <Link href="/portal/start">
                 <Button variant="primary" size="lg">
-                  Let's Talk
+                  Let&apos;s Talk
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
@@ -464,11 +462,11 @@ export default function AboutPage() {
             className="glass-accent p-8 md:p-12 rounded-3xl"
           >
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Let's Build Something Amazing Together
+              Let&apos;s Build Something Amazing Together
             </h2>
             <p className="text-xl text-text-secondary mb-8">
-              Whether you're starting from scratch or looking to upgrade your existing website, 
-              I'm here to help you succeed in the digital world.
+              Whether you&apos;re starting from scratch or looking to upgrade your existing website, 
+              I&apos;m here to help you succeed in the digital world.
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
               <Link href="/portal/start">
