@@ -7,7 +7,7 @@ import { PortalUser, getPortalFeatures } from '@/types/portal';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { AnimatedBackground } from '@/components/ui/animated-background';
-import { GlassPanel } from '@/components/ui/glass/glass-panel';
+import { GlassPanel } from '@/components/ui/glass-panel';
 import { Loader2, User, FileText, FolderOpen, MessageSquare, Settings, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -127,13 +127,17 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
           <GlassPanel level="primary" className="h-full p-6">
             {/* Portal Logo/Title */}
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-text-primary">FAXAS Portal</h2>
-              <p className="text-sm text-text-secondary mt-1">
-                {portalUser.role === 'lead' && 'Lead Portal'}
-                {portalUser.role === 'qualified_lead' && 'Qualified Lead Portal'}
-                {portalUser.role === 'client' && 'Client Portal'}
-                {portalUser.role === 'past_client' && 'Alumni Portal'}
-              </p>
+              <Link href="/" className="block group">
+                <h2 className="text-2xl font-bold text-text-primary group-hover:text-accent-blue transition-colors">
+                  FAXAS Portal
+                </h2>
+                <p className="text-sm text-text-secondary mt-1">
+                  {portalUser.role === 'lead' && 'Lead Portal'}
+                  {portalUser.role === 'qualified_lead' && 'Qualified Lead Portal'}
+                  {portalUser.role === 'client' && 'Client Portal'}
+                  {portalUser.role === 'past_client' && 'Alumni Portal'}
+                </p>
+              </Link>
             </div>
 
             {/* User Info */}

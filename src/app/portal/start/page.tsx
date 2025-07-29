@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { AnimatedBackground } from '@/components/ui/animated-background';
@@ -965,6 +966,18 @@ export default function PortalStartPage() {
     <div className="min-h-screen relative bg-gradient-to-br from-background-start via-background-middle to-background-end overflow-hidden">
       <AnimatedBackground />
       <FloatingElements />
+      
+      {/* Navigation Header */}
+      <div className="absolute top-0 left-0 right-0 z-20 p-6">
+        <Link href="/" className="inline-flex items-center gap-2 group">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-blue to-accent-purple flex items-center justify-center text-white font-bold text-xl">
+            F
+          </div>
+          <span className="text-xl font-bold text-text-primary group-hover:text-accent-blue transition-colors">
+            FAXAS
+          </span>
+        </Link>
+      </div>
       
       <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
         <motion.div

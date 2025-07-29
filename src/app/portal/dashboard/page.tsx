@@ -11,7 +11,7 @@ import {
 } from '@/types/portal';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
-import { GlassPanel } from '@/components/ui/glass/glass-panel';
+import { GlassPanel } from '@/components/ui/glass-panel';
 import { Button } from '@/components/ui/button';
 import { 
   FileText, 
@@ -45,7 +45,7 @@ export default function PortalDashboardPage() {
       // Load user data
       const userDoc = await getDoc(doc(db, 'users', user.uid));
       if (!userDoc.exists()) {
-        router.push('/portal/onboarding');
+        router.push('/portal/start');
         return;
       }
 

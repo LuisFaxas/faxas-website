@@ -160,6 +160,18 @@ export default function LoginPage() {
       <AnimatedBackground />
       <FloatingElements />
       
+      {/* Navigation Header */}
+      <div className="absolute top-0 left-0 right-0 z-20 p-6">
+        <Link href="/" className="inline-flex items-center gap-2 group">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-blue to-accent-purple flex items-center justify-center text-white font-bold text-xl">
+            F
+          </div>
+          <span className="text-xl font-bold text-text-primary group-hover:text-accent-blue transition-colors">
+            FAXAS
+          </span>
+        </Link>
+      </div>
+      
       <div className="relative z-10 min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
         <div className="w-full max-w-5xl grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Column - Welcome Content */}
