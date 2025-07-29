@@ -24,24 +24,24 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
   const [portalUser, setPortalUser] = useState<PortalUser | null>(null);
   const [loadingPortal, setLoadingPortal] = useState(true);
   
-  // Check if we're on the onboarding page
-  const isOnboarding = pathname?.includes('/portal/onboarding');
+  // Check if we're on pages that don't need portal layout
+  const isStartPage = pathname?.includes('/portal/start');
 
   useEffect(() => {
-    // Skip auth check for onboarding page
-    if (isOnboarding) {
+    // Skip auth check for start page
+    if (isStartPage) {
       setLoadingPortal(false);
       return;
     }
 
     if (!loading) {
       if (!user) {
-        router.push('/portal/onboarding');
+        router.push('/portal/start');
       } else {
         loadPortalUser();
       }
     }
-  }, [user, loading, router, isOnboarding]);
+  }, [user, loading, router, isStartPage]);
 
   const loadPortalUser = async () => {
     if (!user) return;
@@ -52,8 +52,8 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
         const userData = userDoc.data() as PortalUser;
         setPortalUser(userData);
       } else {
-        // First time portal user - redirect to onboarding
-        router.push('/portal/onboarding');
+        // First time portal user - redirect to start
+        router.push('/portal/start');
       }
     } catch (error) {
       console.error('Error loading portal user:', error);
@@ -67,8 +67,8 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
     router.push('/');
   };
 
-  // For onboarding page, don't show the portal chrome
-  if (isOnboarding) {
+  // For start page, don't show the portal chrome
+  if (isStartPage) {
     return <>{children}</>;
   }
 

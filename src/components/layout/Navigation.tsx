@@ -183,9 +183,9 @@ export function Navigation() {
                       Sign In
                     </button>
                   </Link>
-                  <Link href="/register">
+                  <Link href="/portal/start">
                     <button className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-accent-blue to-accent-purple hover:from-accent-blue/90 hover:to-accent-purple/90 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl">
-                      Get Started
+                      Start Project
                     </button>
                   </Link>
                 </>
@@ -302,12 +302,12 @@ export function Navigation() {
                               </button>
                             </Link>
                             <Link
-                              href="/register"
+                              href="/portal/start"
                               onClick={() => setIsMobileMenuOpen(false)}
                               className="flex-1"
                             >
                               <button className="w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-accent-blue to-accent-purple rounded-lg transition-all duration-200">
-                                Sign Up
+                                Start Project
                               </button>
                             </Link>
                           </div>

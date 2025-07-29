@@ -450,7 +450,7 @@ export default function ProjectPageClient({ project }: ProjectPageClientProps) {
               Let&apos;s discuss how I can help transform your ideas into reality
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/contact">
+              <Link href="/portal/start">
                 <Button size="lg" className="gap-2">
                   Start Your Project
                   <ExternalLink className="w-5 h-5" />

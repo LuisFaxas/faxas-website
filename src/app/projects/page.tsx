@@ -244,10 +244,10 @@ export default function ProjectsPage() {
               Have a project in mind? I&apos;d love to help bring your vision to life with modern, performant web technologies.
             </p>
             <a 
-              href="/contact"
+              href="/portal/start"
               className="inline-flex items-center gap-2 glass-accent px-6 py-3 rounded-xl hover:scale-105 transition-all font-medium"
             >
-              Start a Project
+              Start Your Project
               <Sparkles className="w-4 h-4" />
             </a>
           </div>

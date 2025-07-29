@@ -984,9 +984,9 @@ export default function Home() {
             </div>
             
             <div className="flex flex-wrap gap-4 justify-center">
-              <Link href="/contact">
+              <Link href="/portal/start">
                 <Button variant="primary" size="lg" className="group">
-                  <span>Get Your Free Website Audit</span>
+                  <span>Start Your Project</span>
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
