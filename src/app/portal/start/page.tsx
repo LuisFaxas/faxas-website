@@ -345,7 +345,7 @@ export default function PortalStartPage() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4, duration: 0.5 }}
-                  className="glass-secondary p-5 sm:p-6 rounded-2xl hover:shadow-lg transition-all duration-300 flex items-start gap-4"
+                  className="glass-secondary p-4 sm:p-5 md:p-6 rounded-2xl hover:shadow-lg transition-all duration-300 flex items-start gap-3 sm:gap-4"
                 >
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-blue/20 to-accent-purple/20 flex items-center justify-center flex-shrink-0">
                     <Target className="w-6 h-6 text-accent-blue" />
@@ -362,14 +362,14 @@ export default function PortalStartPage() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.5, duration: 0.5 }}
-                  className="glass-secondary p-5 sm:p-6 rounded-2xl hover:shadow-lg transition-all duration-300 flex items-start gap-4"
+                  className="glass-secondary p-4 sm:p-5 md:p-6 rounded-2xl hover:shadow-lg transition-all duration-300 flex items-start gap-3 sm:gap-4"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-green/20 to-accent-blue/20 flex items-center justify-center flex-shrink-0">
-                    <TrendingUp className="w-6 h-6 text-accent-green" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-accent-green/20 to-accent-blue/20 flex items-center justify-center flex-shrink-0">
+                    <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-accent-green" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-text-primary mb-1 text-lg">Instant Pricing</h3>
-                    <p className="text-sm text-text-secondary leading-relaxed">
+                    <h3 className="font-semibold text-text-primary mb-1 text-base sm:text-lg">Instant Pricing</h3>
+                    <p className="text-xs sm:text-sm text-text-secondary leading-relaxed">
                       Get an estimated budget range based on your requirements
                     </p>
                   </div>
@@ -379,14 +379,14 @@ export default function PortalStartPage() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6, duration: 0.5 }}
-                  className="glass-secondary p-5 sm:p-6 rounded-2xl hover:shadow-lg transition-all duration-300 flex items-start gap-4"
+                  className="glass-secondary p-4 sm:p-5 md:p-6 rounded-2xl hover:shadow-lg transition-all duration-300 flex items-start gap-3 sm:gap-4"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-purple/20 to-accent-pink/20 flex items-center justify-center flex-shrink-0">
-                    <Sparkles className="w-6 h-6 text-accent-purple" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-accent-purple/20 to-accent-pink/20 flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-accent-purple" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-text-primary mb-1 text-lg">Personal Dashboard</h3>
-                    <p className="text-sm text-text-secondary leading-relaxed">
+                    <h3 className="font-semibold text-text-primary mb-1 text-base sm:text-lg">Personal Dashboard</h3>
+                    <p className="text-xs sm:text-sm text-text-secondary leading-relaxed">
                       Track your project from initial idea to launch
                     </p>
                   </div>

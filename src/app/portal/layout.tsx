@@ -8,10 +8,23 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { AnimatedBackground } from '@/components/ui/animated-background';
 import { GlassPanel } from '@/components/ui/glass-panel';
-import { Loader2, User, FileText, FolderOpen, MessageSquare, Settings, LogOut } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Loader2, 
+  User, 
+  FileText, 
+  FolderOpen, 
+  MessageSquare, 
+  Settings, 
+  LogOut,
+  Menu,
+  X,
+  BarChart3,
+  Home,
+  ChevronRight
+} from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 
 interface PortalLayoutProps {
   children: React.ReactNode;
@@ -24,6 +37,7 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
   const [portalUser, setPortalUser] = useState<PortalUser | null>(null);
   const [loadingPortal, setLoadingPortal] = useState(true);
   const [questionnaireCompleted, setQuestionnaireCompleted] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   
   // Check if we're on pages that don't need portal layout
   const isStartPage = pathname?.includes('/portal/start');
@@ -91,7 +105,7 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
 
   if (loading || loadingPortal) {
     return (
-      <div className="min-h-screen relative flex items-center justify-center">
+      <div className="min-h-screen relative flex items-center justify-center bg-gradient-to-br from-background-start via-background-middle to-background-end">
         <AnimatedBackground />
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-accent-blue mx-auto mb-4" />
@@ -111,7 +125,7 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
     { 
       name: 'Dashboard', 
       href: '/portal/dashboard', 
-      icon: User,
+      icon: BarChart3,
       enabled: features.dashboard && (portalUser.role !== 'lead' || questionnaireCompleted)
     },
     { 
@@ -135,18 +149,22 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
   ];
 
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-screen bg-gradient-to-br from-background-start via-background-middle to-background-end">
       <AnimatedBackground />
       
       <div className="relative z-10 flex min-h-screen">
-        {/* Sidebar */}
-        <div className="w-64 p-4">
-          <GlassPanel level="primary" className="h-full p-6">
+        {/* Desktop Sidebar */}
+        <div className="hidden lg:block w-64 p-4">
+          <GlassPanel level="primary" className="h-full p-6 flex flex-col">
             {/* Portal Logo/Title */}
             <div className="mb-8">
-              <Link href="/" className="block group">
-                <h2 className="text-2xl font-bold text-text-primary group-hover:text-accent-blue transition-colors">
-                  FAXAS Portal
+              <Link href="/" className="group inline-flex items-center gap-2 mb-4">
+                <ChevronRight className="w-4 h-4 text-text-secondary rotate-180 group-hover:text-accent-blue transition-colors" />
+                <span className="text-sm text-text-secondary group-hover:text-accent-blue transition-colors">Back to site</span>
+              </Link>
+              <div>
+                <h2 className="text-2xl font-bold gradient-text">
+                  FAXAS
                 </h2>
                 <p className="text-sm text-text-secondary mt-1">
                   {portalUser.role === 'lead' && 'Lead Portal'}
@@ -154,7 +172,7 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
                   {portalUser.role === 'client' && 'Client Portal'}
                   {portalUser.role === 'past_client' && 'Alumni Portal'}
                 </p>
-              </Link>
+              </div>
             </div>
 
             {/* User Info */}
@@ -175,12 +193,12 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
             </div>
 
             {/* Navigation */}
-            <nav className="space-y-2">
+            <nav className="space-y-2 flex-1">
               {navigation.map((item) => {
                 if (!item.enabled) return null;
                 
                 const Icon = item.icon;
-                const isActive = false; // TODO: Check current route
+                const isActive = pathname === item.href;
                 
                 return (
                   <Link
@@ -192,8 +210,14 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
                       isActive && 'bg-white/20'
                     )}
                   >
-                    <Icon className="w-5 h-5 text-text-secondary" />
-                    <span className="text-sm font-medium text-text-primary">
+                    <Icon className={cn(
+                      "w-5 h-5",
+                      isActive ? "text-accent-blue" : "text-text-secondary"
+                    )} />
+                    <span className={cn(
+                      "text-sm font-medium",
+                      isActive ? "text-text-primary" : "text-text-secondary"
+                    )}>
                       {item.name}
                     </span>
                   </Link>
@@ -222,11 +246,166 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
           </GlassPanel>
         </div>
 
+        {/* Mobile Header */}
+        <div className="lg:hidden fixed top-0 left-0 right-0 z-30">
+          <div className="p-4">
+            <GlassPanel level="primary" className="px-4 py-3">
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => setMobileNavOpen(true)}
+                  className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+                >
+                  <Menu className="w-6 h-6 text-text-primary" />
+                </button>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-lg font-bold gradient-text">FAXAS</h1>
+                  <span className="text-sm text-text-secondary">Portal</span>
+                </div>
+                <Link href="/" className="p-2 rounded-lg hover:bg-white/10 transition-colors">
+                  <Home className="w-5 h-5 text-text-secondary" />
+                </Link>
+              </div>
+            </GlassPanel>
+          </div>
+        </div>
+
+        {/* Mobile Navigation Drawer */}
+        <AnimatePresence>
+          {mobileNavOpen && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setMobileNavOpen(false)}
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+              />
+              
+              {/* Drawer */}
+              <motion.div
+                initial={{ x: '-100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '-100%' }}
+                transition={{ type: 'spring', damping: 20 }}
+                className="fixed left-0 top-0 h-full w-[280px] bg-gradient-to-br from-background-start via-background-middle to-background-end z-50 lg:hidden"
+              >
+                <GlassPanel level="primary" className="h-full m-0 rounded-none">
+                  <div className="p-6 h-full flex flex-col">
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-8">
+                      <div>
+                        <h2 className="text-xl font-bold gradient-text">FAXAS</h2>
+                        <p className="text-xs text-text-secondary mt-1">
+                          {portalUser.role === 'lead' && 'Lead Portal'}
+                          {portalUser.role === 'qualified_lead' && 'Qualified Lead'}
+                          {portalUser.role === 'client' && 'Client Portal'}
+                          {portalUser.role === 'past_client' && 'Alumni Portal'}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setMobileNavOpen(false)}
+                        className="p-2 rounded-xl hover:bg-white/10 transition-colors"
+                      >
+                        <X className="w-6 h-6 text-text-primary" />
+                      </button>
+                    </div>
+                    
+                    {/* User Info */}
+                    <div className="mb-6 p-3 rounded-xl bg-white/5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent-blue to-accent-purple flex items-center justify-center text-white text-sm font-bold">
+                          {portalUser.displayName?.charAt(0).toUpperCase() || 'U'}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-text-primary truncate">
+                            {portalUser.displayName}
+                          </p>
+                          <p className="text-xs text-text-secondary truncate">
+                            {portalUser.company || portalUser.email}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Navigation */}
+                    <nav className="flex-1 space-y-1">
+                      {navigation.map((item) => {
+                        if (!item.enabled) return null;
+                        
+                        const Icon = item.icon;
+                        const isActive = pathname === item.href;
+                        
+                        return (
+                          <Link
+                            key={item.name}
+                            href={item.href}
+                            onClick={() => setMobileNavOpen(false)}
+                            className={cn(
+                              'flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200',
+                              'hover:bg-white/10 active:scale-[0.98]',
+                              isActive && 'bg-white/15 shadow-sm'
+                            )}
+                          >
+                            <Icon className={cn(
+                              "w-5 h-5",
+                              isActive ? "text-accent-blue" : "text-text-secondary"
+                            )} />
+                            <span className={cn(
+                              "flex-1 text-sm font-medium",
+                              isActive ? "text-text-primary" : "text-text-secondary"
+                            )}>
+                              {item.name}
+                            </span>
+                            {isActive && (
+                              <ChevronRight className="w-4 h-4 text-accent-blue" />
+                            )}
+                          </Link>
+                        );
+                      })}
+                    </nav>
+
+                    {/* Bottom Actions */}
+                    <div className="pt-6 space-y-1 border-t border-glass-lighter">
+                      <Link
+                        href="/"
+                        onClick={() => setMobileNavOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all duration-200"
+                      >
+                        <Home className="w-5 h-5 text-text-secondary" />
+                        <span className="text-sm font-medium text-text-secondary">Back to Homepage</span>
+                      </Link>
+                      
+                      <Link
+                        href="/portal/settings"
+                        onClick={() => setMobileNavOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all duration-200"
+                      >
+                        <Settings className="w-5 h-5 text-text-secondary" />
+                        <span className="text-sm font-medium text-text-secondary">Settings</span>
+                      </Link>
+                      
+                      <button
+                        onClick={() => {
+                          handleLogout();
+                          setMobileNavOpen(false);
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all duration-200 text-left"
+                      >
+                        <LogOut className="w-5 h-5 text-text-secondary" />
+                        <span className="text-sm font-medium text-text-secondary">Logout</span>
+                      </button>
+                    </div>
+                  </div>
+                </GlassPanel>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
         {/* Main Content */}
-        <div className="flex-1 p-4">
-          <GlassPanel level="secondary" className="min-h-full">
-            {children}
-          </GlassPanel>
+        <div className="flex-1 pt-24 lg:pt-0 lg:p-4">
+          {children}
         </div>
       </div>
     </div>

@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 interface GlassPanelProps {
   children: React.ReactNode;
   className?: string;
-  level?: 'primary' | 'secondary' | 'accent';
+  level?: 'primary' | 'secondary' | 'accent' | 'light';
   float?: boolean;
 }
 
@@ -17,6 +17,7 @@ export function GlassPanel({
     primary: 'glass-primary',
     secondary: 'glass-secondary',
     accent: 'glass-accent',
+    light: 'glass-light',
   };
 
   return (
