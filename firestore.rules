@@ -186,6 +186,21 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
     
+    // Contacts collection (for contact form messages)
+    match /contacts/{contactId} {
+      // Only admins can read contacts
+      allow read: if isAdmin();
+      
+      // Anyone can create a contact (public contact form)
+      allow create: if true;
+      
+      // Only admins can update contacts
+      allow update: if isAdmin();
+      
+      // Only admins can delete contacts
+      allow delete: if isAdmin();
+    }
+    
     // Deny all other access by default
     match /{document=**} {
       allow read, write: if false;

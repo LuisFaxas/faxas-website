@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Shield, Lock, Mail, AlertCircle, ArrowLeft, Eye, EyeOff } from 'lucide-react';
@@ -66,9 +66,15 @@ export default function AdminLoginPage() {
     }
   };
 
-  // If already logged in as admin, redirect
+  // Redirect if already logged in as admin (in useEffect to avoid render-time state updates)
+  useEffect(() => {
+    if (user && isAdmin) {
+      router.push('/admin');
+    }
+  }, [user, isAdmin, router]);
+
+  // Show loading state while checking auth
   if (user && isAdmin) {
-    router.push('/admin');
     return null;
   }
 
