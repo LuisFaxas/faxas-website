@@ -9,7 +9,6 @@ import { ContactForm } from '@/components/forms/ContactForm';
 import { EnhancedContactForm } from '@/components/forms/EnhancedContactForm';
 import { ProjectInquiryForm } from '@/components/forms/ProjectInquiryForm';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 
 export default function ContactPage() {
   const [formType, setFormType] = useState<'contact' | 'enhanced' | 'project'>('enhanced');
@@ -46,10 +45,10 @@ export default function ContactPage() {
           {/* Header */}
           <motion.div className="text-center mb-12" variants={itemVariants}>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-text-primary mb-4">
-              Let's Work Together
+              Let&apos;s Work Together
             </h1>
             <p className="text-xl text-text-secondary max-w-3xl mx-auto">
-              Ready to transform your ideas into reality? Choose how you'd like to connect.
+              Ready to transform your ideas into reality? Choose how you&apos;d like to connect.
             </p>
           </motion.div>
 

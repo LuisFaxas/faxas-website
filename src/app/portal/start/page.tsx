@@ -28,7 +28,7 @@ import {
 import { FcGoogle } from 'react-icons/fc';
 import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
-import { PortalUser, getPortalFeatures } from '@/types/portal';
+import { getPortalFeatures } from '@/types/portal';
 import { createLead } from '@/lib/firebase/db';
 import { trackAnalyticsEvent } from '@/lib/firebase/db';
 import { cn } from '@/lib/utils';
@@ -153,8 +153,8 @@ export default function PortalStartPage() {
       if (result.success) {
         toast.success('Welcome!', 'Successfully signed in with Google.');
       }
-    } catch (error: any) {
-      toast.error('Sign in failed', error.message);
+    } catch (error) {
+      toast.error('Sign in failed', error instanceof Error ? error.message : 'An error occurred');
     }
   };
 
@@ -167,8 +167,8 @@ export default function PortalStartPage() {
       } else {
         toast.error('Sign in failed', result.error || 'Invalid credentials');
       }
-    } catch (error: any) {
-      toast.error('Sign in failed', error.message);
+    } catch (error) {
+      toast.error('Sign in failed', error instanceof Error ? error.message : 'An error occurred');
     }
   };
 
@@ -198,8 +198,8 @@ export default function PortalStartPage() {
       } else {
         toast.error('Sign up failed', result.error || 'Please try again');
       }
-    } catch (error: any) {
-      toast.error('Sign up failed', error.message);
+    } catch (error) {
+      toast.error('Sign up failed', error instanceof Error ? error.message : 'An error occurred');
     }
   };
 
@@ -280,9 +280,9 @@ export default function PortalStartPage() {
         router.push('/portal/questionnaire');
       }, 1500);
 
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error creating portal account:', error);
-      toast.error('Failed to create account', error.message);
+      toast.error('Failed to create account', error instanceof Error ? error.message : 'An error occurred');
       setIsCreating(false);
     }
   };

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { PortalUser, getPortalFeatures } from '@/types/portal';
@@ -11,7 +11,6 @@ import { GlassPanel } from '@/components/ui/glass-panel';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Loader2, 
-  User, 
   FileText, 
   FolderOpen, 
   MessageSquare, 
@@ -43,23 +42,7 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
   const isStartPage = pathname?.includes('/portal/start');
   const isQuestionnairePage = pathname?.includes('/portal/questionnaire');
 
-  useEffect(() => {
-    // Skip auth check for start page
-    if (isStartPage) {
-      setLoadingPortal(false);
-      return;
-    }
-
-    if (!loading) {
-      if (!user) {
-        router.push('/portal/start');
-      } else {
-        loadPortalUser();
-      }
-    }
-  }, [user, loading, router, isStartPage]);
-
-  const loadPortalUser = async () => {
+  const loadPortalUser = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -91,7 +74,23 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
     } finally {
       setLoadingPortal(false);
     }
-  };
+  }, [user, router, isQuestionnairePage]);
+
+  useEffect(() => {
+    // Skip auth check for start page
+    if (isStartPage) {
+      setLoadingPortal(false);
+      return;
+    }
+
+    if (!loading) {
+      if (!user) {
+        router.push('/portal/start');
+      } else {
+        loadPortalUser();
+      }
+    }
+  }, [user, loading, router, isStartPage, loadPortalUser]);
 
   const handleLogout = async () => {
     await signOut();

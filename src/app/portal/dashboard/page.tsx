@@ -1,14 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { 
   PortalDashboardData, 
   PortalUser, 
   getTemperatureEmoji,
-  QuestionnaireSession 
+  QuestionnaireSession,
+  LeadScoreBreakdown
 } from '@/types/portal';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
@@ -17,22 +18,13 @@ import { GlassPanel } from '@/components/ui/glass-panel';
 import { 
   FileText, 
   Download, 
-  Calendar,
-  TrendingUp,
   BookOpen,
   MessageSquare,
-  ArrowRight,
   CheckCircle,
   Clock,
   AlertCircle,
-  Sparkles,
   Target,
-  Users,
   BarChart3,
-  Rocket,
-  Shield,
-  Zap,
-  Star,
   Phone,
   Mail,
   ExternalLink,
@@ -40,58 +32,21 @@ import {
   Activity,
   Award,
   Bell,
-  Settings,
-  LogOut,
-  Menu,
-  X,
   Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
-// Floating decorative elements
-function FloatingElements() {
-  return (
-    <>
-      <motion.div
-        className="absolute top-[20%] left-[10%] w-20 h-20 sm:w-32 sm:h-32 bg-gradient-to-br from-accent-purple/10 to-accent-pink/10 rounded-full blur-3xl"
-        animate={{
-          y: [-20, 20, -20],
-          x: [-10, 10, -10],
-        }}
-        transition={{
-          duration: 8,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-      />
-      <motion.div
-        className="absolute bottom-[20%] right-[10%] w-24 h-24 sm:w-40 sm:h-40 bg-gradient-to-tr from-accent-blue/10 to-accent-green/10 rounded-full blur-3xl"
-        animate={{
-          y: [20, -20, 20],
-          x: [10, -10, 10],
-        }}
-        transition={{
-          duration: 10,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-      />
-    </>
-  );
-}
 
 // Progress Ring Component
 function ProgressRing({ 
   percentage, 
   size = 120, 
-  strokeWidth = 10,
-  color = 'accent-blue' 
+  strokeWidth = 10
 }: { 
   percentage: number; 
   size?: number; 
   strokeWidth?: number;
-  color?: string;
 }) {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
@@ -142,13 +97,7 @@ export default function PortalDashboardPage() {
   const [dashboardData, setDashboardData] = useState<PortalDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (user) {
-      loadDashboardData();
-    }
-  }, [user]);
-
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -178,10 +127,10 @@ export default function PortalDashboardPage() {
       const mockData: PortalDashboardData = {
         user: portalUser,
         questionnaire: sessionData ? {
-          status: sessionData.status || 'not_started',
+          status: sessionData.status === 'abandoned' ? 'not_started' : (sessionData.status || 'not_started') as 'completed' | 'in_progress' | 'not_started',
           completionPercentage: 100,
           responses: sessionData.responses || [],
-          score: sessionData.scoreBreakdown,
+          score: undefined, // Score breakdown not available in session data
         } : {
           status: 'not_started',
           completionPercentage: 0,
@@ -248,7 +197,13 @@ export default function PortalDashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, router]);
+
+  useEffect(() => {
+    if (user) {
+      loadDashboardData();
+    }
+  }, [user, loadDashboardData]);
 
   if (loading) {
     return (
@@ -315,7 +270,6 @@ export default function PortalDashboardPage() {
                     percentage={journeyProgress} 
                     size={100}
                     strokeWidth={8}
-                    color="accent-blue"
                   />
                 </div>
                 <div className="flex-1 text-center lg:text-left">

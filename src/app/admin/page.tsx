@@ -7,10 +7,7 @@ import {
   FolderOpen, 
   MessageSquare, 
   TrendingUp,
-  Activity,
-  DollarSign,
-  Calendar,
-  Clock
+  Activity
 } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/glass/glass-panel';
 import { getLeadStats } from '@/lib/firebase/leads';
@@ -28,7 +25,12 @@ interface DashboardStats {
   totalProjects: number;
   totalMessages: number;
   leadsByStatus: Record<string, number>;
-  recentActivity: any[];
+  recentActivity: {
+    id: string;
+    type: string;
+    description: string;
+    timestamp: Timestamp;
+  }[];
 }
 
 export default function AdminDashboardPage() {

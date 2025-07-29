@@ -4,9 +4,10 @@ import { User, Lead, Project, AnalyticsEvent, COLLECTIONS } from '@/types/fireba
 // Initialize Firebase Admin SDK
 if (!admin.apps.length) {
   try {
-    // Check if running in production (Vercel)
-    if (process.env.FIREBASE_ADMIN_PRIVATE_KEY) {
-      // Use environment variables in production
+    // Use environment variables
+    if (process.env.FIREBASE_ADMIN_PRIVATE_KEY && 
+        process.env.FIREBASE_ADMIN_PROJECT_ID && 
+        process.env.FIREBASE_ADMIN_CLIENT_EMAIL) {
       admin.initializeApp({
         credential: admin.credential.cert({
           projectId: process.env.FIREBASE_ADMIN_PROJECT_ID,
@@ -15,11 +16,8 @@ if (!admin.apps.length) {
         }),
       });
     } else {
-      // Use service account file in development
-      const serviceAccount = require('../../service-account-key.json');
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-      });
+      console.warn('Firebase Admin SDK not initialized: Missing environment variables');
+      console.warn('Please set FIREBASE_ADMIN_PRIVATE_KEY, FIREBASE_ADMIN_PROJECT_ID, and FIREBASE_ADMIN_CLIENT_EMAIL');
     }
 
     console.log('Firebase Admin SDK initialized successfully');
@@ -29,19 +27,25 @@ if (!admin.apps.length) {
   }
 }
 
-export const adminAuth = admin.auth();
-export const adminDb = admin.firestore();
+// Check if admin is initialized
+const isAdminInitialized = admin.apps.length > 0;
+
+export const adminAuth = isAdminInitialized ? admin.auth() : null;
+export const adminDb = isAdminInitialized ? admin.firestore() : null;
 
 // Type-safe collection references
-export const collections = {
+export const collections = isAdminInitialized && adminDb ? {
   users: adminDb.collection(COLLECTIONS.USERS) as admin.firestore.CollectionReference<User>,
   leads: adminDb.collection(COLLECTIONS.LEADS) as admin.firestore.CollectionReference<Lead>,
   projects: adminDb.collection(COLLECTIONS.PROJECTS) as admin.firestore.CollectionReference<Project>,
   analytics: adminDb.collection(COLLECTIONS.ANALYTICS) as admin.firestore.CollectionReference<AnalyticsEvent>,
-};
+} : null;
 
 // User management functions
 export async function createUser(userData: Omit<User, 'createdAt' | 'updatedAt'>): Promise<void> {
+  if (!collections) {
+    throw new Error('Firebase Admin SDK not initialized');
+  }
   try {
     const now = admin.firestore.FieldValue.serverTimestamp();
     await collections.users.doc(userData.uid).set({
@@ -57,6 +61,9 @@ export async function createUser(userData: Omit<User, 'createdAt' | 'updatedAt'>
 }
 
 export async function updateUserRole(uid: string, role: 'admin' | 'user'): Promise<void> {
+  if (!collections) {
+    throw new Error('Firebase Admin SDK not initialized');
+  }
   try {
     await collections.users.doc(uid).update({
       role,
@@ -70,6 +77,9 @@ export async function updateUserRole(uid: string, role: 'admin' | 'user'): Promi
 }
 
 export async function makeUserAdminByEmail(email: string): Promise<void> {
+  if (!collections) {
+    throw new Error('Firebase Admin SDK not initialized');
+  }
   try {
     const userQuery = await collections.users.where('email', '==', email).limit(1).get();
     
@@ -89,6 +99,9 @@ export async function makeUserAdminByEmail(email: string): Promise<void> {
 
 // Lead management functions
 export async function createLead(leadData: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+  if (!collections) {
+    throw new Error('Firebase Admin SDK not initialized');
+  }
   try {
     const now = admin.firestore.FieldValue.serverTimestamp();
     const leadRef = await collections.leads.add({
@@ -106,6 +119,9 @@ export async function createLead(leadData: Omit<Lead, 'id' | 'createdAt' | 'upda
 }
 
 export async function updateLeadStatus(leadId: string, status: Lead['status']): Promise<void> {
+  if (!collections) {
+    throw new Error('Firebase Admin SDK not initialized');
+  }
   try {
     const updateData: any = {
       status,
@@ -128,6 +144,9 @@ export async function updateLeadStatus(leadId: string, status: Lead['status']): 
 
 // Project management functions
 export async function createProject(projectData: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+  if (!collections) {
+    throw new Error('Firebase Admin SDK not initialized');
+  }
   try {
     const now = admin.firestore.FieldValue.serverTimestamp();
     const projectRef = await collections.projects.add({
@@ -145,6 +164,9 @@ export async function createProject(projectData: Omit<Project, 'id' | 'createdAt
 }
 
 export async function updateProjectStatus(projectId: string, status: Project['status']): Promise<void> {
+  if (!collections) {
+    throw new Error('Firebase Admin SDK not initialized');
+  }
   try {
     await collections.projects.doc(projectId).update({
       status,
@@ -159,6 +181,9 @@ export async function updateProjectStatus(projectId: string, status: Project['st
 
 // Analytics functions
 export async function trackEvent(eventData: Omit<AnalyticsEvent, 'id' | 'timestamp'>): Promise<void> {
+  if (!collections) {
+    throw new Error('Firebase Admin SDK not initialized');
+  }
   try {
     await collections.analytics.add({
       ...eventData,

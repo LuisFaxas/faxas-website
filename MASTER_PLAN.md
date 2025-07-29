@@ -950,3 +950,37 @@ Each version must meet ALL criteria before moving to the next:
    - Clear navigation structure
 
 **Result:** Portal is now production-ready with professional styling consistent with the high standards of the rest of the site, fully responsive on all devices, and with excellent readability throughout.
+
+---
+
+## 🐛 Critical Build and Type Fixes (2025-07-29)
+
+### Fixed Critical Issues Blocking Production:
+
+1. **Portal Dashboard Syntax Error**
+   - Fixed broken ProgressRing component definition
+   - Removed incomplete FloatingElements code
+   - Restored proper component structure
+
+2. **Import Errors**
+   - Fixed `submitLead` import error (changed to `submitContactForm`)
+   - Updated ProjectInquiryForm to use correct function
+
+3. **Firebase Admin Configuration**
+   - Removed dependency on missing service-account-key.json
+   - Updated to use only environment variables
+   - Added proper initialization guards to prevent runtime errors
+   - All admin functions now check if Firebase is initialized
+
+4. **Next.js 15 Compatibility**
+   - Fixed useSearchParams Suspense boundary requirement
+   - Created LoginContent component wrapped in Suspense
+   - Added proper loading fallback
+
+5. **TypeScript Errors Fixed**
+   - Fixed animation variants type issues with `as const`
+   - Fixed questionnaire status type mismatch (handling "abandoned" state)
+   - Fixed LeadScoreBreakdown type expectations
+   - Removed unused FloatingElements to clear warnings
+
+**Result:** Build now completes successfully with all critical errors resolved. Site is stable and running in production mode.

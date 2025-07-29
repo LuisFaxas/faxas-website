@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Loader2, CheckCircle, AlertCircle, ChevronRight } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/glass/glass-panel';
 import { Button } from '@/components/ui/button';
-import { submitLead } from '@/lib/firebase/leads';
+import { submitContactForm } from '@/lib/firebase/leads';
 import { cn } from '@/lib/utils';
 
 const projectInquirySchema = z.object({
@@ -78,7 +78,7 @@ export function ProjectInquiryForm({ className, onSuccess }: ProjectInquiryFormP
     setErrorMessage('');
 
     try {
-      const result = await submitLead({
+      const result = await submitContactForm({
         ...data,
         source: 'project-inquiry-form',
         referrer: window.location.href,

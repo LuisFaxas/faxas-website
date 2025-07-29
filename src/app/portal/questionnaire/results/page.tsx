@@ -100,10 +100,10 @@ export default function QuestionnaireResultsPage() {
                 Thank You!
               </h1>
               <p className="text-lg text-text-secondary mb-2">
-                We've received your assessment responses.
+                We&apos;ve received your assessment responses.
               </p>
               <p className="text-text-secondary mb-8">
-                We're preparing your personalized recommendations...
+                We&apos;re preparing your personalized recommendations...
               </p>
             </motion.div>
 

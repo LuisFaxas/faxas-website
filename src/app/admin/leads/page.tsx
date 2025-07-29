@@ -4,14 +4,8 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Search, 
-  Filter, 
   Download, 
   Mail, 
-  Phone,
-  Building,
-  Calendar,
-  DollarSign,
-  Clock,
   Star
 } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/glass/glass-panel';

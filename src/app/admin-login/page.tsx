@@ -17,7 +17,7 @@ export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  // const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,7 +59,7 @@ export default function AdminLoginPage() {
       } else {
         toast.error('Login Failed', error || 'Invalid credentials');
       }
-    } catch (error) {
+    } catch {
       toast.error('Error', 'An unexpected error occurred');
     } finally {
       setIsLoading(false);

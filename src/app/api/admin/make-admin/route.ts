@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { makeUserAdminByEmail } from '@/lib/firebase-admin';
-import { auth } from '@/lib/firebase/config';
 import { headers } from 'next/headers';
 
 export async function POST(request: NextRequest) {
@@ -41,10 +40,10 @@ export async function POST(request: NextRequest) {
       { message: `Successfully made ${email} an admin` },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error in make-admin API:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to make user admin' },
+      { error: (error as Error).message || 'Failed to make user admin' },
       { status: 500 }
     );
   }

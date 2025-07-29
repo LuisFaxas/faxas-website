@@ -8,13 +8,9 @@ import {
   Edit, 
   Trash2, 
   Eye, 
-  EyeOff,
   ArrowUp,
   ArrowDown,
   Search,
-  Filter,
-  Download,
-  Upload,
   ExternalLink,
   Image as ImageIcon,
   Video,
@@ -23,7 +19,8 @@ import {
 } from 'lucide-react';
 import { collection, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
-import { useAuth } from '@/lib/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
+import { Timestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { FloatingTile } from '@/components/ui/floating-tile';
 import Link from 'next/link';
@@ -50,14 +47,14 @@ interface Project {
     improvement?: number;
   };
   order: number;
-  createdAt: any;
-  updatedAt: any;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
 }
 
 export default function AdminProjectsPage() {
   const { user, loading } = useAuth();
   // TODO: Fix userProfile - needs to use useAuthStore instead
-  const userProfile: any = { role: 'admin' };
+  const userProfile = { role: 'admin' as const };
   const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(true);

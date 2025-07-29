@@ -8,23 +8,22 @@ import {
   Save,
   Plus,
   X,
-  Upload,
   Link as LinkIcon,
   Video,
-  Image as ImageIcon,
-  Sparkles
+  Image as ImageIcon
 } from 'lucide-react';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
-import { useAuth } from '@/lib/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { FloatingTile } from '@/components/ui/floating-tile';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function NewProjectPage() {
   const { user } = useAuth();
   // TODO: Fix userProfile - needs to use useAuthStore instead
-  const userProfile: any = { role: 'admin' };
+  const userProfile = { role: 'admin' as const };
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -157,9 +156,9 @@ export default function NewProjectPage() {
       });
 
       router.push('/admin/projects');
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error creating project:', err);
-      setError(err.message || 'Failed to create project');
+      setError((err as Error).message || 'Failed to create project');
     } finally {
       setSaving(false);
     }
@@ -275,7 +274,7 @@ export default function NewProjectPage() {
                     </label>
                     <select
                       value={formData.status}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value as 'completed' | 'in-progress' | 'concept' })}
                       className="w-full px-4 py-2 bg-white/50 border border-glass-lighter rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-blue/50"
                     >
                       <option value="completed">Completed</option>
@@ -450,11 +449,14 @@ export default function NewProjectPage() {
                         key={index}
                         className="relative group"
                       >
-                        <img
-                          src={image}
-                          alt={`Project image ${index + 1}`}
-                          className="w-full h-24 object-cover rounded-lg"
-                        />
+                        <div className="relative w-full h-24">
+                          <Image
+                            src={image}
+                            alt={`Project image ${index + 1}`}
+                            fill
+                            className="object-cover rounded-lg"
+                          />
+                        </div>
                         <button
                           type="button"
                           onClick={() => handleRemoveImage(index)}

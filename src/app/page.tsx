@@ -8,7 +8,6 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { 
   ArrowRight, 
   BarChart3, 
-  Check, 
   CheckCircle, 
   ChevronRight, 
   Play, 

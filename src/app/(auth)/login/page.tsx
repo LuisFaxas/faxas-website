@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -33,7 +34,7 @@ const floatAnimation = {
     transition: {
       duration: 6,
       repeat: Infinity,
-      ease: "easeInOut"
+      ease: "easeInOut" as const
     }
   }
 };
@@ -66,7 +67,7 @@ function FloatingElements() {
   );
 }
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { signIn, signInWithGoogle, verifyMagicLink, error, clearError, isLoading } = useAuthStore();
@@ -484,5 +485,17 @@ export default function LoginPage() {
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-accent-green/10 to-accent-blue/10 rounded-full blur-3xl" />
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-base">
+        <Loader2 className="w-8 h-8 animate-spin text-accent-blue" />
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }

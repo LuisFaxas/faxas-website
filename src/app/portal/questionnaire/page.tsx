@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,17 +11,14 @@ import { questions, getQuestionFlow, questionnaireVersion } from '@/lib/portal/q
 import { calculateLeadScore } from '@/lib/portal/scoring';
 import { 
   QuestionnaireResponse, 
-  QuestionnaireSession,
-  Question,
-  getPortalFeatures 
+  QuestionnaireSession
 } from '@/types/portal';
 import { 
   doc, 
   setDoc, 
   getDoc, 
   serverTimestamp,
-  updateDoc,
-  arrayUnion 
+  updateDoc
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { toast } from '@/components/ui/toast';
@@ -31,9 +28,9 @@ export default function QuestionnairePage() {
   const { user } = useAuth();
   const router = useRouter();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [responses, setResponses] = useState<Map<string, any>>(new Map());
+  const [responses, setResponses] = useState<Map<string, string | string[] | number>>(new Map());
   const [sessionId, setSessionId] = useState<string>('');
-  const [startTime, setStartTime] = useState<number>(Date.now());
+  const [startTime] = useState<number>(Date.now());
   const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
   const [loading, setLoading] = useState(true);
 
@@ -42,13 +39,7 @@ export default function QuestionnairePage() {
   const isFirst = currentQuestionIndex === 0;
   const isLast = currentQuestionIndex === questionFlow.length - 1;
 
-  useEffect(() => {
-    if (user) {
-      loadOrCreateSession();
-    }
-  }, [user]);
-
-  const loadOrCreateSession = async () => {
+  const loadOrCreateSession = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -102,7 +93,13 @@ export default function QuestionnairePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, router]);
+
+  useEffect(() => {
+    if (user) {
+      loadOrCreateSession();
+    }
+  }, [user, loadOrCreateSession]);
 
   const saveProgress = async () => {
     if (!user || !sessionId) return;
@@ -128,7 +125,7 @@ export default function QuestionnairePage() {
     }
   };
 
-  const handleAnswer = (value: any) => {
+  const handleAnswer = (value: string | string[] | number) => {
     const newResponses = new Map(responses);
     newResponses.set(currentQuestion.id, value);
     setResponses(newResponses);

@@ -9,8 +9,7 @@ import {
   Package, 
   TrendingUp,
   Users,
-  DollarSign,
-  BarChart3
+  DollarSign
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FloatingTile } from '@/components/ui/floating-tile';
@@ -25,7 +24,7 @@ const products = [
 
 export default function EcommerceDemoPage() {
   const [cart, setCart] = useState<{[key: number]: number}>({});
-  const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
+  // const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
 
   const addToCart = (productId: number) => {
     setCart(prev => ({

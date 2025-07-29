@@ -10,14 +10,13 @@ import {
   Archive,
   Search,
   Calendar,
-  User,
   Clock,
-  Filter,
   CheckCircle
 } from 'lucide-react';
 import { collection, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
-import { useAuth } from '@/lib/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
+import { Timestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { FloatingTile } from '@/components/ui/floating-tile';
 import { formatDistance } from 'date-fns';
@@ -28,13 +27,13 @@ interface Message {
   email: string;
   message: string;
   status: 'unread' | 'read' | 'archived';
-  createdAt: any;
+  createdAt: Timestamp;
 }
 
 export default function AdminMessagesPage() {
   const { user, loading } = useAuth();
   // TODO: Fix userProfile - needs to use useAuthStore instead
-  const userProfile: any = { role: 'admin' };
+  const userProfile = { role: 'admin' as const };
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(true);
@@ -176,7 +175,7 @@ export default function AdminMessagesPage() {
               <div className="flex gap-2">
                 <select
                   value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value as any)}
+                  onChange={(e) => setFilterStatus(e.target.value as 'all' | 'unread' | 'read' | 'archived')}
                   className="px-4 py-2 bg-white/50 border border-glass-lighter rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-blue/50"
                 >
                   <option value="all">All Messages</option>
