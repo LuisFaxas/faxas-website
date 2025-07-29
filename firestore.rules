@@ -40,7 +40,7 @@ service cloud.firestore {
     }
     
     function isValidUserRole(role) {
-      return role in ['user', 'admin'];
+      return role in ['user', 'admin', 'lead', 'qualified_lead', 'client', 'past_client'];
     }
     
     function isValidUserStatus(status) {
@@ -52,22 +52,20 @@ service cloud.firestore {
       // Users can read their own profile
       allow read: if isOwner(userId) || isAdmin();
       
-      // Users can update their own profile (except role and status)
-      allow update: if isOwner(userId) && isActiveUser() &&
-        request.resource.data.role == resource.data.role &&
-        request.resource.data.status == resource.data.status &&
-        request.resource.data.uid == resource.data.uid;
-      
-      // Only admins can create users or update role/status
-      allow create: if isAdmin() &&
-        request.resource.data.uid == userId &&
+      // Users can create their own profile when they first sign up
+      allow create: if isOwner(userId) &&
+        request.resource.data.id == userId &&
         isValidEmail(request.resource.data.email) &&
         isValidUserRole(request.resource.data.role) &&
-        isValidUserStatus(request.resource.data.status);
+        request.resource.data.role == 'lead'; // New users always start as leads
       
+      // Users can update their own profile (except role)
+      allow update: if isOwner(userId) &&
+        request.resource.data.role == resource.data.role &&
+        request.resource.data.id == resource.data.id;
+      
+      // Admins can do everything
       allow update: if isAdmin();
-      
-      // Only admins can delete users
       allow delete: if isAdmin();
     }
     
@@ -152,6 +150,22 @@ service cloud.firestore {
       allow read: if isAdmin();
       allow create: if isAuthenticated();
       allow update: if false;
+      allow delete: if isAdmin();
+    }
+    
+    // Questionnaire sessions collection
+    match /questionnaire_sessions/{sessionId} {
+      // Users can read their own sessions
+      allow read: if isOwner(sessionId) || isAdmin();
+      
+      // Users can create and update their own sessions
+      allow create: if isOwner(sessionId) &&
+        request.resource.data.userId == request.auth.uid;
+      
+      allow update: if isOwner(sessionId) &&
+        request.resource.data.userId == resource.data.userId;
+      
+      // Only admins can delete
       allow delete: if isAdmin();
     }
     

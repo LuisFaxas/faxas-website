@@ -91,7 +91,7 @@ export default function LoginPage() {
         
         if (result.success) {
           toast.success('Welcome!', 'Successfully signed in with magic link.');
-          const returnUrl = searchParams.get('from') || '/';
+          const returnUrl = searchParams.get('from') || '/portal';
           router.push(returnUrl);
         } else {
           toast.error('Magic link failed', result.error || 'Invalid or expired link.');
@@ -112,7 +112,14 @@ export default function LoginPage() {
     
     if (result.success) {
       toast.success('Welcome back!', 'Successfully signed in.');
-      router.push('/');
+      // Check if user came from a specific page
+      const returnUrl = searchParams.get('from');
+      if (returnUrl) {
+        router.push(returnUrl);
+      } else {
+        // Default to portal for authenticated users
+        router.push('/portal');
+      }
     } else {
       toast.error('Sign in failed', result.error || 'Please check your credentials.');
     }
@@ -124,7 +131,14 @@ export default function LoginPage() {
     
     if (result.success) {
       toast.success('Welcome!', 'Successfully signed in with Google.');
-      router.push('/');
+      // Check if user came from a specific page
+      const returnUrl = searchParams.get('from');
+      if (returnUrl) {
+        router.push(returnUrl);
+      } else {
+        // Default to portal for authenticated users
+        router.push('/portal');
+      }
     }
   };
 
