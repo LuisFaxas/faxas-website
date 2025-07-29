@@ -13,10 +13,11 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, isAdmin, isLoading } = useAuthStore();
+  const { user, isAdmin, isLoading, isInitialized } = useAuthStore();
   
   useEffect(() => {
-    if (!isLoading) {
+    // Only redirect after auth is fully initialized
+    if (isInitialized && !isLoading) {
       if (!user) {
         // Redirect to login with return URL
         router.push(`/login?from=${encodeURIComponent(pathname)}`);
@@ -25,10 +26,10 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
         router.push('/');
       }
     }
-  }, [user, isAdmin, isLoading, requireAdmin, router, pathname]);
+  }, [user, isAdmin, isLoading, isInitialized, requireAdmin, router, pathname]);
   
-  // Show loading state
-  if (isLoading) {
+  // Show loading state while auth is initializing
+  if (!isInitialized || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

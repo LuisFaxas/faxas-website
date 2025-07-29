@@ -21,6 +21,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isAdmin: boolean;
   isLoading: boolean;
+  isInitialized: boolean;
   error: string | null;
   
   // Actions
@@ -44,6 +45,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: false,
   isAdmin: false,
   isLoading: true,
+  isInitialized: false,
   error: null,
 
   signIn: async (email: string, password: string, rememberMe: boolean = false) => {
@@ -260,6 +262,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           isAuthenticated: true,
           isAdmin: isAdminUser,
           isLoading: false,
+          isInitialized: true,
         });
       } else {
         set({
@@ -268,6 +271,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           isAuthenticated: false,
           isAdmin: false,
           isLoading: false,
+          isInitialized: true,
         });
       }
     });

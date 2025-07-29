@@ -169,6 +169,23 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
     
+    // Auth events collection for tracking login/logout
+    match /auth_events/{eventId} {
+      // Only admins can read auth events
+      allow read: if isAdmin();
+      
+      // Authenticated users can create auth events
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.timestamp == request.time;
+      
+      // Auth events are immutable
+      allow update: if false;
+      
+      // Only admins can delete
+      allow delete: if isAdmin();
+    }
+    
     // Deny all other access by default
     match /{document=**} {
       allow read, write: if false;

@@ -15,33 +15,35 @@ const inter = Inter({
   display: 'swap',
 });
 
+import { siteConfig } from "@/lib/config/site";
+
 export const metadata: Metadata = {
-  metadataBase: new URL('https://faxas.net'),
-  title: "FAXAS | Premium Web Development Portfolio",
-  description: "Transform your vision into stunning digital experiences. Explore interactive demos and learn about modern web development through live examples.",
-  keywords: "web development, portfolio, React, Next.js, TypeScript, interactive demos, glassmorphic design",
-  authors: [{ name: "FAXAS" }],
-  creator: "FAXAS",
+  metadataBase: new URL(siteConfig.url),
+  title: siteConfig.metadata.title(),
+  description: siteConfig.metadata.description.en,
+  keywords: siteConfig.metadata.keywords.en,
+  authors: [{ name: siteConfig.name }],
+  creator: siteConfig.name,
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://faxas.net",
-    siteName: "FAXAS Portfolio",
-    title: "FAXAS | Premium Web Development Portfolio",
-    description: "Transform your vision into stunning digital experiences. Explore interactive demos and learn about modern web development.",
+    url: siteConfig.url,
+    siteName: `${siteConfig.name} Portfolio`,
+    title: siteConfig.metadata.title(),
+    description: siteConfig.metadata.description.en,
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "FAXAS Portfolio",
+        alt: `${siteConfig.name} Portfolio`,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "FAXAS | Premium Web Development Portfolio",
-    description: "Transform your vision into stunning digital experiences.",
+    title: siteConfig.metadata.title(),
+    description: siteConfig.metadata.description.en,
     images: ["/og-image.png"],
   },
   robots: {

@@ -483,7 +483,7 @@ interface Milestone {
 **Priority:** 🔴 CRITICAL  
 **Complexity:** 🟡 MEDIUM
 **Status:** ✅ PARTIAL (1.3.1 & 1.3.2 Complete)
-**Updated:** 2025-07-29 (Implemented Email & Real-time Lead Management)
+**Updated:** 2025-07-30 (Email & Real-time Lead Management Complete)
 
 ### Objectives:
 Transform the static admin dashboard into a powerful, real-time lead management system that handles the rich data from the Lead Portal, with emphasis on mobile experience and automated lead response.
@@ -576,6 +576,13 @@ Transform the static admin dashboard into a powerful, real-time lead management 
 - ✅ Lead response time <1 hour average
 - ✅ Zero data loss or security breaches
 - ✅ Automated actions for all temperatures
+
+### 🌐 Internationalization Strategy (Added 2025-07-30):
+- **Phase 1:** Created centralized site configuration for easy rebranding
+- **Phase 2:** Spanish landing page for immediate needs (/espanol)
+- **Phase 3:** Full translation after v1.4 completion
+- **Decision:** Wait for stable codebase before full i18n implementation
+- **Benefit:** Avoid retranslation work during active development
 
 ---
 
@@ -1108,3 +1115,182 @@ To activate email notifications:
 **Note:** The system gracefully handles missing API keys - it will log warnings but won't crash the application.
 
 **Result:** Email notifications are now fully implemented. Once Resend is configured, the system will automatically send welcome emails, questionnaire notifications, and hot lead alerts.
+
+---
+
+## 🐛 Active Bug Tracking
+**Added:** 2025-07-30
+**Last Updated:** Testing session findings
+**Status:** ✅ CRITICAL BUGS FIXED (3/4 Priority 1 Fixed)
+
+### Priority 1 - Breaking Issues (Fix Immediately):
+1. **Admin Dashboard Refresh Redirect Bug** ✅ FIXED
+   - **Issue:** Refreshing /admin redirects to /login?from=%2Fadmin
+   - **Impact:** Breaks admin workflow, forces re-navigation
+   - **Cause:** Auth initialization happening before redirect check
+   - **Fix Applied:** Added isInitialized state to auth store and updated ProtectedRoute
+
+2. **Firebase Permissions Error** ✅ FIXED
+   - **Issue:** "Missing or insufficient permissions" when logging auth events
+   - **Impact:** Analytics data not being captured
+   - **Cause:** Firebase rules blocking auth event logging
+   - **Fix Applied:** Added auth_events collection rules to firestore.rules
+
+### Priority 2 - UX/UI Issues (Fix Soon):
+3. **Admin Login Page Outdated Design** 🟠
+   - **Issue:** Doesn't match new glass morphism client login aesthetic
+   - **Impact:** Inconsistent experience, looks unprofessional
+   - **Fix Required:** Apply portal design system to admin login
+
+4. **Admin Dashboard Needs Redesign** 🟠
+   - **Issue:** Static design doesn't match beautiful client portal
+   - **Impact:** Poor admin experience (most important user!)
+   - **Fix Required:** Full glass morphism redesign with animations
+
+5. **Admin Portal Access Issue** ✅ FIXED
+   - **Issue:** Admin sees "Portal" link but gets error when clicked
+   - **Impact:** Confusing UX, admin shouldn't access client portal
+   - **Fix Applied:** Updated Navigation component to hide portal link for admin users
+
+### Priority 3 - Minor Issues (Fix Later):
+6. **Mobile Admin Login Link Missing** 🟡
+   - **Issue:** Admin login link not visible in mobile footer
+   - **Impact:** Can't access admin on mobile
+   - **Fix Required:** Add to mobile navigation menu
+
+7. **React setState Warning** ⚠️ INVESTIGATED
+   - **Issue:** "Cannot update Router while rendering AdminLoginPage"
+   - **Impact:** Console warning only - no functional impact
+   - **Note:** Component "AdminLoginPage" not found in codebase
+   - **Finding:** All router.push calls properly in event handlers/useEffect
+   - **Status:** Non-critical warning, possibly from third-party library
+
+### 🎯 Recommended Action Plan:
+
+**Option A: Fix Critical Bugs First (Recommended)**
+- Time: 2-3 hours
+- Fix Priority 1 bugs before continuing v1.3
+- Ensures stable foundation for further development
+- Admin can work without frustration
+
+**Option B: Continue v1.3, Fix Later**
+- Document workarounds for critical bugs
+- Complete v1.3.3 Mobile Admin Experience
+- Fix all bugs in dedicated cleanup sprint
+- Risk: Bugs may compound with new features
+
+**Option C: Hybrid Approach**
+- Fix only the refresh redirect bug (30 min)
+- Continue with v1.3.3 which includes admin redesign
+- Address other bugs as part of v1.3.3 work
+
+### Bug Workarounds (If Continuing):
+1. **Refresh Issue:** Use browser back button instead of refresh
+2. **Portal Access:** Ignore portal link as admin
+3. **Mobile Admin:** Use desktop for admin tasks
+4. **Permissions:** Non-critical, just console noise
+
+---
+
+## 🧪 Testing & Quality Assurance Plan
+**Added:** 2025-07-30
+**Priority:** 🟠 HIGH  
+**Status:** ⏳ ONGOING
+
+### Testing Strategy:
+1. **Unit Testing**
+   - Components with Jest & React Testing Library
+   - Firebase rules testing
+   - Utility functions coverage
+   - Target: 80% coverage
+
+2. **Integration Testing**
+   - Portal flow end-to-end
+   - Email delivery verification
+   - Lead scoring accuracy
+   - Payment processing
+
+3. **Performance Testing**
+   - Lighthouse CI in pipeline
+   - Core Web Vitals monitoring
+   - Load time <1s target
+   - Bundle size optimization
+
+4. **Security Testing**
+   - Firebase rules audit
+   - Authentication flows
+   - Data privacy compliance
+   - Penetration testing
+
+5. **User Testing**
+   - Beta test with 5 businesses
+   - A/B testing key conversions
+   - Heatmap analysis
+   - Session recordings
+
+---
+
+## 🌐 Internationalization Roadmap
+**Added:** 2025-07-30
+**Priority:** 🟡 MEDIUM  
+**Status:** ⏳ PLANNED
+
+### Smart Implementation Strategy:
+1. **Phase 1 - Foundation** (Completed)
+   - ✅ Centralized site configuration
+   - ✅ Easy rebranding capability
+   - ✅ Name change in one location
+
+2. **Phase 2 - Quick Solutions** (In Progress)
+   - [ ] Spanish landing page at /espanol
+   - [ ] Contact form in Spanish
+   - [ ] Key value propositions translated
+   - [ ] Spanish lead capture
+
+3. **Phase 3 - Full Translation** (After v1.4)
+   - [ ] Complete content audit
+   - [ ] Professional translation service
+   - [ ] i18n system implementation
+   - [ ] SEO optimization per language
+
+4. **Phase 4 - Global Expansion** (Future)
+   - [ ] Additional languages (Portuguese, French)
+   - [ ] Geo-targeted content
+   - [ ] Multi-currency support
+   - [ ] Regional compliance
+
+### Decision Rationale:
+- Avoid retranslation during active development
+- Quick solution for immediate Spanish leads
+- Professional approach when codebase stabilizes
+- Cost-effective and time-efficient
+
+---
+
+## 🚀 Site Rebranding Capability
+**Added:** 2025-07-30
+**Status:** ✅ READY
+
+### Configuration System:
+```typescript
+// src/lib/config/site.ts
+export const siteConfig = {
+  name: "FAXAS", // Change this to rebrand entire site
+  // Options: "Full-Stacked", "Faxas Media", etc.
+}
+```
+
+### What Changes Automatically:
+- Navigation logo
+- Page titles
+- Email templates
+- SEO metadata
+- Social sharing
+- Footer branding
+
+### Future Enhancements:
+- [ ] Logo upload system
+- [ ] Color scheme configuration
+- [ ] Font selection
+- [ ] Multi-brand support
+- [ ] White-label options

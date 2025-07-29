@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, LogOut, Settings, LayoutDashboard } from 'lucide-react';
 import { useAuthStore } from '@/lib/store/authStore';
 import { cn } from '@/lib/utils';
+import { siteConfig } from '@/lib/config/site';
 
 export function Navigation() {
   const pathname = usePathname();
@@ -17,7 +18,7 @@ export function Navigation() {
     { href: '/projects', label: 'Projects' },
     { href: '/about', label: 'About' },
     { href: '/contact', label: 'Contact' },
-    ...(user ? [{ href: '/portal', label: 'Portal', accent: 'accent-green' }] : []),
+    ...(user && !isAdmin ? [{ href: '/portal', label: 'Portal', accent: 'accent-green' }] : []),
   ];
   
   const [isScrolled, setIsScrolled] = useState(false);
@@ -61,7 +62,7 @@ export function Navigation() {
                 whileHover={{ scale: 1.05 }}
                 className="relative"
               >
-                <h1 className="text-2xl font-bold gradient-text">FAXAS</h1>
+                <h1 className="text-2xl font-bold gradient-text">{siteConfig.name}</h1>
               </motion.div>
             </Link>
 
