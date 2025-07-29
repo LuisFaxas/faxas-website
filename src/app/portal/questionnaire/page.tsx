@@ -2,22 +2,26 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { QuestionCard } from '@/components/portal/questionnaire/QuestionCard';
+import { AnimatedBackground } from '@/components/ui/animated-background';
+import { Loader2 } from 'lucide-react';
 import { questions, getQuestionFlow, questionnaireVersion } from '@/lib/portal/questionnaire-config';
 import { calculateLeadScore } from '@/lib/portal/scoring';
 import { 
   QuestionnaireResponse, 
   QuestionnaireSession,
-  Question 
+  Question,
+  getPortalFeatures 
 } from '@/types/portal';
 import { 
   doc, 
   setDoc, 
   getDoc, 
   serverTimestamp,
-  updateDoc 
+  updateDoc,
+  arrayUnion 
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { toast } from '@/components/ui/toast';
@@ -36,8 +40,7 @@ export default function QuestionnairePage() {
   const questionFlow = getQuestionFlow(responses);
   const currentQuestion = questionFlow[currentQuestionIndex];
   const isFirst = currentQuestionIndex === 0;
-  const isLast = currentQuestionIndex === questions.length - 1 || 
-                 !questions.some(q => !responses.has(q.id) && !questionFlow.includes(q));
+  const isLast = currentQuestionIndex === questionFlow.length - 1;
 
   useEffect(() => {
     if (user) {
@@ -105,11 +108,12 @@ export default function QuestionnairePage() {
     if (!user || !sessionId) return;
 
     try {
+      const now = new Date();
       const responseArray: QuestionnaireResponse[] = Array.from(responses.entries()).map(
         ([questionId, value]) => ({
           questionId,
           value,
-          answeredAt: serverTimestamp() as any,
+          answeredAt: now,
           timeSpent: Math.round((Date.now() - questionStartTime) / 1000),
         })
       );
@@ -159,11 +163,12 @@ export default function QuestionnairePage() {
       const score = calculateLeadScore(responses);
       
       // Update session as completed
+      const now = new Date();
       const responseArray: QuestionnaireResponse[] = Array.from(responses.entries()).map(
         ([questionId, value]) => ({
           questionId,
           value,
-          answeredAt: serverTimestamp() as any,
+          answeredAt: now,
           timeSpent: Math.round((Date.now() - questionStartTime) / 1000),
         })
       );
@@ -172,19 +177,31 @@ export default function QuestionnairePage() {
         responses: responseArray,
         completedAt: serverTimestamp(),
         status: 'completed',
-        score,
+        score: score.total,
+        scoreBreakdown: score,
       });
 
-      // Update user's lead record with score
-      await updateDoc(doc(db, 'leads', user.uid), {
-        score: score.total,
-        questionnaire: {
-          completed: true,
-          completedAt: serverTimestamp(),
-          responses: Object.fromEntries(responses),
-        },
-        updatedAt: serverTimestamp(),
-      });
+      // Update user document with questionnaire completion milestone
+      const userRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userRef);
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        const updatedMilestones = [...(userData.milestones || []), {
+          type: 'questionnaire_completed',
+          timestamp: new Date(),
+          metadata: { 
+            score: score.total,
+            temperature: score.temperature 
+          }
+        }];
+        
+        await updateDoc(userRef, {
+          milestones: updatedMilestones,
+          journeyStage: 'evaluating',
+          updatedAt: serverTimestamp(),
+        });
+      }
 
       // Track analytics
       await trackAnalyticsEvent('questionnaire_completed', {
@@ -210,10 +227,20 @@ export default function QuestionnairePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-blue mx-auto mb-4"></div>
-          <p className="text-text-secondary">Loading questionnaire...</p>
+      <div className="min-h-screen relative bg-gradient-to-br from-background-start via-background-middle to-background-end overflow-hidden">
+        <AnimatedBackground />
+        <div className="relative z-10 min-h-screen flex items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="glass-primary p-8 rounded-3xl"
+          >
+            <div className="flex items-center gap-3">
+              <Loader2 className="w-6 h-6 animate-spin text-accent-blue" />
+              <p className="text-text-secondary">Loading questionnaire...</p>
+            </div>
+          </motion.div>
         </div>
       </div>
     );
@@ -228,21 +255,51 @@ export default function QuestionnairePage() {
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-8">
-      <AnimatePresence mode="wait">
-        <QuestionCard
-          key={currentQuestion.id}
-          question={currentQuestion}
-          value={responses.get(currentQuestion.id)}
-          onChange={handleAnswer}
-          onNext={handleNext}
-          onBack={handleBack}
-          isFirst={isFirst}
-          isLast={isLast}
-          questionNumber={currentQuestionIndex + 1}
-          totalQuestions={questions.length}
-        />
-      </AnimatePresence>
+    <div className="min-h-screen relative bg-gradient-to-br from-background-start via-background-middle to-background-end overflow-hidden">
+      <AnimatedBackground />
+      
+      {/* Floating decorative elements */}
+      <motion.div
+        className="absolute top-20 left-20 w-32 h-32 bg-gradient-to-br from-accent-purple/20 to-accent-pink/20 rounded-full blur-3xl"
+        animate={{
+          y: [-20, 20, -20],
+          x: [-10, 10, -10],
+        }}
+        transition={{
+          duration: 8,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      />
+      <motion.div
+        className="absolute bottom-40 right-40 w-40 h-40 bg-gradient-to-tr from-accent-blue/20 to-accent-green/20 rounded-full blur-3xl"
+        animate={{
+          y: [20, -20, 20],
+          x: [10, -10, 10],
+        }}
+        transition={{
+          duration: 10,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      />
+      
+      <div className="relative z-10 min-h-screen p-4 md:p-8 flex items-center justify-center">
+        <AnimatePresence mode="wait">
+          <QuestionCard
+            key={currentQuestion.id}
+            question={currentQuestion}
+            value={responses.get(currentQuestion.id)}
+            onChange={handleAnswer}
+            onNext={handleNext}
+            onBack={handleBack}
+            isFirst={isFirst}
+            isLast={isLast}
+            questionNumber={currentQuestionIndex + 1}
+            totalQuestions={questions.length}
+          />
+        </AnimatePresence>
+      </div>
     </div>
   );
 }

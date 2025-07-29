@@ -54,6 +54,14 @@ export default function PortalDashboardPage() {
       // Load questionnaire session
       const sessionDoc = await getDoc(doc(db, 'questionnaire_sessions', user.uid));
       
+      // If user is a lead and hasn't completed questionnaire, redirect
+      if (portalUser.role === 'lead') {
+        if (!sessionDoc.exists() || sessionDoc.data().status !== 'completed') {
+          router.push('/portal/questionnaire');
+          return;
+        }
+      }
+      
       // Mock dashboard data for now
       const mockData: PortalDashboardData = {
         user: portalUser,

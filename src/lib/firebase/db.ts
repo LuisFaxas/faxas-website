@@ -91,15 +91,10 @@ export async function createLead(leadData: ContactFormData): Promise<string> {
     // Calculate lead score based on data
     const score = calculateLeadScore(leadData);
     
-    const lead: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'> = {
+    const lead: any = {
       name: leadData.name,
       email: leadData.email,
-      phone: leadData.phone,
-      company: leadData.company,
       message: leadData.message,
-      projectType: leadData.projectType,
-      budget: leadData.budget,
-      timeline: leadData.timeline,
       status: 'new',
       source: leadData.source as Lead['source'] || 'contact_form',
       score,
@@ -111,6 +106,13 @@ export async function createLead(leadData: ContactFormData): Promise<string> {
         lastActivityAt: new Date(),
       },
     };
+    
+    // Add optional fields only if they exist
+    if (leadData.phone) lead.phone = leadData.phone;
+    if (leadData.company) lead.company = leadData.company;
+    if (leadData.projectType) lead.projectType = leadData.projectType;
+    if (leadData.budget) lead.budget = leadData.budget;
+    if (leadData.timeline) lead.timeline = leadData.timeline;
     
     const docRef = await addDoc(leadsCollection, {
       ...lead,
@@ -133,21 +135,30 @@ function calculateLeadScore(data: ContactFormData): number {
   let score = 0;
   
   // Budget weight (40 points)
-  if (data.budget === '$50k+') score += 40;
-  else if (data.budget === '$25k-$50k') score += 30;
-  else if (data.budget === '$10k-$25k') score += 20;
-  else if (data.budget === '$5k-$10k') score += 10;
+  if (data.budget) {
+    if (data.budget === '$50k+') score += 40;
+    else if (data.budget === '$25k-$50k') score += 30;
+    else if (data.budget === '$10k-$25k') score += 20;
+    else if (data.budget === '$5k-$10k') score += 10;
+  }
   
   // Timeline urgency (30 points)
-  if (data.timeline === 'ASAP') score += 30;
-  else if (data.timeline === '1-3 months') score += 20;
-  else if (data.timeline === '3-6 months') score += 10;
+  if (data.timeline) {
+    if (data.timeline === 'ASAP') score += 30;
+    else if (data.timeline === '1-3 months') score += 20;
+    else if (data.timeline === '3-6 months') score += 10;
+  }
   
   // Project type (15 points)
   if (data.projectType) score += 15;
   
   // Company info (15 points)
   if (data.company) score += 15;
+  
+  // For portal leads without budget/timeline info, give base score
+  if (!data.budget && !data.timeline && data.source === 'portal_start') {
+    score = 5; // Base score for portal signups
+  }
   
   return Math.min(score, 100);
 }
@@ -266,9 +277,8 @@ export async function trackAnalyticsEvent(
   userId?: string
 ): Promise<void> {
   try {
-    const event: Omit<AnalyticsEvent, 'id' | 'timestamp'> = {
+    const event: any = {
       type,
-      userId,
       sessionId: getSessionId(),
       properties,
       context: {
@@ -283,6 +293,11 @@ export async function trackAnalyticsEvent(
         language: navigator.language,
       },
     };
+    
+    // Only add userId if it exists
+    if (userId) {
+      event.userId = userId;
+    }
     
     await addDoc(analyticsCollection, {
       ...event,

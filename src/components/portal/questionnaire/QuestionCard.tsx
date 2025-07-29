@@ -2,10 +2,9 @@
 
 import { motion } from 'framer-motion';
 import { Question, QuestionOption } from '@/types/portal';
-import { GlassPanel } from '@/components/ui/glass/glass-panel';
-import { Button } from '@/components/ui/button';
+import { GlassPanel } from '@/components/ui/glass-panel';
 import { cn } from '@/lib/utils';
-import { Check, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 
 interface QuestionCardProps {
@@ -35,9 +34,15 @@ export function QuestionCard({
 
   const handleNext = () => {
     // Validate if required
-    if (question.required && !value) {
-      setError('This field is required');
-      return;
+    if (question.required && value === undefined || value === null || value === '') {
+      // Special handling for yes/no questions - false is a valid value
+      if (question.type === 'yes-no' && value !== false && value !== true) {
+        setError('This field is required');
+        return;
+      } else if (question.type !== 'yes-no' && !value) {
+        setError('This field is required');
+        return;
+      }
     }
 
     // Custom validation
@@ -72,7 +77,14 @@ export function QuestionCard({
             value={value || ''}
             onChange={(e) => onChange(e.target.value)}
             placeholder={question.placeholder}
-            className="w-full px-4 py-3 rounded-2xl bg-white/50 backdrop-blur-sm border border-glass-lighter focus:outline-none focus:ring-2 focus:ring-accent-blue/50 text-text-primary"
+            className={cn(
+              "w-full px-4 py-3 bg-white/50 backdrop-blur-sm",
+              "border-2 rounded-2xl transition-all duration-300",
+              "focus:outline-none focus:ring-0",
+              "border-glass-lighter hover:border-glass-light",
+              "focus:border-accent-blue focus:bg-white/70 focus:shadow-lg",
+              "text-text-primary placeholder:text-text-tertiary"
+            )}
           />
         );
 
@@ -83,7 +95,14 @@ export function QuestionCard({
             onChange={(e) => onChange(e.target.value)}
             placeholder={question.placeholder}
             rows={4}
-            className="w-full px-4 py-3 rounded-2xl bg-white/50 backdrop-blur-sm border border-glass-lighter focus:outline-none focus:ring-2 focus:ring-accent-blue/50 text-text-primary resize-none"
+            className={cn(
+              "w-full px-4 py-3 bg-white/50 backdrop-blur-sm",
+              "border-2 rounded-2xl transition-all duration-300",
+              "focus:outline-none focus:ring-0 resize-none",
+              "border-glass-lighter hover:border-glass-light",
+              "focus:border-accent-blue focus:bg-white/70 focus:shadow-lg",
+              "text-text-primary placeholder:text-text-tertiary"
+            )}
           />
         );
 
@@ -92,7 +111,14 @@ export function QuestionCard({
           <select
             value={value || ''}
             onChange={(e) => onChange(e.target.value)}
-            className="w-full px-4 py-3 rounded-2xl bg-white/50 backdrop-blur-sm border border-glass-lighter focus:outline-none focus:ring-2 focus:ring-accent-blue/50 text-text-primary"
+            className={cn(
+              "w-full px-4 py-3 bg-white/50 backdrop-blur-sm",
+              "border-2 rounded-2xl transition-all duration-300",
+              "focus:outline-none focus:ring-0",
+              "border-glass-lighter hover:border-glass-light",
+              "focus:border-accent-blue focus:bg-white/70 focus:shadow-lg",
+              "text-text-primary"
+            )}
           >
             <option value="">Select an option</option>
             {question.options?.map((option) => (
@@ -114,10 +140,10 @@ export function QuestionCard({
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className={cn(
-                  'relative p-6 rounded-2xl border-2 transition-all duration-200 text-left',
+                  'relative p-6 rounded-2xl border-2 transition-all duration-300 text-left group',
                   value === option.value
-                    ? 'border-accent-blue bg-accent-blue/10'
-                    : 'border-glass-lighter bg-white/30 hover:bg-white/40'
+                    ? 'border-accent-blue bg-gradient-to-br from-accent-blue/20 to-accent-purple/20 shadow-lg'
+                    : 'border-glass-lighter bg-white/30 hover:bg-white/50 hover:border-glass-light hover:shadow-md'
                 )}
               >
                 {value === option.value && (
@@ -125,7 +151,10 @@ export function QuestionCard({
                     <Check className="w-4 h-4 text-white" />
                   </div>
                 )}
-                <h4 className="font-semibold text-text-primary mb-2">{option.label}</h4>
+                <h4 className={cn(
+                  "font-semibold mb-2 transition-colors",
+                  value === option.value ? "text-accent-blue" : "text-text-primary"
+                )}>{option.label}</h4>
                 {option.description && (
                   <p className="text-sm text-text-secondary">{option.description}</p>
                 )}
@@ -142,10 +171,10 @@ export function QuestionCard({
               <label
                 key={option.value}
                 className={cn(
-                  'flex items-center gap-3 p-4 rounded-xl cursor-pointer transition-all duration-200',
+                  'flex items-center gap-3 p-4 rounded-2xl cursor-pointer transition-all duration-300',
                   selectedValues.includes(option.value)
-                    ? 'bg-accent-blue/20 border-2 border-accent-blue'
-                    : 'bg-white/30 border-2 border-glass-lighter hover:bg-white/40'
+                    ? 'bg-gradient-to-br from-accent-blue/20 to-accent-purple/20 border-2 border-accent-blue shadow-md'
+                    : 'bg-white/30 border-2 border-glass-lighter hover:bg-white/50 hover:border-glass-light'
                 )}
               >
                 <input
@@ -198,22 +227,34 @@ export function QuestionCard({
       case 'yes-no':
         return (
           <div className="flex gap-4">
-            <Button
+            <motion.button
               type="button"
-              variant={value === true ? 'primary' : 'secondary'}
               onClick={() => onChange(true)}
-              className="flex-1"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className={cn(
+                "flex-1 py-4 px-6 rounded-2xl font-semibold transition-all duration-300",
+                value === true
+                  ? "bg-gradient-to-r from-accent-blue to-accent-purple text-white shadow-lg"
+                  : "bg-white/30 border-2 border-glass-lighter hover:bg-white/50 text-text-primary"
+              )}
             >
               Yes
-            </Button>
-            <Button
+            </motion.button>
+            <motion.button
               type="button"
-              variant={value === false ? 'primary' : 'secondary'}
               onClick={() => onChange(false)}
-              className="flex-1"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className={cn(
+                "flex-1 py-4 px-6 rounded-2xl font-semibold transition-all duration-300",
+                value === false
+                  ? "bg-gradient-to-r from-accent-blue to-accent-purple text-white shadow-lg"
+                  : "bg-white/30 border-2 border-glass-lighter hover:bg-white/50 text-text-primary"
+              )}
             >
               No
-            </Button>
+            </motion.button>
           </div>
         );
 
@@ -240,13 +281,15 @@ export function QuestionCard({
               {Math.round((questionNumber / totalQuestions) * 100)}% Complete
             </span>
           </div>
-          <div className="w-full bg-white/20 rounded-full h-2">
+          <div className="relative w-full bg-white/20 backdrop-blur-sm rounded-full h-3 overflow-hidden">
             <motion.div
-              className="bg-gradient-to-r from-accent-blue to-accent-purple h-2 rounded-full"
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-accent-blue to-accent-purple rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${(questionNumber / totalQuestions) * 100}%` }}
-              transition={{ duration: 0.3 }}
-            />
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent" />
+            </motion.div>
           </div>
         </div>
 
@@ -269,25 +312,31 @@ export function QuestionCard({
         {/* Navigation */}
         <div className="flex gap-3">
           {!isFirst && (
-            <Button
+            <motion.button
               type="button"
-              variant="secondary"
               onClick={onBack}
-              className="gap-2"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="px-6 py-3 rounded-2xl bg-white/30 border-2 border-glass-lighter hover:bg-white/50 text-text-primary font-medium transition-all duration-300 flex items-center gap-2"
             >
               <ChevronLeft className="w-5 h-5" />
               Back
-            </Button>
+            </motion.button>
           )}
-          <Button
+          <button
             type="button"
-            variant="primary"
             onClick={handleNext}
-            className="gap-2 ml-auto"
+            className="ml-auto relative group"
           >
-            {isLast ? 'Complete' : 'Next'}
-            {!isLast && <ChevronRight className="w-5 h-5" />}
-          </Button>
+            <div className="relative h-12 px-8 flex items-center justify-center rounded-2xl bg-gradient-to-r from-accent-blue to-accent-purple text-white font-semibold text-lg transition-all duration-300 group-hover:shadow-[0_8px_32px_rgba(59,130,246,0.5)] group-active:scale-[0.98]">
+              <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-50 rounded-2xl" />
+              <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+              <span className="relative z-10 flex items-center gap-3">
+                {isLast ? 'Complete' : 'Next'}
+                {!isLast && <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />}
+              </span>
+            </div>
+          </button>
         </div>
       </GlassPanel>
 

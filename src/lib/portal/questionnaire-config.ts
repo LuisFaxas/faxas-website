@@ -347,9 +347,18 @@ export function getNextQuestion(currentQuestionId: string, responses: Map<string
     }
   }
 
-  // Return next question in sequence
-  if (currentIndex < questions.length - 1) {
-    return questions[currentIndex + 1];
+  // Skip conditional questions if they shouldn't be shown
+  let nextIndex = currentIndex + 1;
+  while (nextIndex < questions.length) {
+    const nextQuestion = questions[nextIndex];
+    
+    // Skip current_website_url if user answered 'No' to having a website
+    if (nextQuestion.id === 'current_website_url' && responses.get('current_website') === false) {
+      nextIndex++;
+      continue;
+    }
+    
+    return nextQuestion;
   }
 
   return null;

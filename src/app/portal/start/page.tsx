@@ -22,7 +22,8 @@ import {
   EyeOff,
   Rocket,
   Target,
-  TrendingUp
+  TrendingUp,
+  Phone
 } from 'lucide-react';
 import { FcGoogle } from 'react-icons/fc';
 import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
@@ -73,6 +74,24 @@ function FloatingElements() {
       />
     </>
   );
+}
+
+// Phone number formatting function
+function formatPhoneNumber(value: string): string {
+  // Remove all non-numeric characters
+  const phoneNumber = value.replace(/[^\d]/g, '');
+  
+  // Apply formatting based on length
+  if (phoneNumber.length <= 3) {
+    return phoneNumber;
+  } else if (phoneNumber.length <= 6) {
+    return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+  } else if (phoneNumber.length <= 10) {
+    return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6)}`;
+  } else {
+    // Handle numbers with country code
+    return `+${phoneNumber.slice(0, 1)} (${phoneNumber.slice(1, 4)}) ${phoneNumber.slice(4, 7)}-${phoneNumber.slice(7, 11)}`;
+  }
 }
 
 export default function PortalStartPage() {
@@ -191,6 +210,7 @@ export default function PortalStartPage() {
     setIsCreating(true);
     try {
       // Create portal user document - build object without undefined values
+      const now = new Date();
       const portalUser: any = {
         id: user.uid,
         email: user.email || '',
@@ -199,14 +219,14 @@ export default function PortalStartPage() {
         roleHistory: [{
           from: 'lead' as const,
           to: 'lead' as const,
-          timestamp: serverTimestamp(),
+          timestamp: now,
           reason: 'Account created'
         }],
         portalFeatures: getPortalFeatures('lead'),
         journeyStage: 'exploring',
         milestones: [{
           type: 'account_created',
-          timestamp: serverTimestamp(),
+          timestamp: now,
           metadata: { method: user.providerData[0]?.providerId || 'email' }
         }],
         createdAt: serverTimestamp(),
@@ -924,9 +944,52 @@ export default function PortalStartPage() {
                 </div>
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-text-primary mb-2">
+                  Phone Number *
+                </label>
+                <div className="relative group">
+                  <input
+                    type="tel"
+                    required
+                    value={profileData.phone}
+                    onChange={(e) => {
+                      const formatted = formatPhoneNumber(e.target.value);
+                      setProfileData(prev => ({ 
+                        ...prev, 
+                        phone: formatted 
+                      }));
+                    }}
+                    onFocus={() => setFocusedField('profile-phone')}
+                    onBlur={() => setFocusedField('')}
+                    className={cn(
+                      "w-full px-4 py-3 pl-12 bg-white/50 backdrop-blur-sm",
+                      "border-2 rounded-2xl transition-all duration-300",
+                      "focus:outline-none focus:ring-0",
+                      focusedField === 'profile-phone'
+                        ? "border-accent-blue bg-white/70 shadow-lg"
+                        : "border-glass-lighter hover:border-glass-light"
+                    )}
+                    placeholder="(555) 123-4567"
+                    maxLength={14}
+                  />
+                  <Phone className={cn(
+                    "absolute left-4 top-3.5 w-5 h-5 transition-colors duration-300",
+                    focusedField === 'profile-phone' ? "text-accent-blue" : "text-text-tertiary"
+                  )} />
+                  {focusedField === 'profile-phone' && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="absolute inset-0 -z-10 bg-gradient-to-r from-accent-blue/20 to-accent-purple/20 blur-xl rounded-2xl"
+                    />
+                  )}
+                </div>
+              </div>
+
               <button
                 type="submit"
-                disabled={isCreating || !profileData.displayName}
+                disabled={isCreating || !profileData.displayName || !profileData.phone}
                 className="w-full relative group"
               >
                 <div className="relative h-14 px-8 flex items-center justify-center rounded-2xl bg-gradient-to-r from-accent-blue to-accent-purple text-white font-semibold text-lg transition-all duration-300 group-hover:shadow-[0_8px_32px_rgba(59,130,246,0.5)] group-active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">

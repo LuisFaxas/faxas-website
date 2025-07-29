@@ -23,9 +23,11 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
   const pathname = usePathname();
   const [portalUser, setPortalUser] = useState<PortalUser | null>(null);
   const [loadingPortal, setLoadingPortal] = useState(true);
+  const [questionnaireCompleted, setQuestionnaireCompleted] = useState(false);
   
   // Check if we're on pages that don't need portal layout
   const isStartPage = pathname?.includes('/portal/start');
+  const isQuestionnairePage = pathname?.includes('/portal/questionnaire');
 
   useEffect(() => {
     // Skip auth check for start page
@@ -51,6 +53,21 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
       if (userDoc.exists()) {
         const userData = userDoc.data() as PortalUser;
         setPortalUser(userData);
+        
+        // Check if questionnaire is completed
+        const sessionDoc = await getDoc(doc(db, 'questionnaire_sessions', user.uid));
+        if (sessionDoc.exists()) {
+          const sessionData = sessionDoc.data();
+          setQuestionnaireCompleted(sessionData.status === 'completed');
+          
+          // If user is a lead and hasn't completed questionnaire, redirect to questionnaire
+          if (userData.role === 'lead' && sessionData.status !== 'completed' && !isQuestionnairePage) {
+            router.push('/portal/questionnaire');
+          }
+        } else if (userData.role === 'lead' && !isQuestionnairePage) {
+          // No session exists, redirect to questionnaire
+          router.push('/portal/questionnaire');
+        }
       } else {
         // First time portal user - redirect to start
         router.push('/portal/start');
@@ -67,8 +84,8 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
     router.push('/');
   };
 
-  // For start page, don't show the portal chrome
-  if (isStartPage) {
+  // For start page or questionnaire (when not completed), don't show the portal chrome
+  if (isStartPage || (isQuestionnairePage && portalUser?.role === 'lead' && !questionnaireCompleted)) {
     return <>{children}</>;
   }
 
@@ -95,7 +112,7 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
       name: 'Dashboard', 
       href: '/portal/dashboard', 
       icon: User,
-      enabled: features.dashboard 
+      enabled: features.dashboard && (portalUser.role !== 'lead' || questionnaireCompleted)
     },
     { 
       name: 'Questionnaire', 
@@ -107,7 +124,7 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
       name: 'Resources', 
       href: '/portal/resources', 
       icon: FolderOpen,
-      enabled: features.resources 
+      enabled: features.resources && (portalUser.role !== 'lead' || questionnaireCompleted)
     },
     { 
       name: 'Communication', 
