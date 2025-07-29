@@ -297,6 +297,7 @@ export interface ContactFormData {
 export interface DashboardStats {
   totalLeads: number;
   newLeadsToday: number;
+  newLeads?: number; // For weekly new leads
   qualifiedLeads: number;
   conversionRate: number;
   averageLeadScore: number;
@@ -312,6 +313,8 @@ export interface DashboardStats {
     title: string;
     views: number;
   }>;
+  totalProjects?: number; // Total project count
+  totalMessages?: number; // Total messages count
 }
 
 // Firestore collection names

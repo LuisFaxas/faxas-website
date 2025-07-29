@@ -19,6 +19,7 @@ import { toast } from '@/components/ui/toast';
 import { useAuthStore } from '@/lib/store/authStore';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { formatDistanceToNow } from 'date-fns';
 
 interface DashboardStats {
   totalLeads: number;
@@ -38,11 +39,17 @@ export default function AdminDashboardPage() {
   const { userProfile } = useAuthStore();
   const [stats, setStats] = useState<DashboardStats>({
     totalLeads: 0,
+    newLeadsToday: 0,
     newLeads: 0,
-    totalProjects: 0,
-    totalMessages: 0,
+    qualifiedLeads: 0,
+    conversionRate: 0,
+    averageLeadScore: 0,
     leadsByStatus: {},
-    recentActivity: []
+    leadsBySource: {},
+    recentActivity: [],
+    topProjects: [],
+    totalProjects: 0,
+    totalMessages: 0
   });
   const [realtimeStats, setRealtimeStats] = useState({
     hotLeads: 0,
@@ -96,12 +103,10 @@ export default function AdminDashboardPage() {
       const newLeadsSnapshot = await getDocs(newLeadsQuery);
       
       setStats({
-        totalLeads: leadStats.total,
-        newLeads: newLeadsSnapshot.size,
+        ...leadStats,
         totalProjects,
         totalMessages,
-        leadsByStatus: leadStats.byStatus,
-        recentActivity: [] // TODO: Implement activity tracking
+        newLeads: newLeadsSnapshot.size
       });
     } catch (error) {
       console.error('Error loading dashboard stats:', error);
@@ -280,8 +285,10 @@ export default function AdminDashboardPage() {
                 <div key={index} className="flex items-start space-x-3">
                   <div className="w-2 h-2 bg-accent-blue rounded-full mt-1.5" />
                   <div className="flex-1">
-                    <p className="text-sm text-text-primary">{activity.title}</p>
-                    <p className="text-xs text-text-tertiary">{activity.time}</p>
+                    <p className="text-sm text-text-primary">{activity.description}</p>
+                    <p className="text-xs text-text-tertiary">
+                      {formatDistanceToNow(activity.timestamp, { addSuffix: true })}
+                    </p>
                   </div>
                 </div>
               ))
