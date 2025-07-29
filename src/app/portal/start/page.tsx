@@ -190,45 +190,60 @@ export default function PortalStartPage() {
 
     setIsCreating(true);
     try {
-      // Create portal user document
-      const portalUser: PortalUser = {
+      // Create portal user document - build object without undefined values
+      const portalUser: any = {
         id: user.uid,
         email: user.email || '',
         displayName: profileData.displayName || user.displayName || 'User',
-        photoURL: user.photoURL || undefined,
-        company: profileData.company || undefined,
-        phone: profileData.phone || undefined,
         role: 'lead',
         roleHistory: [{
           from: 'lead' as const,
           to: 'lead' as const,
-          timestamp: serverTimestamp() as any,
+          timestamp: serverTimestamp(),
           reason: 'Account created'
         }],
         portalFeatures: getPortalFeatures('lead'),
         journeyStage: 'exploring',
         milestones: [{
           type: 'account_created',
-          timestamp: serverTimestamp() as any,
+          timestamp: serverTimestamp(),
           metadata: { method: user.providerData[0]?.providerId || 'email' }
         }],
-        createdAt: serverTimestamp() as any,
-        updatedAt: serverTimestamp() as any,
-        lastLoginAt: serverTimestamp() as any,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        lastLoginAt: serverTimestamp(),
       };
+
+      // Add optional fields only if they have values
+      if (user.photoURL) {
+        portalUser.photoURL = user.photoURL;
+      }
+      if (profileData.company) {
+        portalUser.company = profileData.company;
+      }
+      if (profileData.phone) {
+        portalUser.phone = profileData.phone;
+      }
 
       // Save to Firestore
       await setDoc(doc(db, 'users', user.uid), portalUser);
 
-      // Create lead record
-      await createLead({
+      // Create lead record with only defined values
+      const leadData: any = {
         name: portalUser.displayName,
         email: portalUser.email,
-        company: portalUser.company,
-        phone: portalUser.phone,
         message: 'Portal account created - awaiting questionnaire',
         source: 'portal_start'
-      });
+      };
+      
+      if (portalUser.company) {
+        leadData.company = portalUser.company;
+      }
+      if (portalUser.phone) {
+        leadData.phone = portalUser.phone;
+      }
+      
+      await createLead(leadData);
 
       // Track analytics
       await trackAnalyticsEvent('portal_account_created', {
