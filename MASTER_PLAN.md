@@ -1085,4 +1085,26 @@ src/lib/email/
     └── questionnaire-complete.ts // Admin notifications
 ```
 
-**Result:** Email notifications are now fully functional, providing immediate alerts for hot leads and keeping users engaged throughout their portal journey.
+#### Setup Required:
+To activate email notifications:
+
+1. **Create Resend Account**
+   - Sign up at [resend.com](https://resend.com)
+   - Verify your domain or use their test domain
+   - Generate an API key
+
+2. **Update Environment Variables**
+   ```env
+   # Add to .env.local
+   RESEND_API_KEY=re_xxxxxxxxxxxxx
+   ADMIN_EMAIL=your-admin-email@example.com
+   ```
+
+3. **Test Email Templates**
+   - Visit `/test-email` to preview all templates
+   - Verify styling and content
+   - Test actual sending with your API key
+
+**Note:** The system gracefully handles missing API keys - it will log warnings but won't crash the application.
+
+**Result:** Email notifications are now fully implemented. Once Resend is configured, the system will automatically send welcome emails, questionnaire notifications, and hot lead alerts.
