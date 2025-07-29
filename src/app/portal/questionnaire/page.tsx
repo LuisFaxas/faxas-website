@@ -23,6 +23,7 @@ import {
 import { db } from '@/lib/firebase/config';
 import { toast } from '@/components/ui/toast';
 import { trackAnalyticsEvent } from '@/lib/firebase/db';
+import { sendQuestionnaireCompleteNotification, sendHotLeadAlert } from '@/lib/email/services';
 
 export default function QuestionnairePage() {
   const { user } = useAuth();
@@ -207,6 +208,50 @@ export default function QuestionnairePage() {
         temperature: score.temperature,
         timeSpent: Math.round((Date.now() - startTime) / 1000),
         version: questionnaireVersion,
+      });
+
+      // Prepare email data
+      const questionsWithAnswers = questionFlow.map(q => {
+        const answer = responses.get(q.id);
+        let formattedAnswer = 'Not answered';
+        
+        if (answer !== undefined && answer !== null) {
+          if (Array.isArray(answer)) {
+            formattedAnswer = answer.join(', ');
+          } else if (typeof answer === 'boolean') {
+            formattedAnswer = answer ? 'Yes' : 'No';
+          } else {
+            formattedAnswer = String(answer);
+          }
+        }
+        
+        return {
+          question: q.title,
+          answer: formattedAnswer,
+        };
+      });
+
+      // Send notification email (don't await to avoid blocking)
+      const emailPromise = score.total >= 80 
+        ? sendHotLeadAlert({
+            leadName: userData.displayName || userData.email || 'Unknown',
+            leadEmail: userData.email || '',
+            leadCompany: userData.company,
+            leadPhone: userData.phone,
+            score,
+            responses: questionsWithAnswers,
+          })
+        : sendQuestionnaireCompleteNotification({
+            leadName: userData.displayName || userData.email || 'Unknown',
+            leadEmail: userData.email || '',
+            leadCompany: userData.company,
+            score,
+            responses: questionsWithAnswers,
+          });
+
+      emailPromise.catch(error => {
+        console.error('Failed to send questionnaire notification:', error);
+        // Don't show error to user - email is not critical
       });
 
       // Show success and redirect

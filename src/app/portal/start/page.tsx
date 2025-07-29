@@ -32,6 +32,7 @@ import { getPortalFeatures } from '@/types/portal';
 import { createLead } from '@/lib/firebase/db';
 import { trackAnalyticsEvent } from '@/lib/firebase/db';
 import { cn } from '@/lib/utils';
+import { sendWelcomeEmail } from '@/lib/email/services';
 
 type ViewState = 'welcome' | 'signin' | 'signup' | 'profile' | 'redirecting';
 
@@ -270,6 +271,15 @@ export default function PortalStartPage() {
         method: user.providerData[0]?.providerId || 'email',
         hasCompany: !!portalUser.company,
         hasPhone: !!portalUser.phone,
+      });
+
+      // Send welcome email (don't await to avoid blocking)
+      sendWelcomeEmail({
+        userName: portalUser.displayName || 'there',
+        userEmail: portalUser.email,
+      }).catch(error => {
+        console.error('Failed to send welcome email:', error);
+        // Don't show error to user - email is not critical
       });
 
       // Show success and redirect
