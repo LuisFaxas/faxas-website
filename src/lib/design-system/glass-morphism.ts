@@ -43,13 +43,13 @@ export const glassLevels = {
   }
 } as const;
 
-// Border Styles - Consistent border system
+// Border Styles - Using inset shadows to avoid rendering artifacts
 export const glassBorders = {
   none: '',
-  subtle: 'border border-white/[0.08] dark:border-white/[0.06]',
-  medium: 'border border-white/[0.12] dark:border-white/[0.08]',
-  strong: 'border border-white/[0.18] dark:border-white/[0.12]',
-  accent: 'border border-white/[0.25] dark:border-white/[0.15]'
+  subtle: 'shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]',
+  medium: 'shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]',
+  strong: 'shadow-[inset_0_0_0_1px_rgba(255,255,255,0.18)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)]',
+  accent: 'shadow-[inset_0_0_0_1px_rgba(255,255,255,0.25)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.15)]'
 } as const;
 
 // Shadow System - Elevation hierarchy
@@ -185,7 +185,7 @@ export const glassStyles = {
   // Button styles
   button: {
     primary: cn(
-      glassLevels.accent.combined,
+      'bg-gradient-to-r from-accent-blue to-accent-purple',
       glassBorders.accent,
       glassShadows.md,
       radius.md,

@@ -9,24 +9,22 @@ import { Ripple } from './ripple';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 relative group',
+  'inline-flex items-center justify-center whitespace-nowrap font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-blue/50 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 relative group overflow-hidden',
   {
     variants: {
       variant: {
         primary: [
-          // Premium glassmorphism inspired by iOS
+          // Premium gradient button with proper contrast
           'text-white',
-          'bg-white/20',
+          'bg-gradient-to-r from-accent-blue to-accent-purple',
           'backdrop-blur-xl',
-          'border border-white/30',
-          'shadow-[0_8px_32px_rgba(31,38,135,0.37)]',
-          'hover:bg-white/30',
-          'hover:border-white/40',
-          'hover:shadow-[0_8px_32px_rgba(31,38,135,0.5)]',
+          'shadow-[0_8px_32px_rgba(59,130,246,0.4)]',
+          'hover:from-accent-blue/90 hover:to-accent-purple/90',
+          'hover:shadow-[0_12px_40px_rgba(59,130,246,0.5)]',
           'active:scale-[0.98]',
           // Gradient overlay for depth
           'before:absolute before:inset-0',
-          'before:bg-gradient-to-b before:from-white/10 before:to-transparent',
+          'before:bg-gradient-to-b before:from-white/20 before:to-transparent',
           'before:pointer-events-none before:rounded-[inherit]',
         ].join(' '),
         secondary: [
@@ -34,10 +32,9 @@ const buttonVariants = cva(
           'text-gray-900',
           'bg-white/60',
           'backdrop-blur-md',
-          'border border-gray-200/50',
-          'shadow-lg',
+          'shadow-[0_4px_16px_rgba(0,0,0,0.1)]',
           'hover:bg-white/80',
-          'hover:shadow-xl',
+          'hover:shadow-[0_8px_24px_rgba(0,0,0,0.15)]',
           'active:scale-[0.98]',
         ].join(' '),
         ghost: [
@@ -45,19 +42,16 @@ const buttonVariants = cva(
           'text-gray-700',
           'hover:bg-white/30',
           'hover:backdrop-blur-sm',
-          'hover:border hover:border-white/30',
           'active:scale-[0.98]',
         ].join(' '),
         glass: [
-          // Colored glass with gradient
+          // Colored glass with gradient - enhanced contrast
           'text-white',
-          'bg-gradient-to-r from-accent-blue/30 to-accent-purple/30',
+          'bg-gradient-to-r from-accent-blue/50 to-accent-purple/50',
           'backdrop-blur-xl',
-          'border border-white/30',
-          'shadow-[0_8px_32px_rgba(31,38,135,0.37)]',
-          'hover:from-accent-blue/40 hover:to-accent-purple/40',
-          'hover:border-white/40',
-          'hover:shadow-[0_8px_32px_rgba(31,38,135,0.5)]',
+          'shadow-[0_8px_32px_rgba(59,130,246,0.37)]',
+          'hover:from-accent-blue/60 hover:to-accent-purple/60',
+          'hover:shadow-[0_8px_32px_rgba(59,130,246,0.5)]',
           'active:scale-[0.98]',
           // Shimmer effect
           'after:absolute after:inset-0',
@@ -70,18 +64,16 @@ const buttonVariants = cva(
           // Outlined glass button
           'text-gray-900',
           'bg-transparent',
-          'border-2 border-gray-900/20',
           'hover:bg-white/30',
           'hover:backdrop-blur-sm',
-          'hover:border-gray-900/30',
           'active:scale-[0.98]',
         ].join(' '),
       },
       size: {
-        sm: 'h-9 px-4 text-sm rounded-xl gap-2',
-        md: 'h-11 px-6 text-base rounded-2xl gap-2.5',
-        lg: 'h-14 px-10 text-lg rounded-3xl gap-3',
-        xl: 'h-16 px-12 text-xl rounded-[32px] gap-4',
+        sm: 'h-9 px-4 text-sm rounded-lg gap-2',
+        md: 'h-11 px-6 text-base rounded-xl gap-2.5',
+        lg: 'h-14 px-10 text-lg rounded-xl gap-3',
+        xl: 'h-16 px-12 text-xl rounded-xl gap-4',
         icon: 'h-10 w-10 rounded-xl',
       },
     },

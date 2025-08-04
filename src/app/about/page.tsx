@@ -74,8 +74,10 @@ export default function AboutPage() {
             <motion.div variants={fadeInUp} className="flex flex-wrap gap-4 justify-center">
               <Link href="/portal/start">
                 <Button variant="primary" size="lg">
-                  Start Your Project
-                  <ArrowRight className="w-5 h-5 ml-2" />
+                  <span className="flex items-center">
+                    Start Your Project
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </span>
                 </Button>
               </Link>
               <Link href="/projects">
@@ -399,8 +401,10 @@ export default function AboutPage() {
               <p className="text-lg font-medium mb-4">Ready to transform your digital presence?</p>
               <Link href="/portal/start">
                 <Button variant="primary" size="lg">
-                  Let&apos;s Talk
-                  <ArrowRight className="w-5 h-5 ml-2" />
+                  <span className="flex items-center">
+                    Let&apos;s Talk
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </span>
                 </Button>
               </Link>
             </div>
@@ -471,8 +475,10 @@ export default function AboutPage() {
             <div className="flex flex-wrap gap-4 justify-center">
               <Link href="/portal/start">
                 <Button variant="primary" size="lg">
-                  Start Your Project
-                  <ArrowRight className="w-5 h-5 ml-2" />
+                  <span className="flex items-center">
+                    Start Your Project
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </span>
                 </Button>
               </Link>
               <Link href="/projects">

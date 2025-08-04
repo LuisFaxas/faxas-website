@@ -15,7 +15,9 @@ import {
   ArrowRight,
   Eye,
   EyeOff,
-  Zap
+  Zap,
+  AlertCircle,
+  Send
 } from 'lucide-react';
 import { FcGoogle } from 'react-icons/fc';
 import { useAuthStore } from '@/lib/store/authStore';
@@ -70,7 +72,7 @@ function FloatingElements() {
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { signIn, signInWithGoogle, verifyMagicLink, error, clearError, isLoading } = useAuthStore();
+  const { signIn, signInWithGoogle, sendMagicLink, verifyMagicLink, error, clearError, isLoading, isAdmin } = useAuthStore();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -81,6 +83,11 @@ function LoginContent() {
   const [isEmailFocused, setIsEmailFocused] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
   const [isMagicLinkVerifying, setIsMagicLinkVerifying] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isMagicLinkLoading, setIsMagicLinkLoading] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [passwordStrength, setPasswordStrength] = useState(0);
+  const [showMagicLink, setShowMagicLink] = useState(false);
   
   // Check for magic link on mount
   useEffect(() => {
@@ -105,6 +112,80 @@ function LoginContent() {
     checkMagicLink();
   }, [verifyMagicLink, router, searchParams]);
 
+  // Email validation
+  const validateEmail = (email: string) => {
+    const errors: Record<string, string> = {};
+    if (!email) {
+      errors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.email = 'Please enter a valid email';
+    }
+    return errors;
+  };
+
+  // Password strength calculation
+  const calculatePasswordStrength = (password: string) => {
+    let strength = 0;
+    if (password.length >= 8) strength += 25;
+    if (password.length >= 12) strength += 25;
+    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength += 25;
+    if (/\d/.test(password)) strength += 12.5;
+    if (/[^a-zA-Z\d]/.test(password)) strength += 12.5;
+    return strength;
+  };
+
+  // Handle email change with validation
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const email = e.target.value;
+    setFormData({ ...formData, email });
+    if (isEmailFocused) {
+      const errors = validateEmail(email);
+      setValidationErrors(prev => ({ ...prev, ...errors }));
+    }
+  };
+
+  // Handle password change with strength indicator
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const password = e.target.value;
+    setFormData({ ...formData, password });
+    setPasswordStrength(calculatePasswordStrength(password));
+    
+    if (isPasswordFocused && password) {
+      const errors: Record<string, string> = {};
+      if (password.length < 8) {
+        errors.password = 'Password must be at least 8 characters';
+      }
+      setValidationErrors(prev => ({ ...prev, ...errors }));
+    }
+  };
+
+  // Handle magic link request
+  const handleMagicLink = async () => {
+    const emailErrors = validateEmail(formData.email);
+    if (Object.keys(emailErrors).length > 0) {
+      setValidationErrors(emailErrors);
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
+    setIsMagicLinkLoading(true);
+    clearError();
+    
+    // Store email for when user returns
+    window.localStorage.setItem('emailForSignIn', formData.email);
+    
+    const result = await sendMagicLink(formData.email);
+    
+    if (result.success) {
+      toast.success('Magic link sent!', 'Check your email for the sign-in link.');
+      setShowMagicLink(false);
+    } else {
+      toast.error('Failed to send magic link', result.error || 'Please try again.');
+    }
+    
+    setIsMagicLinkLoading(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
@@ -118,8 +199,8 @@ function LoginContent() {
       if (returnUrl) {
         router.push(returnUrl);
       } else {
-        // Default to portal for authenticated users
-        router.push('/portal');
+        // Default based on user role
+        router.push(isAdmin ? '/admin' : '/portal');
       }
     } else {
       toast.error('Sign in failed', result.error || 'Please check your credentials.');
@@ -128,6 +209,7 @@ function LoginContent() {
 
   const handleGoogleSignIn = async () => {
     clearError();
+    setIsGoogleLoading(true);
     const result = await signInWithGoogle();
     
     if (result.success) {
@@ -137,10 +219,11 @@ function LoginContent() {
       if (returnUrl) {
         router.push(returnUrl);
       } else {
-        // Default to portal for authenticated users
-        router.push('/portal');
+        // Default based on user role
+        router.push(isAdmin ? '/admin' : '/portal');
       }
     }
+    setIsGoogleLoading(false);
   };
 
   // Show loading state while verifying magic link
@@ -312,18 +395,32 @@ function LoginContent() {
                       type="email"
                       required
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      onFocus={() => setIsEmailFocused(true)}
-                      onBlur={() => setIsEmailFocused(false)}
+                      onChange={handleEmailChange}
+                      onFocus={() => {
+                        setIsEmailFocused(true);
+                        if (formData.email) {
+                          const errors = validateEmail(formData.email);
+                          setValidationErrors(prev => ({ ...prev, ...errors }));
+                        }
+                      }}
+                      onBlur={() => {
+                        setIsEmailFocused(false);
+                        const errors = validateEmail(formData.email);
+                        setValidationErrors(prev => ({ ...prev, ...errors }));
+                      }}
                       className={cn(
                         "w-full px-4 py-3 pl-12 bg-white/50 backdrop-blur-sm",
                         "border-2 rounded-2xl transition-all duration-300",
                         "focus:outline-none focus:ring-0",
-                        isEmailFocused
+                        validationErrors.email 
+                          ? "border-red-400 bg-red-50/30"
+                          : isEmailFocused
                           ? "border-accent-blue bg-white/70 shadow-lg"
                           : "border-glass-lighter hover:border-glass-light"
                       )}
                       placeholder="you@example.com"
+                      aria-invalid={!!validationErrors.email}
+                      aria-describedby={validationErrors.email ? "email-error" : undefined}
                     />
                     <Mail className={cn(
                       "absolute left-4 top-3.5 w-5 h-5 transition-colors duration-300",
@@ -337,6 +434,12 @@ function LoginContent() {
                       />
                     )}
                   </div>
+                  {validationErrors.email && (
+                    <p id="email-error" className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {validationErrors.email}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -348,18 +451,43 @@ function LoginContent() {
                       type={showPassword ? "text" : "password"}
                       required
                       value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      onFocus={() => setIsPasswordFocused(true)}
-                      onBlur={() => setIsPasswordFocused(false)}
+                      onChange={handlePasswordChange}
+                      onFocus={() => {
+                        setIsPasswordFocused(true);
+                        if (formData.password && formData.password.length < 8) {
+                          setValidationErrors(prev => ({ 
+                            ...prev, 
+                            password: 'Password must be at least 8 characters' 
+                          }));
+                        }
+                      }}
+                      onBlur={() => {
+                        setIsPasswordFocused(false);
+                        if (formData.password && formData.password.length < 8) {
+                          setValidationErrors(prev => ({ 
+                            ...prev, 
+                            password: 'Password must be at least 8 characters' 
+                          }));
+                        } else {
+                          setValidationErrors(prev => {
+                            const { password, ...rest } = prev;
+                            return rest;
+                          });
+                        }
+                      }}
                       className={cn(
                         "w-full px-4 py-3 pl-12 pr-12 bg-white/50 backdrop-blur-sm",
                         "border-2 rounded-2xl transition-all duration-300",
                         "focus:outline-none focus:ring-0",
-                        isPasswordFocused
+                        validationErrors.password
+                          ? "border-red-400 bg-red-50/30"
+                          : isPasswordFocused
                           ? "border-accent-blue bg-white/70 shadow-lg"
                           : "border-glass-lighter hover:border-glass-light"
                       )}
                       placeholder="••••••••"
+                      aria-invalid={!!validationErrors.password}
+                      aria-describedby={validationErrors.password ? "password-error" : undefined}
                     />
                     <Lock className={cn(
                       "absolute left-4 top-3.5 w-5 h-5 transition-colors duration-300",
@@ -384,6 +512,45 @@ function LoginContent() {
                       />
                     )}
                   </div>
+                  
+                  {/* Password Strength Indicator */}
+                  {formData.password && isPasswordFocused && (
+                    <div className="mt-2 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-text-secondary">Password strength</span>
+                        <span className={cn(
+                          "text-xs font-medium",
+                          passwordStrength < 50 ? "text-red-600" :
+                          passwordStrength < 75 ? "text-amber-600" :
+                          "text-green-600"
+                        )}>
+                          {passwordStrength < 50 ? "Weak" :
+                           passwordStrength < 75 ? "Good" :
+                           "Strong"}
+                        </span>
+                      </div>
+                      <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${passwordStrength}%` }}
+                          transition={{ duration: 0.3 }}
+                          className={cn(
+                            "h-full rounded-full",
+                            passwordStrength < 50 ? "bg-red-500" :
+                            passwordStrength < 75 ? "bg-amber-500" :
+                            "bg-green-500"
+                          )}
+                        />
+                      </div>
+                    </div>
+                  )}
+                  
+                  {validationErrors.password && (
+                    <p id="password-error" className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {validationErrors.password}
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -456,13 +623,75 @@ function LoginContent() {
                 >
                   <button
                     onClick={handleGoogleSignIn}
-                    disabled={isLoading}
+                    disabled={isLoading || isGoogleLoading}
                     className="w-full glass-secondary px-6 py-3 rounded-2xl flex items-center justify-center gap-3 group hover:bg-white/80 transition-all duration-300"
                   >
-                    <FcGoogle className="w-6 h-6" />
-                    <span className="font-medium text-text-primary">Continue with Google</span>
+                    {isGoogleLoading ? (
+                      <>
+                        <Loader2 className="w-6 h-6 animate-spin text-gray-600" />
+                        <span className="font-medium text-text-primary">Signing in...</span>
+                      </>
+                    ) : (
+                      <>
+                        <FcGoogle className="w-6 h-6" />
+                        <span className="font-medium text-text-primary">Continue with Google</span>
+                      </>
+                    )}
                   </button>
                 </motion.div>
+
+                {/* Magic Link Option */}
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="mt-3"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setShowMagicLink(!showMagicLink)}
+                    className="w-full glass-secondary px-6 py-3 rounded-2xl flex items-center justify-center gap-3 group hover:bg-white/80 transition-all duration-300"
+                  >
+                    <Send className="w-5 h-5 text-accent-purple" />
+                    <span className="font-medium text-text-primary">Send me a magic link</span>
+                  </button>
+                </motion.div>
+
+                {/* Magic Link Form */}
+                <AnimatePresence>
+                  {showMagicLink && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="mt-4 overflow-hidden"
+                    >
+                      <div className="p-4 glass-accent rounded-xl border border-accent-purple/20">
+                        <p className="text-sm text-text-secondary mb-3">
+                          We'll send you a secure sign-in link to your email address.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={handleMagicLink}
+                          disabled={isMagicLinkLoading || !formData.email}
+                          className="w-full px-4 py-2 bg-gradient-to-r from-accent-purple to-accent-pink text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                          {isMagicLinkLoading ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              <span>Sending...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Mail className="w-4 h-4" />
+                              <span>Send Magic Link</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               <p className="mt-8 text-center text-sm text-text-secondary">

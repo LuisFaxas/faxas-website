@@ -19,8 +19,7 @@ const variants = {
   secondary: glass.styles.button.secondary,
   ghost: glass.styles.button.ghost,
   danger: cn(
-    glass.levels.accent.combined,
-    'bg-gradient-to-r from-red-500/20 to-red-600/10',
+    'bg-gradient-to-r from-red-500 to-red-600',
     glass.borders.accent,
     glass.shadows.md,
     glass.radius.md,
@@ -73,11 +72,11 @@ export const GlassButton = forwardRef<HTMLButtonElement, GlassButtonProps>(
           // Full width
           fullWidth && 'w-full',
           
-          // Text color based on variant
+          // Text color based on variant - ensure contrast
           variant === 'primary' && 'text-white',
           variant === 'secondary' && glass.text.primary,
-          variant === 'ghost' && glass.text.secondary,
-          variant === 'danger' && 'text-red-600 dark:text-red-400',
+          variant === 'ghost' && glass.text.primary,
+          variant === 'danger' && 'text-white',
           
           // Performance
           glass.performance.gpu,

@@ -927,9 +927,11 @@ export default function Home() {
                 Visit our projects page to explore the full portfolio
               </p>
               <Link href="/projects">
-                <Button variant="primary">
-                  View All Projects
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                <Button variant="glass" size="md" className="group">
+                  <span className="flex items-center">
+                    View All Projects
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </span>
                 </Button>
               </Link>
             </div>
@@ -985,13 +987,17 @@ export default function Home() {
             <div className="flex flex-wrap gap-4 justify-center">
               <Link href="/portal/start">
                 <Button variant="primary" size="lg" className="group">
-                  <span>Start Your Project</span>
-                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  <span className="flex items-center">
+                    Start Your Project
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </span>
                 </Button>
               </Link>
               <Link href="/projects">
                 <Button variant="secondary" size="lg">
-                  See More Examples
+                  <span className="flex items-center">
+                    See More Examples
+                  </span>
                 </Button>
               </Link>
             </div>
