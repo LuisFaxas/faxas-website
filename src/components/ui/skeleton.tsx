@@ -6,21 +6,33 @@ interface SkeletonProps {
 
 export function Skeleton({ className }: SkeletonProps) {
   return (
-    <div
-      className={cn(
-        'animate-pulse rounded-md bg-glass-lighter',
-        className
-      )}
-    />
+    <div className="relative overflow-hidden">
+      <div
+        className={cn(
+          'animate-pulse rounded-md bg-white/20 dark:bg-black/20 backdrop-blur-sm',
+          className
+        )}
+      />
+      {/* Shimmer Effect */}
+      <div 
+        className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/10 dark:via-white/5 to-transparent"
+      />
+    </div>
   );
 }
 
 export function CardSkeleton() {
   return (
-    <div className="p-6 rounded-2xl bg-white/50 backdrop-blur-sm border border-glass-lighter">
-      <Skeleton className="h-4 w-3/4 mb-4" />
-      <Skeleton className="h-3 w-full mb-2" />
-      <Skeleton className="h-3 w-5/6" />
+    <div className="relative rounded-2xl p-[1px] overflow-hidden">
+      {/* Gradient Border */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-white/10 animate-pulse" />
+      
+      {/* Inner Card */}
+      <div className="relative bg-white/60 dark:bg-black/60 backdrop-blur-xl rounded-2xl p-6">
+        <Skeleton className="h-4 w-3/4 mb-4" />
+        <Skeleton className="h-3 w-full mb-2" />
+        <Skeleton className="h-3 w-5/6" />
+      </div>
     </div>
   );
 }
@@ -49,13 +61,19 @@ export function TableRowSkeleton() {
 
 export function DashboardStatSkeleton() {
   return (
-    <div className="bg-white rounded-lg p-6 shadow-sm">
-      <div className="flex items-center justify-between mb-2">
-        <Skeleton className="h-5 w-24" />
-        <Skeleton className="h-10 w-10 rounded-lg" />
+    <div className="relative rounded-2xl p-[1px] overflow-hidden">
+      {/* Animated Gradient Border */}
+      <div className="absolute inset-0 bg-gradient-to-br from-accent-blue/20 via-accent-purple/20 to-accent-pink/20 animate-gradient" />
+      
+      {/* Inner Card */}
+      <div className="relative bg-white/80 dark:bg-black/80 backdrop-blur-xl rounded-2xl p-6">
+        <div className="flex items-center justify-between mb-2">
+          <Skeleton className="h-5 w-24" />
+          <Skeleton className="h-10 w-10 rounded-xl" />
+        </div>
+        <Skeleton className="h-8 w-16 mb-1" />
+        <Skeleton className="h-4 w-32" />
       </div>
-      <Skeleton className="h-8 w-16 mb-1" />
-      <Skeleton className="h-4 w-32" />
     </div>
   );
 }

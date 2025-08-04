@@ -64,6 +64,8 @@ export default {
         "subtle-float": "subtle-float 6s ease-in-out infinite",
         "pulse-soft": "pulse-soft 3s ease-in-out infinite",
         "ripple": "ripple 0.6s ease-out",
+        "shimmer": "shimmer 2s linear infinite",
+        "gradient": "gradient 8s ease infinite",
       },
       keyframes: {
         "gradient-shift": {
@@ -87,6 +89,19 @@ export default {
           to: {
             transform: "scale(4)",
             opacity: "0",
+          },
+        },
+        shimmer: {
+          "100%": {
+            transform: "translateX(100%)",
+          },
+        },
+        gradient: {
+          "0%, 100%": {
+            backgroundPosition: "0% 50%",
+          },
+          "50%": {
+            backgroundPosition: "100% 50%",
           },
         },
       },

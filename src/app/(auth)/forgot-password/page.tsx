@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/store/authStore';
 import { AnimatedBackground } from '@/components/ui/animated-background';
-import { GlassPanel } from '@/components/ui/glass-panel';
+import { GlassCard, GlassButton, GlassInput, glass } from '@/components/ui/glass';
 import { toast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 
@@ -24,7 +24,7 @@ const floatAnimation = {
     transition: {
       duration: 6,
       repeat: Infinity,
-      ease: "easeInOut"
+      ease: "easeInOut" as const
     }
   }
 };
@@ -55,7 +55,6 @@ export default function ForgotPasswordPage() {
   
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isEmailFocused, setIsEmailFocused] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,7 +82,15 @@ export default function ForgotPasswordPage() {
             transition={{ duration: 0.5 }}
             className="w-full max-w-md"
           >
-            <GlassPanel level="primary" className="p-8 text-center">
+            <GlassCard
+              level="strong"
+              border="medium"
+              shadow="xl"
+              radius="xl"
+              spacing="xl"
+              animated
+              className="text-center"
+            >
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
@@ -93,38 +100,36 @@ export default function ForgotPasswordPage() {
                 <Check className="w-10 h-10 text-accent-green" />
               </motion.div>
               
-              <h2 className="text-3xl font-bold gradient-text mb-4">Check Your Email</h2>
-              <p className="text-text-secondary mb-2">
+              <h2 className={cn("text-3xl font-bold mb-4", glass.text.primary)}>Check Your Email</h2>
+              <p className={cn("mb-2", glass.text.secondary)}>
                 We&apos;ve sent a password reset link to:
               </p>
-              <p className="font-medium text-text-primary mb-8">{email}</p>
+              <p className={cn("font-medium mb-8", glass.text.primary)}>{email}</p>
               
-              <p className="text-sm text-text-secondary mb-8">
+              <p className={cn("text-sm mb-8", glass.text.secondary)}>
                 Didn&apos;t receive the email? Check your spam folder or try sending again.
               </p>
               
               <div className="space-y-3">
-                <button
+                <GlassButton
+                  variant="secondary"
+                  fullWidth
                   onClick={() => setIsSubmitted(false)}
-                  className="w-full glass-secondary px-6 py-3 rounded-2xl font-medium text-text-primary hover:bg-white/80 transition-all duration-300"
                 >
                   Try Again
-                </button>
+                </GlassButton>
                 
-                <Link href="/login" className="block">
-                  <button className="w-full relative group">
-                    <div className="relative h-12 px-6 flex items-center justify-center rounded-2xl bg-gradient-to-r from-accent-blue to-accent-purple text-white font-medium transition-all duration-300 group-hover:shadow-[0_8px_32px_rgba(59,130,246,0.5)] group-active:scale-[0.98]">
-                      <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-50 rounded-2xl" />
-                      <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                      <span className="relative z-10 flex items-center gap-2">
-                        <ArrowLeft className="w-4 h-4" />
-                        Back to Login
-                      </span>
-                    </div>
-                  </button>
+                <Link href="/login">
+                  <GlassButton
+                    variant="primary"
+                    fullWidth
+                    icon={<ArrowLeft className="w-4 h-4" />}
+                  >
+                    Back to Login
+                  </GlassButton>
                 </Link>
               </div>
-            </GlassPanel>
+            </GlassCard>
           </motion.div>
         </div>
       </div>
@@ -143,7 +148,14 @@ export default function ForgotPasswordPage() {
           transition={{ duration: 0.5 }}
           className="w-full max-w-md"
         >
-          <GlassPanel level="primary" className="p-8 md:p-10">
+          <GlassCard
+            level="strong"
+            border="medium"
+            shadow="xl"
+            radius="xl"
+            spacing="xl"
+            animated
+          >
             <div className="text-center mb-8">
               <motion.div
                 initial={{ scale: 0 }}
@@ -153,96 +165,70 @@ export default function ForgotPasswordPage() {
               >
                 <Key className="w-8 h-8 text-white" />
               </motion.div>
-              <h2 className="text-3xl font-bold text-text-primary mb-2">Forgot Password?</h2>
-              <p className="text-text-secondary">
+              <h2 className={cn("text-3xl font-bold mb-2", glass.text.primary)}>Forgot Password?</h2>
+              <p className={glass.text.secondary}>
                 No worries, we&apos;ll send you reset instructions.
               </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
-                  Email Address
-                </label>
-                <div className="relative group">
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    onFocus={() => setIsEmailFocused(true)}
-                    onBlur={() => setIsEmailFocused(false)}
-                    className={cn(
-                      "w-full px-4 py-3 pl-12 bg-white/50 backdrop-blur-sm",
-                      "border-2 rounded-2xl transition-all duration-300",
-                      "focus:outline-none focus:ring-0",
-                      isEmailFocused
-                        ? "border-accent-blue bg-white/70 shadow-lg"
-                        : "border-glass-lighter hover:border-glass-light"
-                    )}
-                    placeholder="you@example.com"
-                  />
-                  <Mail className={cn(
-                    "absolute left-4 top-3.5 w-5 h-5 transition-colors duration-300",
-                    isEmailFocused ? "text-accent-blue" : "text-text-tertiary"
-                  )} />
-                  {isEmailFocused && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="absolute inset-0 -z-10 bg-gradient-to-r from-accent-blue/20 to-accent-purple/20 blur-xl rounded-2xl"
-                    />
-                  )}
-                </div>
+                <GlassInput
+                  label="Email Address"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  icon={<Mail className="w-5 h-5" />}
+                  fullWidth
+                  required
+                />
               </div>
 
               <AnimatePresence>
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
-                  className="glass-secondary p-4 rounded-xl"
                 >
-                  <p className="text-sm text-text-secondary">
+                  <GlassCard
+                    level="subtle"
+                    border="subtle"
+                    radius="lg"
+                    spacing="md"
+                  >
+                    <p className={cn("text-sm", glass.text.secondary)}>
                     Enter the email address associated with your account and we&apos;ll send you a link to reset your password.
-                  </p>
+                    </p>
+                  </GlassCard>
                 </motion.div>
               </AnimatePresence>
 
-              <button
+              <GlassButton
                 type="submit"
-                disabled={isLoading}
-                className="w-full relative group"
+                variant="primary"
+                fullWidth
+                size="lg"
+                loading={isLoading}
+                icon={!isLoading && <ArrowRight className="w-5 h-5" />}
+                iconPosition="right"
               >
-                <div className="relative h-14 px-8 flex items-center justify-center rounded-2xl bg-gradient-to-r from-accent-blue to-accent-purple text-white font-semibold text-lg transition-all duration-300 group-hover:shadow-[0_8px_32px_rgba(59,130,246,0.5)] group-active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">
-                  <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-50 rounded-2xl" />
-                  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                  <span className="relative z-10 flex items-center gap-3">
-                    {isLoading ? (
-                      <>
-                        <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                        <span>Sending...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>Send Reset Link</span>
-                        <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-                      </>
-                    )}
-                  </span>
-                </div>
-              </button>
+                {isLoading ? 'Sending...' : 'Send Reset Link'}
+              </GlassButton>
             </form>
 
             <div className="mt-8 text-center">
               <Link
                 href="/login"
-                className="inline-flex items-center gap-2 text-sm font-medium text-accent-blue hover:text-accent-purple transition-colors"
+                className={cn(
+                  "inline-flex items-center gap-2 text-sm font-medium",
+                  "text-accent-blue hover:text-accent-purple transition-colors"
+                )}
               >
                 <ArrowLeft className="w-4 h-4" />
                 Back to login
               </Link>
             </div>
-          </GlassPanel>
+          </GlassCard>
         </motion.div>
       </div>
 

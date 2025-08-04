@@ -342,9 +342,10 @@ export const getLeadStats = async (): Promise<DashboardStats> => {
       })
       .slice(0, 10)
       .map(lead => ({
+        id: `activity_${lead.id}_${Date.now()}`,
         type: 'new_lead',
         description: `New lead: ${lead.name} (${lead.email})`,
-        timestamp: lead.createdAt instanceof Timestamp ? lead.createdAt.toDate() : lead.createdAt
+        timestamp: lead.createdAt instanceof Timestamp ? lead.createdAt : Timestamp.fromDate(lead.createdAt)
       }));
     
     // Top projects (placeholder - would need project view tracking)

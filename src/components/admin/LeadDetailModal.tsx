@@ -18,8 +18,9 @@ import { GlassPanel } from '@/components/ui/glass-panel';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/toast';
 import { EnhancedLead } from '@/lib/firebase/admin-leads';
-import { updateLeadStatus, addLeadNote, addLeadTags, removeLeadTag, type Lead } from '@/lib/firebase/leads';
-import { getTemperatureEmoji } from '@/types/portal';
+import { updateLeadStatus, addLeadNote, addLeadTags, removeLeadTag } from '@/lib/firebase/leads';
+import { Lead } from '@/types/firebase';
+import { getTemperatureEmoji, calculateLeadTemperature } from '@/types/portal';
 import { useAuthStore } from '@/lib/store/authStore';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -214,7 +215,7 @@ export function LeadDetailModal({ lead, onClose, onUpdate }: LeadDetailModalProp
             {/* Score and Status */}
             <div className="flex items-center gap-4 p-4 bg-glass-light rounded-lg">
               <div className="text-center">
-                <div className="text-3xl mb-1">{getTemperatureEmoji(lead.questionnaire?.score || lead.score)}</div>
+                <div className="text-3xl mb-1">{getTemperatureEmoji(calculateLeadTemperature(lead.questionnaire?.score || lead.score))}</div>
                 <div className="text-sm text-text-secondary">Score: {lead.questionnaire?.score || lead.score}</div>
               </div>
               <div className="flex-1">
@@ -334,8 +335,8 @@ export function LeadDetailModal({ lead, onClose, onUpdate }: LeadDetailModalProp
                   {lead.questionnaire.responses.map((response, index) => (
                     <div key={index} className="p-4 bg-glass-light rounded-lg">
                       <p className="text-xs text-text-tertiary mb-1">Question {index + 1}</p>
-                      <p className="text-sm text-text-secondary mb-2">{response.question}</p>
-                      <p className="text-text-primary font-medium">{response.answer}</p>
+                      <p className="text-sm text-text-secondary mb-2">Question ID: {response.questionId}</p>
+                      <p className="text-text-primary font-medium">{String(response.value)}</p>
                     </div>
                   ))}
                 </div>
@@ -410,27 +411,27 @@ export function LeadDetailModal({ lead, onClose, onUpdate }: LeadDetailModalProp
               </div>
             </div>
             
-            {/* Metadata */}
-            {lead.metadata && (
+            {/* Project Details */}
+            {(lead.budget || lead.timeline || lead.projectType) && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {lead.metadata.budget && (
+                {lead.budget && (
                   <div className="p-4 bg-glass-light rounded-lg">
                     <p className="text-sm text-text-secondary mb-1">Budget</p>
-                    <p className="text-text-primary font-medium">{lead.metadata.budget}</p>
+                    <p className="text-text-primary font-medium">{lead.budget}</p>
                   </div>
                 )}
                 
-                {lead.metadata.timeline && (
+                {lead.timeline && (
                   <div className="p-4 bg-glass-light rounded-lg">
                     <p className="text-sm text-text-secondary mb-1">Timeline</p>
-                    <p className="text-text-primary font-medium">{lead.metadata.timeline}</p>
+                    <p className="text-text-primary font-medium">{lead.timeline}</p>
                   </div>
                 )}
                 
-                {lead.metadata.projectType && (
+                {lead.projectType && (
                   <div className="p-4 bg-glass-light rounded-lg">
                     <p className="text-sm text-text-secondary mb-1">Project Type</p>
-                    <p className="text-text-primary font-medium">{lead.metadata.projectType}</p>
+                    <p className="text-text-primary font-medium">{lead.projectType}</p>
                   </div>
                 )}
               </div>

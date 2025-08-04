@@ -39,29 +39,22 @@ const mockProject: Project = {
   category: 'web-app',
   description: 'A comprehensive dashboard for managing online stores with real-time analytics and inventory management.',
   featured: true,
-  tags: ['React', 'TypeScript', 'Firebase'],
+  status: 'active',
+  priority: 1,
   showcase: {
+    tier: 1 as const,
     quickPreview: {
       type: 'widget' as const,
       hookMessage: 'Watch sales grow in real-time',
       component: 'stats',
-      data: {
-        stats: [
-          { label: 'Orders', value: '156', trend: '+15%' },
-          { label: 'Revenue', value: '$12,543', trend: '+23%' },
-        ],
-      },
     },
-    thumbnail: '/projects/ecommerce-thumb.jpg',
-    gallery: [],
-    liveUrl: 'https://demo.example.com',
   },
   technical: {
     stack: ['React', 'Next.js', 'TypeScript', 'Firebase', 'Tailwind CSS'],
-    features: {
-      core: ['Real-time updates', 'Responsive design'],
-      advanced: [],
-    },
+    features: [
+      { name: 'Real-time updates', description: 'Live data synchronization' },
+      { name: 'Responsive design', description: 'Works on all devices' },
+    ],
     performance: {
       lighthouse: { performance: 98, accessibility: 100, bestPractices: 95, seo: 100 },
       loadTime: 0.8,
@@ -76,9 +69,31 @@ const mockProject: Project = {
     testimonial: {
       content: 'This dashboard transformed our business',
       author: 'John Doe',
-      role: 'CEO, Example Corp',
+      role: 'CEO',
+      company: 'Example Corp',
     },
   },
+  educational: {
+    concepts: [],
+    comparisons: [],
+    learningPath: [],
+  },
+  analytics: {
+    views: 0,
+    engagement: {
+      timeSpent: 0,
+      interactions: 0,
+      scrollDepth: 0,
+      educationalEngagement: 0,
+    },
+    conversion: {
+      viewToLead: 0,
+      leadToDiscovery: 0,
+      discoveryToClient: 0,
+    },
+  },
+  createdAt: new Date(),
+  updatedAt: new Date(),
 }
 
 describe('ProjectCard', () => {

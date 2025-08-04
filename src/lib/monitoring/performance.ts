@@ -69,7 +69,8 @@ export function trackWebVitals(): void {
   new PerformanceObserver((entryList) => {
     const entries = entryList.getEntries();
     entries.forEach((entry) => {
-      const fid = entry.processingStart - entry.startTime;
+      const fidEntry = entry as PerformanceEventTiming;
+      const fid = fidEntry.processingStart - fidEntry.startTime;
       
       logger.info('Web Vitals: FID', { value: fid });
       Sentry.setContext('web_vitals_fid', { value: fid });

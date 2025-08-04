@@ -13,7 +13,7 @@ import {
   limit
 } from 'firebase/firestore';
 import { db } from './config';
-import { Lead } from './leads';
+import { Lead } from '@/types/firebase';
 import { PortalUser, QuestionnaireSession } from '@/types/portal';
 
 export interface EnhancedLead extends Lead {
@@ -71,20 +71,21 @@ export function subscribeToLeads(
           // Try to fetch portal user data if email exists
           if (leadData.email) {
             try {
-              // Get user by email (you might need to adjust this query based on your structure)
+              // Get user by email
               const userQuery = query(
                 collection(db, 'users'),
                 where('email', '==', leadData.email),
                 limit(1)
               );
               
-              const userSnapshot = await getDoc(doc(db, 'users', leadData.uid || ''));
-              if (userSnapshot.exists()) {
-                enhancedLead.portalUser = userSnapshot.data() as PortalUser;
+              const userSnapshot = await getDocs(userQuery);
+              if (!userSnapshot.empty) {
+                const userDoc = userSnapshot.docs[0];
+                enhancedLead.portalUser = userDoc.data() as PortalUser;
                 
                 // If we have a user, try to get their questionnaire
                 const questionnaireDoc = await getDoc(
-                  doc(db, 'questionnaire_sessions', userSnapshot.id)
+                  doc(db, 'questionnaire_sessions', userDoc.id)
                 );
                 
                 if (questionnaireDoc.exists()) {
@@ -153,7 +154,12 @@ export function subscribeToDashboardStats(
         else if (lead.score >= 60) warmLeads++;
         
         // Count new today
-        const createdAt = lead.createdAt?.toDate();
+        let createdAt: Date | undefined;
+        if (lead.createdAt instanceof Date) {
+          createdAt = lead.createdAt;
+        } else if (lead.createdAt && typeof (lead.createdAt as any).toDate === 'function') {
+          createdAt = (lead.createdAt as any).toDate();
+        }
         if (createdAt && createdAt >= todayStart) {
           newToday++;
         }

@@ -36,7 +36,7 @@ export async function sendEmail({
       subject,
       html,
       text: text || subject, // Fallback to subject if no text provided
-      reply_to: replyTo,
+      replyTo: replyTo,
     });
 
     if (error) {

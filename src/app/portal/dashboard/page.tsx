@@ -14,7 +14,7 @@ import {
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { AnimatedBackground } from '@/components/ui/animated-background';
-import { GlassPanel } from '@/components/ui/glass-panel';
+import { GlassCard, GlassButton, GlassPanel, glass } from '@/components/ui/glass';
 import { 
   FileText, 
   Download, 
@@ -209,7 +209,7 @@ export default function PortalDashboardPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background-start via-background-middle to-background-end flex items-center justify-center">
         <AnimatedBackground />
-        <GlassPanel level="primary" className="p-8">
+        <GlassPanel level="strong" className="p-8">
           <div className="flex items-center gap-3">
             <Loader2 className="w-6 h-6 animate-spin text-accent-blue" />
             <p className="text-white/80">Loading your dashboard...</p>
@@ -263,7 +263,7 @@ export default function PortalDashboardPage() {
             transition={{ delay: 0.1 }}
             className="mb-8"
           >
-            <GlassPanel level="primary" className="p-6 sm:p-8">
+            <GlassPanel level="strong" className="p-6 sm:p-8">
               <div className="flex flex-col lg:flex-row items-center gap-6">
                 <div className="flex-shrink-0">
                   <ProgressRing 
@@ -349,7 +349,7 @@ export default function PortalDashboardPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.3 + (index * 0.1) }}
               >
-                <GlassPanel level="secondary" className="p-5 h-full">
+                <GlassPanel level="medium" className="p-5 h-full">
                   <div className="flex items-start justify-between mb-3">
                     <div className={cn(
                       "w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center",
@@ -379,7 +379,7 @@ export default function PortalDashboardPage() {
               </h3>
               <div className="space-y-3">
                 {nextSteps.map((step) => (
-                  <GlassPanel key={step.id} level="secondary" className="p-4 hover:shadow-lg transition-all">
+                  <GlassPanel key={step.id} level="medium" className="p-4 hover:shadow-lg transition-all">
                     <div className="flex items-start gap-3">
                       <div className={cn(
                         "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
@@ -438,7 +438,7 @@ export default function PortalDashboardPage() {
               </h3>
               <div className="space-y-3">
                 {resources.recommended.map((resource) => (
-                  <GlassPanel key={resource.id} level="secondary" className="p-4 hover:shadow-lg transition-all">
+                  <GlassPanel key={resource.id} level="medium" className="p-4 hover:shadow-lg transition-all">
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-purple/20 to-accent-pink/20 flex items-center justify-center flex-shrink-0">
                         {resource.type === 'guide' && <BookOpen className="w-4 h-4 text-accent-purple" />}
@@ -470,7 +470,7 @@ export default function PortalDashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
           >
-            <GlassPanel level="primary" className="p-6 sm:p-8">
+            <GlassPanel level="strong" className="p-6 sm:p-8">
               <div className="text-center">
                 <h3 className="text-xl font-semibold text-text-primary mb-2">
                   Need Help?

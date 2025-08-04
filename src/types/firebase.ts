@@ -1,3 +1,5 @@
+import { Timestamp } from 'firebase/firestore';
+
 // Firestore Collection Types
 
 // User roles
@@ -28,6 +30,10 @@ export type AnalyticsEventType =
   | 'contact_form_start'
   | 'contact_form_submit'
   | 'lead_score_calculated'
+  | 'lead_status_updated'
+  | 'questionnaire_started'
+  | 'questionnaire_completed'
+  | 'portal_account_created'
   | 'cta_click'
   | 'demo_interaction'
   | 'tooltip_view'
@@ -291,6 +297,7 @@ export interface ContactFormData {
   budget?: string;
   timeline?: string;
   source?: string;
+  referrer?: string;
 }
 
 // Admin dashboard statistics
@@ -304,9 +311,10 @@ export interface DashboardStats {
   leadsByStatus: Record<LeadStatus, number>;
   leadsBySource: Record<LeadSource, number>;
   recentActivity: Array<{
+    id: string;
     type: string;
     description: string;
-    timestamp: Date;
+    timestamp: Date | Timestamp;
   }>;
   topProjects: Array<{
     projectId: string;

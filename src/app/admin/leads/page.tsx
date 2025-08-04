@@ -18,7 +18,8 @@ import {
 } from 'lucide-react';
 import { GlassPanel } from '@/components/ui/glass-panel';
 import { Button } from '@/components/ui/button';
-import { updateLeadStatus, type Lead } from '@/lib/firebase/leads';
+import { updateLeadStatus } from '@/lib/firebase/leads';
+import { Lead } from '@/types/firebase';
 import { subscribeToLeads, EnhancedLead } from '@/lib/firebase/admin-leads';
 import { LeadCard } from '@/components/admin/LeadCard';
 import { LeadDetailModal } from '@/components/admin/LeadDetailModal';
@@ -88,8 +89,24 @@ export default function AdminLeadsPage() {
         return b.score - a.score;
       } else {
         // Sort by date (newest first)
-        const dateA = a.createdAt?.toDate?.() || new Date(0);
-        const dateB = b.createdAt?.toDate?.() || new Date(0);
+        let dateA: Date;
+        let dateB: Date;
+        
+        if (a.createdAt instanceof Date) {
+          dateA = a.createdAt;
+        } else if (a.createdAt && typeof (a.createdAt as any).toDate === 'function') {
+          dateA = (a.createdAt as any).toDate();
+        } else {
+          dateA = new Date(0);
+        }
+        
+        if (b.createdAt instanceof Date) {
+          dateB = b.createdAt;
+        } else if (b.createdAt && typeof (b.createdAt as any).toDate === 'function') {
+          dateB = (b.createdAt as any).toDate();
+        } else {
+          dateB = new Date(0);
+        }
         return dateB.getTime() - dateA.getTime();
       }
     });

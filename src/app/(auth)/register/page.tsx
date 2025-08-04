@@ -13,7 +13,8 @@ import {
 import { FcGoogle } from 'react-icons/fc';
 import { useAuthStore } from '@/lib/store/authStore';
 import { AnimatedBackground } from '@/components/ui/animated-background';
-import { GlassPanel } from '@/components/ui/glass-panel';
+import { GlassCard, GlassButton, GlassInput, GlassPanel, glass } from '@/components/ui/glass';
+import { cn } from '@/lib/utils';
 
 export default function RegisterPage() {
   const router = useRouter();

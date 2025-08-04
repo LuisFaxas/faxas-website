@@ -14,15 +14,11 @@ import {
   Star,
   Tag
 } from 'lucide-react';
-import { Lead } from '@/lib/firebase/leads';
+import { Lead } from '@/types/firebase';
+import { EnhancedLead } from '@/lib/firebase/admin-leads';
 import { PortalUser, QuestionnaireSession, getTemperatureEmoji } from '@/types/portal';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
-
-interface EnhancedLead extends Lead {
-  portalUser?: PortalUser;
-  questionnaire?: QuestionnaireSession;
-}
 
 interface LeadCardProps {
   lead: EnhancedLead;
@@ -61,16 +57,16 @@ export function LeadCard({ lead, onClick, isSelected }: LeadCardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <GlassPanel 
-        level="primary" 
-        className={cn(
-          "p-4 sm:p-6 cursor-pointer transition-all",
-          "hover:shadow-lg hover:border-accent-blue/50",
-          isSelected && "ring-2 ring-accent-blue shadow-lg",
-          temperature && temperatureStyles[temperature]
-        )}
-        onClick={onClick}
-      >
+      <div onClick={onClick}>
+        <GlassPanel 
+          level="primary" 
+          className={cn(
+            "p-4 sm:p-6 cursor-pointer transition-all",
+            "hover:shadow-lg hover:border-accent-blue/50",
+            isSelected && "ring-2 ring-accent-blue shadow-lg",
+            temperature && temperatureStyles[temperature]
+          )}
+        >
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           {/* Left side - Lead info */}
           <div className="flex-1 space-y-3">
@@ -180,7 +176,14 @@ export function LeadCard({ lead, onClick, isSelected }: LeadCardProps) {
             <div className="flex flex-wrap items-center gap-4 text-xs text-text-tertiary">
               <div className="flex items-center gap-1">
                 <Clock className="w-3 h-3" />
-                {formatDistanceToNow(lead.createdAt?.toDate() || new Date(), { addSuffix: true })}
+                {formatDistanceToNow(
+                  lead.createdAt instanceof Date 
+                    ? lead.createdAt 
+                    : (lead.createdAt && typeof (lead.createdAt as any).toDate === 'function')
+                      ? (lead.createdAt as any).toDate()
+                      : new Date(), 
+                  { addSuffix: true }
+                )}
               </div>
               {lead.source && (
                 <div className="flex items-center gap-1">
@@ -206,7 +209,8 @@ export function LeadCard({ lead, onClick, isSelected }: LeadCardProps) {
             <ChevronRight className="w-5 h-5 text-text-tertiary" />
           </div>
         </div>
-      </GlassPanel>
+        </GlassPanel>
+      </div>
     </motion.div>
   );
 }

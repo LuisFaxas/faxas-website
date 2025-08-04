@@ -1,28 +1,29 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, 
   Bell, 
   Sun, 
   Moon, 
   Command,
-  Menu,
   User,
-  LogOut
+  LogOut,
+  Menu
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/store/authStore';
-import { GlassPanel } from '@/components/ui/glass/glass-panel';
+import { GlassCard, GlassButton, glass } from '@/components/ui/glass';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
 interface AdminHeaderProps {
   onCommandPalette: () => void;
   sidebarCollapsed?: boolean;
+  onMobileMenu?: () => void;
 }
 
-export function AdminHeader({ onCommandPalette, sidebarCollapsed }: AdminHeaderProps) {
+export function AdminHeader({ onCommandPalette, sidebarCollapsed, onMobileMenu }: AdminHeaderProps) {
   const { userProfile, signOut } = useAuthStore();
   const [darkMode, setDarkMode] = useState(false);
   const [greeting, setGreeting] = useState('');
@@ -45,138 +46,181 @@ export function AdminHeader({ onCommandPalette, sidebarCollapsed }: AdminHeaderP
   // Handle dark mode toggle
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
-    // In production, this would update a global theme context
     document.documentElement.classList.toggle('dark');
   };
 
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (showProfileMenu && !(e.target as Element).closest('.profile-menu')) {
+        setShowProfileMenu(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showProfileMenu]);
+
   return (
-    <header className="sticky top-0 z-20">
-      <GlassPanel level="primary" className="m-4 sm:m-6">
-        <div className="px-4 sm:px-6 py-4">
-          <div className="flex items-center justify-between gap-4">
-            {/* Left Section - Greeting */}
-            <div className="flex items-center gap-4">
-              {/* Mobile Menu Toggle */}
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="lg:hidden p-2 rounded-xl hover:bg-white/10 transition-colors"
-                onClick={() => {/* Mobile menu handled by sidebar */}}
-              >
-                <Menu className="w-5 h-5 text-text-primary" />
-              </motion.button>
-              
-              <div>
-                <motion.h1 
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-xl sm:text-2xl font-bold text-text-primary"
-                >
-                  {greeting}, {userProfile?.displayName || 'Admin'}!
-                </motion.h1>
-                <p className="text-sm text-text-secondary hidden sm:block">
-                  Here's what's happening with your leads today
-                </p>
-              </div>
-            </div>
+    <header className="sticky top-0 z-30 p-4 sm:p-6">
+      <GlassCard
+        level="strong"
+        border="subtle"
+        shadow="md"
+        className="overflow-hidden"
+      >
+        <div className="flex items-center justify-between gap-4">
+          {/* Left Section - Greeting */}
+          <div className="flex items-center gap-4">
+            {/* Mobile Menu Button */}
+            {onMobileMenu && (
+              <GlassButton
+                variant="ghost"
+                size="sm"
+                onClick={onMobileMenu}
+                className="lg:hidden"
+                icon={<Menu className="w-5 h-5" />}
+              />
+            )}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <h1 className={cn("text-xl sm:text-2xl font-bold", glass.text.primary)}>
+                {greeting}, {userProfile?.displayName || 'Admin'}!
+              </h1>
+              <p className={cn("text-sm hidden sm:block", glass.text.secondary)}>
+                Here's what's happening with your leads today
+              </p>
+            </motion.div>
+          </div>
 
-            {/* Right Section - Actions */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              {/* Command Palette Button - Desktop */}
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={onCommandPalette}
-                className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors"
-              >
-                <Command className="w-4 h-4 text-text-secondary" />
-                <span className="text-sm text-text-secondary">⌘K</span>
-              </motion.button>
+          {/* Right Section - Actions */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Command Palette Button - Desktop */}
+            <GlassButton
+              variant="ghost"
+              size="sm"
+              onClick={onCommandPalette}
+              className="hidden lg:flex"
+              icon={<Command className="w-4 h-4" />}
+            >
+              <span className="text-xs">⌘K</span>
+            </GlassButton>
 
-              {/* Search Button - Mobile */}
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={onCommandPalette}
-                className="lg:hidden p-2 rounded-xl hover:bg-white/10 transition-colors"
-              >
-                <Search className="w-5 h-5 text-text-primary" />
-              </motion.button>
+            {/* Search Button - Mobile */}
+            <GlassButton
+              variant="ghost"
+              size="sm"
+              onClick={onCommandPalette}
+              className="lg:hidden"
+              icon={<Search className="w-5 h-5" />}
+            />
 
-              {/* Notifications */}
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="relative p-2 rounded-xl hover:bg-white/10 transition-colors"
-              >
-                <Bell className="w-5 h-5 text-text-primary" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-accent-red rounded-full" />
-              </motion.button>
+            {/* Notifications */}
+            <GlassButton
+              variant="ghost"
+              size="sm"
+              className="relative"
+              icon={
+                <>
+                  <Bell className="w-5 h-5" />
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                </>
+              }
+            />
 
-              {/* Dark Mode Toggle */}
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={toggleDarkMode}
-                className="p-2 rounded-xl hover:bg-white/10 transition-colors"
-              >
-                {darkMode ? (
-                  <Sun className="w-5 h-5 text-text-primary" />
+            {/* Dark Mode Toggle */}
+            <GlassButton
+              variant="ghost"
+              size="sm"
+              onClick={toggleDarkMode}
+              icon={
+                darkMode ? (
+                  <Sun className="w-5 h-5 text-yellow-500" />
                 ) : (
-                  <Moon className="w-5 h-5 text-text-primary" />
-                )}
-              </motion.button>
+                  <Moon className="w-5 h-5" />
+                )
+              }
+            />
 
-              {/* Profile Menu */}
-              <div className="relative">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  className="flex items-center gap-2 p-2 rounded-xl hover:bg-white/10 transition-colors"
-                >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent-blue to-accent-purple flex items-center justify-center">
-                    <span className="text-sm font-medium text-white">
-                      {userProfile?.displayName?.charAt(0) || 'A'}
-                    </span>
-                  </div>
-                </motion.button>
+            {/* Profile Menu */}
+            <div className="relative profile-menu">
+              <GlassButton
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                className="p-1"
+              >
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent-blue to-accent-purple flex items-center justify-center">
+                  <span className="text-sm font-bold text-white">
+                    {userProfile?.displayName?.charAt(0)?.toUpperCase() || 'A'}
+                  </span>
+                </div>
+              </GlassButton>
 
-                {/* Profile Dropdown */}
+              {/* Profile Dropdown */}
+              <AnimatePresence>
                 {showProfileMenu && (
                   <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="absolute right-0 mt-2 w-48"
+                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 mt-2 w-56"
                   >
-                    <GlassPanel level="secondary" className="p-1">
-                      <Link
-                        href="/admin/profile"
-                        className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors"
-                        onClick={() => setShowProfileMenu(false)}
-                      >
-                        <User className="w-4 h-4 text-text-secondary" />
-                        <span className="text-sm text-text-primary">Profile</span>
-                      </Link>
-                      <button
-                        onClick={() => {
-                          signOut();
-                          setShowProfileMenu(false);
-                        }}
-                        className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors"
-                      >
-                        <LogOut className="w-4 h-4 text-text-secondary" />
-                        <span className="text-sm text-text-primary">Sign Out</span>
-                      </button>
-                    </GlassPanel>
+                    <GlassCard
+                      level="strong"
+                      border="medium"
+                      shadow="lg"
+                      spacing="xs"
+                    >
+                      <div className="p-3 border-b border-white/10">
+                        <p className={cn("font-medium", glass.text.primary)}>
+                          {userProfile?.displayName || 'Admin User'}
+                        </p>
+                        <p className={cn("text-sm", glass.text.tertiary)}>
+                          {userProfile?.email}
+                        </p>
+                      </div>
+                      
+                      <div className="p-1">
+                        <Link
+                          href="/admin/profile"
+                          className={cn(
+                            "flex items-center gap-3 px-3 py-2 rounded-lg",
+                            "hover:bg-white/5 transition-colors",
+                            glass.text.secondary
+                          )}
+                          onClick={() => setShowProfileMenu(false)}
+                        >
+                          <User className="w-4 h-4" />
+                          <span className="text-sm">Profile Settings</span>
+                        </Link>
+                        
+                        <button
+                          onClick={async () => {
+                            setShowProfileMenu(false);
+                            await signOut();
+                          }}
+                          className={cn(
+                            "w-full flex items-center gap-3 px-3 py-2 rounded-lg",
+                            "hover:bg-white/5 transition-colors text-left",
+                            glass.text.secondary
+                          )}
+                        >
+                          <LogOut className="w-4 h-4" />
+                          <span className="text-sm">Sign Out</span>
+                        </button>
+                      </div>
+                    </GlassCard>
                   </motion.div>
                 )}
-              </div>
+              </AnimatePresence>
             </div>
           </div>
         </div>
-      </GlassPanel>
+      </GlassCard>
     </header>
   );
 }

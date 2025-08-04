@@ -24,7 +24,7 @@ const products = [
 
 export default function EcommerceDemoPage() {
   const [cart, setCart] = useState<{[key: number]: number}>({});
-  // const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
 
   const addToCart = (productId: number) => {
     setCart(prev => ({

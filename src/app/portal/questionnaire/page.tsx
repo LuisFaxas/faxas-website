@@ -18,7 +18,8 @@ import {
   setDoc, 
   getDoc, 
   serverTimestamp,
-  updateDoc
+  updateDoc,
+  Timestamp
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { toast } from '@/components/ui/toast';
@@ -29,7 +30,7 @@ export default function QuestionnairePage() {
   const { user } = useAuth();
   const router = useRouter();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [responses, setResponses] = useState<Map<string, string | string[] | number>>(new Map());
+  const [responses, setResponses] = useState<Map<string, string | string[] | number | boolean | null>>(new Map());
   const [sessionId, setSessionId] = useState<string>('');
   const [startTime] = useState<number>(Date.now());
   const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
@@ -106,7 +107,7 @@ export default function QuestionnairePage() {
     if (!user || !sessionId) return;
 
     try {
-      const now = new Date();
+      const now = Timestamp.now();
       const responseArray: QuestionnaireResponse[] = Array.from(responses.entries()).map(
         ([questionId, value]) => ({
           questionId,
@@ -161,7 +162,7 @@ export default function QuestionnairePage() {
       const score = calculateLeadScore(responses);
       
       // Update session as completed
-      const now = new Date();
+      const now = Timestamp.now();
       const responseArray: QuestionnaireResponse[] = Array.from(responses.entries()).map(
         ([questionId, value]) => ({
           questionId,
@@ -182,9 +183,10 @@ export default function QuestionnairePage() {
       // Update user document with questionnaire completion milestone
       const userRef = doc(db, 'users', user.uid);
       const userDoc = await getDoc(userRef);
+      let userData: any = null;
       
       if (userDoc.exists()) {
-        const userData = userDoc.data();
+        userData = userDoc.data();
         const updatedMilestones = [...(userData.milestones || []), {
           type: 'questionnaire_completed',
           timestamp: new Date(),
@@ -234,17 +236,17 @@ export default function QuestionnairePage() {
       // Send notification email (don't await to avoid blocking)
       const emailPromise = score.total >= 80 
         ? sendHotLeadAlert({
-            leadName: userData.displayName || userData.email || 'Unknown',
-            leadEmail: userData.email || '',
-            leadCompany: userData.company,
-            leadPhone: userData.phone,
+            leadName: userData?.displayName || user.email || 'Unknown',
+            leadEmail: userData?.email || user.email || '',
+            leadCompany: userData?.company,
+            leadPhone: userData?.phone,
             score,
             responses: questionsWithAnswers,
           })
         : sendQuestionnaireCompleteNotification({
-            leadName: userData.displayName || userData.email || 'Unknown',
-            leadEmail: userData.email || '',
-            leadCompany: userData.company,
+            leadName: userData?.displayName || user.email || 'Unknown',
+            leadEmail: userData?.email || user.email || '',
+            leadCompany: userData?.company,
             score,
             responses: questionsWithAnswers,
           });

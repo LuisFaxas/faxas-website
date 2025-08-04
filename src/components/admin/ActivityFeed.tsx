@@ -115,7 +115,7 @@ export function ActivityFeed() {
       <div className="space-y-3">
         {[...Array(3)].map((_, i) => (
           <div key={i} className="animate-pulse">
-            <div className="h-20 bg-white/10 rounded-xl"></div>
+            <div className="h-20 bg-white/20 dark:bg-black/20 backdrop-blur-sm rounded-xl"></div>
           </div>
         ))}
       </div>
@@ -136,16 +136,25 @@ export function ActivityFeed() {
               exit={{ opacity: 0, x: 20 }}
               transition={{ delay: index * 0.1 }}
             >
-              <GlassPanel 
-                level="secondary" 
-                className="p-4 hover:shadow-lg transition-all duration-300 cursor-pointer group"
-              >
-                <div className="flex items-start gap-4">
+              {/* Premium Glass Card */}
+              <div className="relative rounded-xl p-[1px] overflow-hidden group cursor-pointer">
+                {/* Gradient Border */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-white/10 group-hover:from-accent-blue/20 group-hover:to-accent-purple/20 transition-all duration-300" />
+                
+                {/* Inner Card */}
+                <div className="relative bg-white/60 dark:bg-black/60 backdrop-blur-xl rounded-xl">
+                  {/* Background Gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5 opacity-30" />
+                  
+                  {/* Content */}
+                  <div className="relative p-4">
+                    <div className="flex items-start gap-4">
                   {/* Icon */}
                   <motion.div
-                    whileHover={{ rotate: 10, scale: 1.1 }}
+                    whileHover={{ rotate: 360, scale: 1.1 }}
+                    transition={{ duration: 0.5 }}
                     className={cn(
-                      "w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center flex-shrink-0",
+                      "w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center flex-shrink-0 shadow-lg",
                       activity.color
                     )}
                   >
@@ -156,10 +165,10 @@ export function ActivityFeed() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1">
-                        <h4 className="text-sm font-medium text-text-primary group-hover:text-accent-blue transition-colors">
+                        <h4 className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-accent-blue group-hover:to-accent-purple group-hover:bg-clip-text transition-all">
                           {activity.title}
                         </h4>
-                        <p className="text-xs text-text-secondary mt-0.5">
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
                           {activity.description}
                         </p>
                         
@@ -183,7 +192,7 @@ export function ActivityFeed() {
                       </div>
                       
                       {/* Timestamp */}
-                      <div className="flex items-center gap-1 text-text-tertiary">
+                      <div className="flex items-center gap-1 text-gray-500 dark:text-gray-500">
                         <Clock className="w-3 h-3" />
                         <span className="text-xs whitespace-nowrap">
                           {formatDistanceToNow(activity.timestamp.toDate(), { addSuffix: true })}
@@ -191,15 +200,21 @@ export function ActivityFeed() {
                       </div>
                     </div>
                   </div>
+                    </div>
+                  </div>
+                  
+                  {/* Hover Shine Effect */}
+                  <motion.div
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 pointer-events-none"
+                    initial={{ x: '-100%' }}
+                    whileHover={{ x: '100%' }}
+                    transition={{ duration: 0.6 }}
+                    style={{
+                      background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.2) 50%, transparent 60%)',
+                    }}
+                  />
                 </div>
-
-                {/* Hover Action */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  whileHover={{ opacity: 1 }}
-                  className="absolute inset-0 bg-gradient-to-r from-accent-blue/5 to-accent-purple/5 rounded-xl pointer-events-none"
-                />
-              </GlassPanel>
+              </div>
             </motion.div>
           );
         })}
@@ -207,7 +222,7 @@ export function ActivityFeed() {
 
       {activities.length === 0 && (
         <div className="text-center py-8">
-          <p className="text-text-secondary">No recent activity</p>
+          <p className="text-gray-500 dark:text-gray-400">No recent activity</p>
         </div>
       )}
     </div>

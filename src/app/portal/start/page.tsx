@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { AnimatedBackground } from '@/components/ui/animated-background';
-import { GlassPanel } from '@/components/ui/glass-panel';
+import { GlassCard, GlassButton, GlassInput, glass } from '@/components/ui/glass';
 import { toast } from '@/components/ui/toast';
 import { 
   Sparkles, 
@@ -44,7 +44,7 @@ const floatAnimation = {
     transition: {
       duration: 6,
       repeat: Infinity,
-      ease: "easeInOut"
+      ease: "easeInOut" as const
     }
   }
 };
@@ -117,7 +117,6 @@ export default function PortalStartPage() {
   });
 
   // Focus states
-  const [focusedField, setFocusedField] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -309,12 +308,19 @@ export default function PortalStartPage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
           >
-            <GlassPanel level="primary" className="p-8">
+            <GlassCard
+              level="strong"
+              border="medium"
+              shadow="xl"
+              radius="xl"
+              spacing="xl"
+              animated
+            >
               <div className="flex items-center gap-3">
                 <Loader2 className="w-6 h-6 animate-spin text-accent-blue" />
-                <p className="text-text-secondary">Loading...</p>
+                <p className={glass.text.secondary}>Loading...</p>
               </div>
-            </GlassPanel>
+            </GlassCard>
           </motion.div>
         </div>
       </div>
@@ -340,11 +346,11 @@ export default function PortalStartPage() {
               <Rocket className="w-10 h-10 text-white" />
             </motion.div>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
+            <h1 className={cn("text-3xl sm:text-4xl md:text-5xl font-bold mb-4", glass.text.primary)}>
               Start Your
               <span className="block gradient-text mt-2">Project Journey</span>
             </h1>
-            <p className="text-lg sm:text-xl text-text-secondary mb-10 sm:mb-12 px-4">
+            <p className={cn("text-lg sm:text-xl mb-10 sm:mb-12 px-4", glass.text.secondary)}>
               Join FAXAS Portal to get personalized solutions and pricing for your web project
             </p>
 
@@ -355,71 +361,89 @@ export default function PortalStartPage() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4, duration: 0.5 }}
-                  className="glass-secondary p-4 sm:p-5 md:p-6 rounded-2xl hover:shadow-lg transition-all duration-300 flex items-start gap-3 sm:gap-4"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-blue/20 to-accent-purple/20 flex items-center justify-center flex-shrink-0">
-                    <Target className="w-6 h-6 text-accent-blue" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-text-primary mb-1 text-lg">Quick Assessment</h3>
-                    <p className="text-sm text-text-secondary leading-relaxed">
-                      Answer a few questions to help us understand your needs
-                    </p>
-                  </div>
+                  <GlassCard
+                    level="subtle"
+                    border="subtle"
+                    radius="lg"
+                    hover
+                    className="flex items-start gap-3 sm:gap-4 p-4 sm:p-5 md:p-6"
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-blue/20 to-accent-purple/20 flex items-center justify-center flex-shrink-0">
+                      <Target className="w-6 h-6 text-accent-blue" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className={cn("font-semibold mb-1 text-lg", glass.text.primary)}>Quick Assessment</h3>
+                      <p className={cn("text-sm leading-relaxed", glass.text.secondary)}>
+                        Answer a few questions to help us understand your needs
+                      </p>
+                    </div>
+                  </GlassCard>
                 </motion.div>
 
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.5, duration: 0.5 }}
-                  className="glass-secondary p-4 sm:p-5 md:p-6 rounded-2xl hover:shadow-lg transition-all duration-300 flex items-start gap-3 sm:gap-4"
                 >
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-accent-green/20 to-accent-blue/20 flex items-center justify-center flex-shrink-0">
-                    <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-accent-green" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-text-primary mb-1 text-base sm:text-lg">Instant Pricing</h3>
-                    <p className="text-xs sm:text-sm text-text-secondary leading-relaxed">
-                      Get an estimated budget range based on your requirements
-                    </p>
-                  </div>
+                  <GlassCard
+                    level="subtle"
+                    border="subtle"
+                    radius="lg"
+                    hover
+                    className="flex items-start gap-3 sm:gap-4 p-4 sm:p-5 md:p-6"
+                  >
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-accent-green/20 to-accent-blue/20 flex items-center justify-center flex-shrink-0">
+                      <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-accent-green" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className={cn("font-semibold mb-1 text-base sm:text-lg", glass.text.primary)}>Instant Pricing</h3>
+                      <p className={cn("text-xs sm:text-sm leading-relaxed", glass.text.secondary)}>
+                        Get an estimated budget range based on your requirements
+                      </p>
+                    </div>
+                  </GlassCard>
                 </motion.div>
 
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6, duration: 0.5 }}
-                  className="glass-secondary p-4 sm:p-5 md:p-6 rounded-2xl hover:shadow-lg transition-all duration-300 flex items-start gap-3 sm:gap-4"
                 >
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-accent-purple/20 to-accent-pink/20 flex items-center justify-center flex-shrink-0">
-                    <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-accent-purple" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-text-primary mb-1 text-base sm:text-lg">Personal Dashboard</h3>
-                    <p className="text-xs sm:text-sm text-text-secondary leading-relaxed">
-                      Track your project from initial idea to launch
-                    </p>
-                  </div>
+                  <GlassCard
+                    level="subtle"
+                    border="subtle"
+                    radius="lg"
+                    hover
+                    className="flex items-start gap-3 sm:gap-4 p-4 sm:p-5 md:p-6"
+                  >
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-accent-purple/20 to-accent-pink/20 flex items-center justify-center flex-shrink-0">
+                      <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-accent-purple" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className={cn("font-semibold mb-1 text-base sm:text-lg", glass.text.primary)}>Personal Dashboard</h3>
+                      <p className={cn("text-xs sm:text-sm leading-relaxed", glass.text.secondary)}>
+                        Track your project from initial idea to launch
+                      </p>
+                    </div>
+                  </GlassCard>
                 </motion.div>
               </div>
             </div>
 
             <div className="space-y-4">
-              <button
+              <GlassButton
+                variant="primary"
+                size="lg"
                 onClick={() => setViewState('signup')}
-                className="w-full sm:w-auto relative group"
+                icon={<ArrowRight className="w-5 h-5" />}
+                iconPosition="right"
+                className="w-full sm:w-auto"
               >
-                <div className="relative h-14 px-8 flex items-center justify-center rounded-2xl bg-gradient-to-r from-accent-blue to-accent-purple text-white font-semibold text-lg transition-all duration-300 group-hover:shadow-[0_8px_32px_rgba(59,130,246,0.5)] group-active:scale-[0.98]">
-                  <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-50 rounded-2xl" />
-                  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                  <span className="relative z-10 flex items-center gap-3">
-                    Create Account
-                    <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-                  </span>
-                </div>
-              </button>
+                Create Account
+              </GlassButton>
               
-              <div className="text-sm text-text-secondary">
+              <div className={cn("text-sm", glass.text.secondary)}>
                 Already have an account?{' '}
                 <button
                   onClick={() => setViewState('signin')}
@@ -449,91 +473,52 @@ export default function PortalStartPage() {
               >
                 <LogIn className="w-8 h-8 text-white" />
               </motion.div>
-              <h2 className="text-3xl font-bold text-text-primary mb-2">
+              <h2 className={cn("text-3xl font-bold mb-2", glass.text.primary)}>
                 Welcome Back
               </h2>
-              <p className="text-text-secondary">
+              <p className={glass.text.secondary}>
                 Sign in to continue to your portal
               </p>
             </div>
 
             <form onSubmit={handleEmailSignIn} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
-                  Email Address
-                </label>
-                <div className="relative group">
-                  <input
-                    type="email"
-                    required
-                    value={signInData.email}
-                    onChange={(e) => setSignInData({ ...signInData, email: e.target.value })}
-                    onFocus={() => setFocusedField('signin-email')}
-                    onBlur={() => setFocusedField('')}
-                    className={cn(
-                      "w-full px-4 py-3 pl-12 bg-white/50 backdrop-blur-sm",
-                      "border-2 rounded-2xl transition-all duration-300",
-                      "focus:outline-none focus:ring-0",
-                      focusedField === 'signin-email'
-                        ? "border-accent-blue bg-white/70 shadow-lg"
-                        : "border-glass-lighter hover:border-glass-light"
-                    )}
-                    placeholder="you@example.com"
-                  />
-                  <Mail className={cn(
-                    "absolute left-4 top-3.5 w-5 h-5 transition-colors duration-300",
-                    focusedField === 'signin-email' ? "text-accent-blue" : "text-text-tertiary"
-                  )} />
-                  {focusedField === 'signin-email' && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="absolute inset-0 -z-10 bg-gradient-to-r from-accent-blue/20 to-accent-purple/20 blur-xl rounded-2xl"
-                    />
-                  )}
-                </div>
+                <GlassInput
+                  label="Email Address"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={signInData.email}
+                  onChange={(e) => setSignInData({ ...signInData, email: e.target.value })}
+                  icon={<Mail className="w-5 h-5" />}
+                  fullWidth
+                  required
+                />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
-                  Password
-                </label>
-                <div className="relative group">
-                  <input
+                <div className="relative">
+                  <GlassInput
+                    label="Password"
                     type={showPassword ? "text" : "password"}
-                    required
+                    placeholder="••••••••"
                     value={signInData.password}
                     onChange={(e) => setSignInData({ ...signInData, password: e.target.value })}
-                    onFocus={() => setFocusedField('signin-password')}
-                    onBlur={() => setFocusedField('')}
-                    className={cn(
-                      "w-full px-4 py-3 pl-12 pr-12 bg-white/50 backdrop-blur-sm",
-                      "border-2 rounded-2xl transition-all duration-300",
-                      "focus:outline-none focus:ring-0",
-                      focusedField === 'signin-password'
-                        ? "border-accent-blue bg-white/70 shadow-lg"
-                        : "border-glass-lighter hover:border-glass-light"
-                    )}
-                    placeholder="••••••••"
+                    icon={<Lock className="w-5 h-5" />}
+                    fullWidth
+                    required
                   />
-                  <Lock className={cn(
-                    "absolute left-4 top-3.5 w-5 h-5 transition-colors duration-300",
-                    focusedField === 'signin-password' ? "text-accent-blue" : "text-text-tertiary"
-                  )} />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-3.5 text-text-tertiary hover:text-text-primary transition-colors"
+                    className={cn(
+                      "absolute right-3 top-[38px]",
+                      glass.text.tertiary,
+                      "hover:text-accent-blue transition-colors"
+                    )}
+                    style={{ marginTop: '-40px' }}
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
-                  {focusedField === 'signin-password' && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="absolute inset-0 -z-10 bg-gradient-to-r from-accent-blue/20 to-accent-purple/20 blur-xl rounded-2xl"
-                    />
-                  )}
                 </div>
               </div>
 
@@ -546,19 +531,16 @@ export default function PortalStartPage() {
                 </Link>
               </div>
 
-              <button
+              <GlassButton
                 type="submit"
-                className="w-full relative group"
+                variant="primary"
+                fullWidth
+                size="lg"
+                icon={<ArrowRight className="w-5 h-5" />}
+                iconPosition="right"
               >
-                <div className="relative h-14 px-8 flex items-center justify-center rounded-2xl bg-gradient-to-r from-accent-blue to-accent-purple text-white font-semibold text-lg transition-all duration-300 group-hover:shadow-[0_8px_32px_rgba(59,130,246,0.5)] group-active:scale-[0.98]">
-                  <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-50 rounded-2xl" />
-                  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                  <span className="relative z-10 flex items-center gap-3">
-                    Sign In
-                    <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-                  </span>
-                </div>
-              </button>
+                Sign In
+              </GlassButton>
             </form>
 
             <div className="mt-6">
@@ -576,17 +558,18 @@ export default function PortalStartPage() {
                 whileTap={{ scale: 0.98 }}
                 className="mt-6"
               >
-                <button
+                <GlassButton
+                  variant="secondary"
+                  fullWidth
                   onClick={handleGoogleSignIn}
-                  className="w-full glass-secondary px-6 py-3 rounded-2xl flex items-center justify-center gap-3 group hover:bg-white/80 transition-all duration-300"
+                  icon={<FcGoogle className="w-6 h-6" />}
                 >
-                  <FcGoogle className="w-6 h-6" />
-                  <span className="font-medium text-text-primary">Continue with Google</span>
-                </button>
+                  Continue with Google
+                </GlassButton>
               </motion.div>
             </div>
 
-            <p className="mt-6 text-center text-sm text-text-secondary">
+            <p className={cn("mt-6 text-center text-sm", glass.text.secondary)}>
               Don&apos;t have an account?{' '}
               <button
                 onClick={() => setViewState('signup')}
@@ -615,10 +598,10 @@ export default function PortalStartPage() {
               >
                 <Sparkles className="w-8 h-8 text-white" />
               </motion.div>
-              <h2 className="text-3xl font-bold text-text-primary mb-2">
+              <h2 className={cn("text-3xl font-bold mb-2", glass.text.primary)}>
                 Create Your Account
               </h2>
-              <p className="text-text-secondary">
+              <p className={glass.text.secondary}>
                 Join FAXAS Portal to start your project
               </p>
             </div>
@@ -628,13 +611,14 @@ export default function PortalStartPage() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <button
+                <GlassButton
+                  variant="secondary"
+                  fullWidth
                   onClick={handleGoogleSignIn}
-                  className="w-full glass-secondary px-6 py-3 rounded-2xl flex items-center justify-center gap-3 group hover:bg-white/80 transition-all duration-300"
+                  icon={<FcGoogle className="w-6 h-6" />}
                 >
-                  <FcGoogle className="w-6 h-6" />
-                  <span className="font-medium text-text-primary">Sign up with Google</span>
-                </button>
+                  Sign up with Google
+                </GlassButton>
               </motion.div>
             </div>
 
@@ -649,160 +633,82 @@ export default function PortalStartPage() {
 
             <form onSubmit={handleEmailSignUp} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
-                  Full Name
-                </label>
-                <div className="relative group">
-                  <input
-                    type="text"
-                    required
-                    value={signUpData.name}
-                    onChange={(e) => setSignUpData({ ...signUpData, name: e.target.value })}
-                    onFocus={() => setFocusedField('signup-name')}
-                    onBlur={() => setFocusedField('')}
-                    className={cn(
-                      "w-full px-4 py-3 pl-12 bg-white/50 backdrop-blur-sm",
-                      "border-2 rounded-2xl transition-all duration-300",
-                      "focus:outline-none focus:ring-0",
-                      focusedField === 'signup-name'
-                        ? "border-accent-blue bg-white/70 shadow-lg"
-                        : "border-glass-lighter hover:border-glass-light"
-                    )}
-                    placeholder="John Doe"
-                  />
-                  <User className={cn(
-                    "absolute left-4 top-3.5 w-5 h-5 transition-colors duration-300",
-                    focusedField === 'signup-name' ? "text-accent-blue" : "text-text-tertiary"
-                  )} />
-                  {focusedField === 'signup-name' && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="absolute inset-0 -z-10 bg-gradient-to-r from-accent-blue/20 to-accent-purple/20 blur-xl rounded-2xl"
-                    />
-                  )}
-                </div>
+                <GlassInput
+                  label="Full Name"
+                  type="text"
+                  placeholder="John Doe"
+                  value={signUpData.name}
+                  onChange={(e) => setSignUpData({ ...signUpData, name: e.target.value })}
+                  icon={<User className="w-5 h-5" />}
+                  fullWidth
+                  required
+                />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
-                  Email Address
-                </label>
-                <div className="relative group">
-                  <input
-                    type="email"
-                    required
-                    value={signUpData.email}
-                    onChange={(e) => setSignUpData({ ...signUpData, email: e.target.value })}
-                    onFocus={() => setFocusedField('signup-email')}
-                    onBlur={() => setFocusedField('')}
-                    className={cn(
-                      "w-full px-4 py-3 pl-12 bg-white/50 backdrop-blur-sm",
-                      "border-2 rounded-2xl transition-all duration-300",
-                      "focus:outline-none focus:ring-0",
-                      focusedField === 'signup-email'
-                        ? "border-accent-blue bg-white/70 shadow-lg"
-                        : "border-glass-lighter hover:border-glass-light"
-                    )}
-                    placeholder="you@example.com"
-                  />
-                  <Mail className={cn(
-                    "absolute left-4 top-3.5 w-5 h-5 transition-colors duration-300",
-                    focusedField === 'signup-email' ? "text-accent-blue" : "text-text-tertiary"
-                  )} />
-                  {focusedField === 'signup-email' && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="absolute inset-0 -z-10 bg-gradient-to-r from-accent-blue/20 to-accent-purple/20 blur-xl rounded-2xl"
-                    />
-                  )}
-                </div>
+                <GlassInput
+                  label="Email Address"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={signUpData.email}
+                  onChange={(e) => setSignUpData({ ...signUpData, email: e.target.value })}
+                  icon={<Mail className="w-5 h-5" />}
+                  fullWidth
+                  required
+                />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
-                  Password
-                </label>
-                <div className="relative group">
-                  <input
+                <div className="relative">
+                  <GlassInput
+                    label="Password"
                     type={showPassword ? "text" : "password"}
-                    required
+                    placeholder="••••••••"
                     value={signUpData.password}
                     onChange={(e) => setSignUpData({ ...signUpData, password: e.target.value })}
-                    onFocus={() => setFocusedField('signup-password')}
-                    onBlur={() => setFocusedField('')}
-                    className={cn(
-                      "w-full px-4 py-3 pl-12 pr-12 bg-white/50 backdrop-blur-sm",
-                      "border-2 rounded-2xl transition-all duration-300",
-                      "focus:outline-none focus:ring-0",
-                      focusedField === 'signup-password'
-                        ? "border-accent-blue bg-white/70 shadow-lg"
-                        : "border-glass-lighter hover:border-glass-light"
-                    )}
-                    placeholder="••••••••"
+                    icon={<Lock className="w-5 h-5" />}
+                    fullWidth
+                    required
                   />
-                  <Lock className={cn(
-                    "absolute left-4 top-3.5 w-5 h-5 transition-colors duration-300",
-                    focusedField === 'signup-password' ? "text-accent-blue" : "text-text-tertiary"
-                  )} />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-3.5 text-text-tertiary hover:text-text-primary transition-colors"
+                    className={cn(
+                      "absolute right-3 top-[38px]",
+                      glass.text.tertiary,
+                      "hover:text-accent-blue transition-colors"
+                    )}
+                    style={{ marginTop: '-40px' }}
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
-                  {focusedField === 'signup-password' && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="absolute inset-0 -z-10 bg-gradient-to-r from-accent-blue/20 to-accent-purple/20 blur-xl rounded-2xl"
-                    />
-                  )}
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
-                  Confirm Password
-                </label>
-                <div className="relative group">
-                  <input
+                <div className="relative">
+                  <GlassInput
+                    label="Confirm Password"
                     type={showConfirmPassword ? "text" : "password"}
-                    required
+                    placeholder="••••••••"
                     value={signUpData.confirmPassword}
                     onChange={(e) => setSignUpData({ ...signUpData, confirmPassword: e.target.value })}
-                    onFocus={() => setFocusedField('signup-confirm')}
-                    onBlur={() => setFocusedField('')}
-                    className={cn(
-                      "w-full px-4 py-3 pl-12 pr-12 bg-white/50 backdrop-blur-sm",
-                      "border-2 rounded-2xl transition-all duration-300",
-                      "focus:outline-none focus:ring-0",
-                      focusedField === 'signup-confirm'
-                        ? "border-accent-blue bg-white/70 shadow-lg"
-                        : "border-glass-lighter hover:border-glass-light"
-                    )}
-                    placeholder="••••••••"
+                    icon={<Lock className="w-5 h-5" />}
+                    fullWidth
+                    required
                   />
-                  <Lock className={cn(
-                    "absolute left-4 top-3.5 w-5 h-5 transition-colors duration-300",
-                    focusedField === 'signup-confirm' ? "text-accent-blue" : "text-text-tertiary"
-                  )} />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-4 top-3.5 text-text-tertiary hover:text-text-primary transition-colors"
+                    className={cn(
+                      "absolute right-3 top-[38px]",
+                      glass.text.tertiary,
+                      "hover:text-accent-blue transition-colors"
+                    )}
+                    style={{ marginTop: '-40px' }}
                   >
                     {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
-                  {focusedField === 'signup-confirm' && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="absolute inset-0 -z-10 bg-gradient-to-r from-accent-blue/20 to-accent-purple/20 blur-xl rounded-2xl"
-                    />
-                  )}
                 </div>
               </div>
 
@@ -812,7 +718,7 @@ export default function PortalStartPage() {
                   required
                   className="w-4 h-4 text-accent-blue bg-white/50 border-glass-lighter rounded focus:ring-2 focus:ring-accent-blue/50 focus:ring-offset-0"
                 />
-                <label className="ml-2 text-sm text-text-secondary">
+                <label className={cn("ml-2 text-sm", glass.text.secondary)}>
                   I agree to the{' '}
                   <Link href="/terms" className="text-accent-blue hover:text-accent-purple transition-colors">
                     Terms of Service
@@ -824,22 +730,19 @@ export default function PortalStartPage() {
                 </label>
               </div>
 
-              <button
+              <GlassButton
                 type="submit"
-                className="w-full relative group"
+                variant="primary"
+                fullWidth
+                size="lg"
+                icon={<ArrowRight className="w-5 h-5" />}
+                iconPosition="right"
               >
-                <div className="relative h-14 px-8 flex items-center justify-center rounded-2xl bg-gradient-to-r from-accent-blue to-accent-purple text-white font-semibold text-lg transition-all duration-300 group-hover:shadow-[0_8px_32px_rgba(59,130,246,0.5)] group-active:scale-[0.98]">
-                  <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-50 rounded-2xl" />
-                  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                  <span className="relative z-10 flex items-center gap-3">
-                    Create Account
-                    <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-                  </span>
-                </div>
-              </button>
+                Create Account
+              </GlassButton>
             </form>
 
-            <p className="mt-6 text-center text-sm text-text-secondary">
+            <p className={cn("mt-6 text-center text-sm", glass.text.secondary)}>
               Already have an account?{' '}
               <button
                 onClick={() => setViewState('signin')}
@@ -868,158 +771,78 @@ export default function PortalStartPage() {
               >
                 <User className="w-8 h-8 text-white" />
               </motion.div>
-              <h2 className="text-3xl font-bold text-text-primary mb-2">
+              <h2 className={cn("text-3xl font-bold mb-2", glass.text.primary)}>
                 Complete Your Profile
               </h2>
-              <p className="text-text-secondary">
+              <p className={glass.text.secondary}>
                 Help us personalize your experience
               </p>
             </div>
 
             <form onSubmit={handleProfileSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
-                  Your Name *
-                </label>
-                <div className="relative group">
-                  <input
-                    type="text"
-                    required
-                    value={profileData.displayName}
-                    onChange={(e) => setProfileData(prev => ({ 
-                      ...prev, 
-                      displayName: e.target.value 
-                    }))}
-                    onFocus={() => setFocusedField('profile-name')}
-                    onBlur={() => setFocusedField('')}
-                    className={cn(
-                      "w-full px-4 py-3 pl-12 bg-white/50 backdrop-blur-sm",
-                      "border-2 rounded-2xl transition-all duration-300",
-                      "focus:outline-none focus:ring-0",
-                      focusedField === 'profile-name'
-                        ? "border-accent-blue bg-white/70 shadow-lg"
-                        : "border-glass-lighter hover:border-glass-light"
-                    )}
-                    placeholder="John Doe"
-                  />
-                  <User className={cn(
-                    "absolute left-4 top-3.5 w-5 h-5 transition-colors duration-300",
-                    focusedField === 'profile-name' ? "text-accent-blue" : "text-text-tertiary"
-                  )} />
-                  {focusedField === 'profile-name' && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="absolute inset-0 -z-10 bg-gradient-to-r from-accent-blue/20 to-accent-purple/20 blur-xl rounded-2xl"
-                    />
-                  )}
-                </div>
+                <GlassInput
+                  label="Your Name *"
+                  type="text"
+                  placeholder="John Doe"
+                  value={profileData.displayName}
+                  onChange={(e) => setProfileData(prev => ({ 
+                    ...prev, 
+                    displayName: e.target.value 
+                  }))}
+                  icon={<User className="w-5 h-5" />}
+                  fullWidth
+                  required
+                />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
-                  Company (Optional)
-                </label>
-                <div className="relative group">
-                  <input
-                    type="text"
-                    value={profileData.company}
-                    onChange={(e) => setProfileData(prev => ({ 
-                      ...prev, 
-                      company: e.target.value 
-                    }))}
-                    onFocus={() => setFocusedField('profile-company')}
-                    onBlur={() => setFocusedField('')}
-                    className={cn(
-                      "w-full px-4 py-3 pl-12 bg-white/50 backdrop-blur-sm",
-                      "border-2 rounded-2xl transition-all duration-300",
-                      "focus:outline-none focus:ring-0",
-                      focusedField === 'profile-company'
-                        ? "border-accent-blue bg-white/70 shadow-lg"
-                        : "border-glass-lighter hover:border-glass-light"
-                    )}
-                    placeholder="Acme Inc."
-                  />
-                  <Building className={cn(
-                    "absolute left-4 top-3.5 w-5 h-5 transition-colors duration-300",
-                    focusedField === 'profile-company' ? "text-accent-blue" : "text-text-tertiary"
-                  )} />
-                  {focusedField === 'profile-company' && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="absolute inset-0 -z-10 bg-gradient-to-r from-accent-blue/20 to-accent-purple/20 blur-xl rounded-2xl"
-                    />
-                  )}
-                </div>
+                <GlassInput
+                  label="Company (Optional)"
+                  type="text"
+                  placeholder="Acme Inc."
+                  value={profileData.company}
+                  onChange={(e) => setProfileData(prev => ({ 
+                    ...prev, 
+                    company: e.target.value 
+                  }))}
+                  icon={<Building className="w-5 h-5" />}
+                  fullWidth
+                />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
-                  Phone Number *
-                </label>
-                <div className="relative group">
-                  <input
-                    type="tel"
-                    required
-                    value={profileData.phone}
-                    onChange={(e) => {
-                      const formatted = formatPhoneNumber(e.target.value);
-                      setProfileData(prev => ({ 
-                        ...prev, 
-                        phone: formatted 
-                      }));
-                    }}
-                    onFocus={() => setFocusedField('profile-phone')}
-                    onBlur={() => setFocusedField('')}
-                    className={cn(
-                      "w-full px-4 py-3 pl-12 bg-white/50 backdrop-blur-sm",
-                      "border-2 rounded-2xl transition-all duration-300",
-                      "focus:outline-none focus:ring-0",
-                      focusedField === 'profile-phone'
-                        ? "border-accent-blue bg-white/70 shadow-lg"
-                        : "border-glass-lighter hover:border-glass-light"
-                    )}
-                    placeholder="(555) 123-4567"
-                    maxLength={14}
-                  />
-                  <Phone className={cn(
-                    "absolute left-4 top-3.5 w-5 h-5 transition-colors duration-300",
-                    focusedField === 'profile-phone' ? "text-accent-blue" : "text-text-tertiary"
-                  )} />
-                  {focusedField === 'profile-phone' && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="absolute inset-0 -z-10 bg-gradient-to-r from-accent-blue/20 to-accent-purple/20 blur-xl rounded-2xl"
-                    />
-                  )}
-                </div>
+                <GlassInput
+                  label="Phone Number *"
+                  type="tel"
+                  placeholder="(555) 123-4567"
+                  value={profileData.phone}
+                  onChange={(e) => {
+                    const formatted = formatPhoneNumber(e.target.value);
+                    setProfileData(prev => ({ 
+                      ...prev, 
+                      phone: formatted 
+                    }));
+                  }}
+                  icon={<Phone className="w-5 h-5" />}
+                  fullWidth
+                  required
+                  maxLength={14}
+                />
               </div>
 
-              <button
+              <GlassButton
                 type="submit"
-                disabled={isCreating || !profileData.displayName || !profileData.phone}
-                className="w-full relative group"
+                variant="primary"
+                fullWidth
+                size="lg"
+                disabled={!profileData.displayName || !profileData.phone}
+                loading={isCreating}
+                icon={!isCreating && <ArrowRight className="w-5 h-5" />}
+                iconPosition="right"
               >
-                <div className="relative h-14 px-8 flex items-center justify-center rounded-2xl bg-gradient-to-r from-accent-blue to-accent-purple text-white font-semibold text-lg transition-all duration-300 group-hover:shadow-[0_8px_32px_rgba(59,130,246,0.5)] group-active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">
-                  <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-50 rounded-2xl" />
-                  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                  <span className="relative z-10 flex items-center gap-3">
-                    {isCreating ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        <span>Setting up your portal...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>Continue to Assessment</span>
-                        <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-                      </>
-                    )}
-                  </span>
-                </div>
-              </button>
+                {isCreating ? 'Setting up your portal...' : 'Continue to Assessment'}
+              </GlassButton>
             </form>
           </motion.div>
         );
@@ -1034,10 +857,10 @@ export default function PortalStartPage() {
             <div className="w-20 h-20 bg-gradient-to-br from-accent-green/20 to-accent-blue/20 rounded-full flex items-center justify-center mx-auto mb-6">
               <Check className="w-10 h-10 text-accent-green" />
             </div>
-            <h2 className="text-3xl font-bold gradient-text mb-2">
+            <h2 className={cn("text-3xl font-bold gradient-text mb-2")}>
               Welcome to FAXAS Portal!
             </h2>
-            <p className="text-text-secondary mb-6">
+            <p className={cn("mb-6", glass.text.secondary)}>
               Let&apos;s start with a quick assessment...
             </p>
             <div className="flex items-center justify-center gap-2 text-accent-blue">
@@ -1060,7 +883,7 @@ export default function PortalStartPage() {
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-blue to-accent-purple flex items-center justify-center text-white font-bold text-xl">
             F
           </div>
-          <span className="text-xl font-bold text-text-primary group-hover:text-accent-blue transition-colors">
+          <span className={cn("text-xl font-bold group-hover:text-accent-blue transition-colors", glass.text.primary)}>
             FAXAS
           </span>
         </Link>
@@ -1073,11 +896,18 @@ export default function PortalStartPage() {
           transition={{ duration: 0.5 }}
           className="w-full max-w-4xl"
         >
-          <GlassPanel level="primary" className="p-8 md:p-12">
+          <GlassCard
+            level="strong"
+            border="medium"
+            shadow="xl"
+            radius="xl"
+            spacing="xl"
+            animated
+          >
             <AnimatePresence mode="wait">
               {renderContent()}
             </AnimatePresence>
-          </GlassPanel>
+          </GlassCard>
         </motion.div>
       </div>
 

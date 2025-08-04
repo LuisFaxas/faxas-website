@@ -1,4 +1,9 @@
-import { cn } from '@/lib/utils';
+// Legacy GlassPanel component - redirects to new glass system
+// This file is kept for backward compatibility
+// Please use components from '@/components/ui/glass' instead
+
+import { GlassPanel as NewGlassPanel } from '@/components/ui/glass';
+import type { GlassLevel } from '@/lib/design-system/glass-morphism';
 
 interface GlassPanelProps {
   children: React.ReactNode;
@@ -7,31 +12,27 @@ interface GlassPanelProps {
   float?: boolean;
 }
 
+// Map old level names to new glass levels
+const levelMap: Record<string, GlassLevel> = {
+  primary: 'medium',
+  secondary: 'subtle',
+  accent: 'accent',
+  light: 'ultraSubtle',
+};
+
 export function GlassPanel({
   children,
   className,
   level = 'primary',
   float = false,
 }: GlassPanelProps) {
-  const levelClasses = {
-    primary: 'glass-primary',
-    secondary: 'glass-secondary',
-    accent: 'glass-accent',
-    light: 'glass-light',
-  };
-
   return (
-    <div
-      className={cn(
-        levelClasses[level],
-        float && 'floating-tile hover:shadow-glass-hover',
-        'relative overflow-hidden',
-        className
-      )}
+    <NewGlassPanel
+      level={levelMap[level]}
+      floating={float}
+      className={className}
     >
-      {/* Glass shine effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent pointer-events-none" />
       {children}
-    </div>
+    </NewGlassPanel>
   );
 }
